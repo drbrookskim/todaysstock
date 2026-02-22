@@ -2,6 +2,5 @@ flask
 yfinance
 pykrx
 pandas
-git+https://github.com/twopirllc/pandas-ta.git@main
 requests
 gunicorn
