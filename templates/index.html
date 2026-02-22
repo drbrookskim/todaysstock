@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 종목 검색 | Stock Finder</title>
+    <meta name="description" content="코스피, 코스닥 종목을 검색하고 주가 및 이동평균선 정보를 확인하세요.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- Ambient background effects -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar Hamburger Toggle (visible when unpinned) -->
+        <button id="sidebarToggle" class="sidebar-toggle" aria-label="관심종목 열기" title="관심종목">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <!-- Sidebar Overlay (for mobile/unpinned click-away) -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <!-- Watchlist Sidebar -->
+        <aside id="watchlistSidebar" class="watchlist-sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">📋 관심종목</h2>
+                <div class="sidebar-header-actions">
+                    <span id="watchlistCount" class="sidebar-count">0</span>
+                    <button id="sidebarPinBtn" class="sidebar-pin-btn" title="사이드바 고정" aria-label="사이드바 고정">
+                        <svg class="pin-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 17v5"></path>
+                            <path
+                                d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="watchlistItems" class="watchlist-items"></div>
+            <div id="watchlistEmpty" class="watchlist-empty">
+                <span class="empty-icon">📌</span>
+                <p>종목을 검색하고<br>"종목추가" 버튼으로<br>관심 목록에 추가하세요</p>
+            </div>
+        </aside>
+
+        <div class="container">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-row">
+                    <div class="logo">
+                        <img src="/static/favicon.svg" alt="Stock Finder" class="logo-icon" width="36" height="36">
+                        <h1>Stock Finder</h1>
+                    </div>
+                    <button id="themeToggle" class="theme-toggle" aria-label="테마 변경" title="다크/라이트 모드 전환">
+                        <span class="theme-icon-sun">☀️</span>
+                        <span class="theme-icon-moon">🌙</span>
+                    </button>
+                </div>
+                <p class="subtitle">코스피 · 코스닥 종목 검색</p>
+            </header>
+
+            <!-- Search Section -->
+            <section class="search-section">
+                <p class="search-guide">종목명 또는 종목번호(6자리)로 검색할 수 있습니다</p>
+                <div class="search-wrapper">
+                    <div class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                    </div>
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="종목명 또는 종목코드를 입력하세요 (예: 삼성전자, 005930)" autocomplete="off" spellcheck="false">
+                    <div class="search-shortcut">
+                        <kbd>검색</kbd>
+                    </div>
+                    <button id="addWatchlistBtn" class="add-watchlist-btn" disabled title="종목을 먼저 검색하세요">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        추가
+                    </button>
+                </div>
+                <!-- Autocomplete Dropdown -->
+                <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
+                <!-- Recent Searches -->
+                <div id="recentSearches" class="recent-searches hidden">
+                    <div class="recent-header">
+                        <span class="recent-label">🕐 최근 검색</span>
+                        <button id="clearRecent" class="recent-clear">전체 삭제</button>
+                    </div>
+                    <div id="recentList" class="recent-list"></div>
+                </div>
+            </section>
+
+            <!-- Loading -->
+            <div id="loadingSpinner" class="loading hidden">
+                <div class="spinner"></div>
+                <p>주가 데이터를 가져오는 중...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message hidden"></div>
+
+            <!-- Results -->
+            <section id="resultSection" class="result-section hidden">
+                <!-- Stock Header Card -->
+                <div class="stock-header-card">
+                    <div class="stock-title-row">
+                        <div class="stock-name-group">
+                            <span id="stockMarketBadge" class="market-badge">KOSPI</span>
+                            <h2 id="stockName" class="stock-name">삼성전자</h2>
+                            <span id="stockCode" class="stock-code">005930</span>
+                        </div>
+                        <div id="stockDate" class="stock-date"></div>
+                    </div>
+                    <div class="price-row">
+                        <span id="stockPrice" class="current-price">0</span>
+                        <span id="stockChange" class="price-change">0 (0.00%)</span>
+                    </div>
+                    <div class="ohlv-row">
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">시가</span>
+                            <span id="stockOpen" class="ohlv-value">0</span>
+                        </div>
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">고가</span>
+                            <span id="stockHigh" class="ohlv-value">0</span>
+                        </div>
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">저가</span>
+                            <span id="stockLow" class="ohlv-value">0</span>
+                        </div>
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">거래량</span>
+                            <span id="stockVolume" class="ohlv-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NXT 시간외 거래 카드 -->
+                <div id="nxtCard" class="nxt-card hidden">
+                    <div class="nxt-header">
+                        <div class="nxt-title-row">
+                            <span class="nxt-badge">NXT</span>
+                            <h3 class="nxt-title">시간외 거래</h3>
+                            <span id="nxtStatus" class="nxt-status"></span>
+                        </div>
+                        <span id="nxtTime" class="nxt-time"></span>
+                    </div>
+                    <div class="nxt-body">
+                        <div class="nxt-price-row">
+                            <span id="nxtPrice" class="nxt-price">0</span>
+                            <span id="nxtChange" class="nxt-change">0원 (0%)</span>
+                        </div>
+                        <div class="nxt-detail">
+                            <div class="nxt-detail-item">
+                                <span class="nxt-detail-label">고가</span>
+                                <span id="nxtHigh" class="nxt-detail-value">0</span>
+                            </div>
+                            <div class="nxt-detail-item">
+                                <span class="nxt-detail-label">저가</span>
+                                <span id="nxtLow" class="nxt-detail-value">0</span>
+                            </div>
+                            <div class="nxt-detail-item">
+                                <span class="nxt-detail-label">거래량</span>
+                                <span id="nxtVolume" class="nxt-detail-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moving Averages Card -->
+                <div class="ma-card">
+                    <h3 class="ma-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        이동평균선 (Moving Averages)
+                    </h3>
+                    <div class="ma-grid">
+                        <div class="ma-item" id="ma5Card">
+                            <div class="ma-period">
+                                <span class="ma-dot ma-dot-5"></span>
+                                5일선
+                            </div>
+                            <div id="ma5Value" class="ma-value">-</div>
+                            <div id="ma5Diff" class="ma-diff">-</div>
+                        </div>
+                        <div class="ma-item" id="ma10Card">
+                            <div class="ma-period">
+                                <span class="ma-dot ma-dot-10"></span>
+                                10일선
+                            </div>
+                            <div id="ma10Value" class="ma-value">-</div>
+                            <div id="ma10Diff" class="ma-diff">-</div>
+                        </div>
+                        <div class="ma-item" id="ma20Card">
+                            <div class="ma-period">
+                                <span class="ma-dot ma-dot-20"></span>
+                                20일선
+                            </div>
+                            <div id="ma20Value" class="ma-value">-</div>
+                            <div id="ma20Diff" class="ma-diff">-</div>
+                        </div>
+                        <div class="ma-item" id="ma60Card">
+                            <div class="ma-period">
+                                <span class="ma-dot ma-dot-60"></span>
+                                60일선
+                            </div>
+                            <div id="ma60Value" class="ma-value">-</div>
+                            <div id="ma60Diff" class="ma-diff">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MA Visual Bar -->
+                <div class="ma-visual-card">
+                    <h3 class="ma-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"></path>
+                            <path d="m19 9-5 5-4-4-3 3"></path>
+                        </svg>
+                        이동평균 대비 현재가 위치
+                    </h3>
+                    <div id="maVisualBars" class="ma-visual-bars"></div>
+                </div>
+
+                <!-- AI Candle Pattern Analysis Report -->
+                <div id="analysisSection" class="analysis-section hidden">
+                    <!-- Analysis Header -->
+                    <div class="analysis-header-card">
+                        <h3 class="analysis-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                            </svg>
+                            AI 캔들 패턴 분석 리포트
+                        </h3>
+                        <div class="analysis-loading hidden" id="analysisLoading">
+                            <div class="spinner spinner-sm"></div>
+                            <span>패턴 분석 중...</span>
+                        </div>
+
+                        <!-- Trend Badge -->
+                        <div class="trend-container" id="trendContainer">
+                            <div id="trendBadge" class="trend-badge">
+                                <span id="trendIcon" class="trend-icon"></span>
+                                <span id="trendLabel" class="trend-label"></span>
+                            </div>
+                            <div class="trend-strength-bar">
+                                <div id="trendStrengthFill" class="trend-strength-fill"></div>
+                            </div>
+                            <span id="trendStrengthText" class="trend-strength-text"></span>
+                        </div>
+                    </div>
+
+                    <!-- Detected Patterns -->
+                    <div class="patterns-card" id="patternsCard">
+                        <h4 class="card-subtitle">
+                            🕯️ 감지된 캔들 패턴
+                        </h4>
+                        <div id="patternsList" class="patterns-list"></div>
+                        <div id="noPatternsMsg" class="no-patterns hidden">
+                            현재 뚜렷한 캔들 패턴이 감지되지 않았습니다.
+                        </div>
+                    </div>
+
+                    <!-- Candlestick Mini Chart -->
+                    <div class="candle-chart-card" id="candleChartCard">
+                        <h4 class="card-subtitle">
+                            📊 최근 캔들 차트
+                        </h4>
+                        <div id="candleChart" class="candle-chart"></div>
+                    </div>
+
+                    <!-- Buy / Sell Reports Grid -->
+                    <div class="report-grid" id="reportGrid">
+                        <!-- Buy Report -->
+                        <div id="buyReport" class="report-card report-buy hidden">
+                            <div class="report-header report-header-buy">
+                                <span class="report-icon">📈</span>
+                                <span class="report-title">매수 리포트</span>
+                                <span id="buySignalBadge" class="signal-badge signal-buy"></span>
+                            </div>
+                            <div class="report-body">
+                                <div class="report-pattern" id="buyPattern"></div>
+                                <div class="report-prices">
+                                    <div class="price-row-item">
+                                        <span class="price-label">적극 매수가</span>
+                                        <span id="buyAggressive" class="price-val buy-color"></span>
+                                    </div>
+                                    <div class="price-row-item">
+                                        <span class="price-label">보수 매수가</span>
+                                        <span id="buyConservative" class="price-val buy-color"></span>
+                                    </div>
+                                    <div class="price-row-item">
+                                        <span class="price-label">목표가</span>
+                                        <span id="buyTarget" class="price-val target-color"></span>
+                                    </div>
+                                    <div class="price-row-item stop-loss">
+                                        <span class="price-label">손절가</span>
+                                        <span id="buyStopLoss" class="price-val sell-color"></span>
+                                    </div>
+                                </div>
+                                <div class="report-meta">
+                                    <div id="buyRiskReward" class="risk-reward"></div>
+                                    <div id="buyVolume" class="volume-note"></div>
+                                </div>
+                                <div id="buyTip" class="report-tip"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sell Report -->
+                        <div id="sellReport" class="report-card report-sell hidden">
+                            <div class="report-header report-header-sell">
+                                <span class="report-icon">📉</span>
+                                <span class="report-title">매도 리포트</span>
+                                <span id="sellSignalBadge" class="signal-badge signal-sell"></span>
+                            </div>
+                            <div class="report-body">
+                                <div class="report-pattern" id="sellPattern"></div>
+                                <div class="report-prices">
+                                    <div class="price-row-item">
+                                        <span class="price-label">즉시 매도가</span>
+                                        <span id="sellPrice" class="price-val sell-color"></span>
+                                    </div>
+                                    <div class="price-row-item">
+                                        <span class="price-label">보수 매도가</span>
+                                        <span id="sellConservative" class="price-val sell-color"></span>
+                                    </div>
+                                    <div class="price-row-item">
+                                        <span class="price-label">예상 하락가</span>
+                                        <span id="sellTarget" class="price-val target-color"></span>
+                                    </div>
+                                    <div class="price-row-item stop-loss">
+                                        <span class="price-label">최대 손절가</span>
+                                        <span id="sellStopLoss" class="price-val buy-color"></span>
+                                    </div>
+                                </div>
+                                <div class="report-meta">
+                                    <div id="sellRiskReward" class="risk-reward"></div>
+                                    <div id="sellVolume" class="volume-note"></div>
+                                </div>
+                                <div id="sellTip" class="report-tip"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div class="disclaimer">
+                        ⚠️ 본 분석은 캔들 패턴을 기반으로 한 기술적 참고자료이며, 투자 판단의 최종 결정은 본인에게 있습니다.
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div> <!-- .app-layout -->
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
