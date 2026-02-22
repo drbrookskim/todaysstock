@@ -295,7 +295,9 @@ def stock_analysis():
     return jsonify(analysis)
 
 
+# --- Gunicorn 등 프로덕션 환경에서도 시작 시 종목을 로드하도록 모듈 레벨에서 호출 ---
+load_all_stocks()
+print(f"🕯️  캔들 패턴 분석 엔진 활성화")
+
 if __name__ == "__main__":
-    load_all_stocks()
-    print(f"🕯️  캔들 패턴 분석 엔진 활성화")
     app.run(debug=True, port=5000)
