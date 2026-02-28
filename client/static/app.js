@@ -442,7 +442,7 @@ async function selectStock(item) {
     loadingSpinner.classList.remove('hidden');
 
     try {
-        const url = `/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
+        const url = API_BASE_URL + `/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -666,7 +666,7 @@ async function fetchAnalysis(item) {
     document.getElementById('reportGrid').classList.add('hidden');
 
     try {
-        const url = `/api/analysis?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
+        const url = API_BASE_URL + `/api/analysis?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -1183,7 +1183,7 @@ async function initAuth() {
             const password = document.getElementById('password').value.trim();
             if (!username || !password) return;
 
-            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            const endpoint = isLoginMode ? API_BASE_URL + '/api/login' : API_BASE_URL + '/api/register';
 
             try {
                 authSubmitBtn.disabled = true;
