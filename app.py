@@ -5,9 +5,11 @@
 - 캔들 패턴 분석 및 AI 매매 리포트
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 from supabase import create_client, Client, ClientOptions
 import os
+import html
 from dotenv import load_dotenv
 import yfinance as yf
 import pandas as pd
@@ -18,6 +20,8 @@ from candle_patterns import analyze_candle_patterns
 import os
 
 app = Flask(__name__)
+CORS(app)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24).hex())
 
 load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
@@ -259,10 +263,10 @@ def get_stock_data(code, market):
         
     # DART 정보를 활용해 동일한 포맷의 HTML 동적 생성
     dart_li = []
-    if est_dt: dart_li.append(f"<li><strong>설립일:</strong> {est_dt}</li>")
-    if ceo: dart_li.append(f"<li><strong>대표이사:</strong> {ceo}</li>")
-    if adres: dart_li.append(f"<li><strong>본사:</strong> {adres}</li>")
-    if hm_url: dart_li.append(f"<li><strong>웹사이트:</strong> <a href='{hm_url}' target='_blank'>{hm_url.replace('http://', '').replace('https://', '')}</a></li>")
+    if est_dt: dart_li.append(f"<li><strong>설립일:</strong> {html.escape(est_dt)}</li>")
+    if ceo: dart_li.append(f"<li><strong>대표이사:</strong> {html.escape(ceo)}</li>")
+    if adres: dart_li.append(f"<li><strong>본사:</strong> {html.escape(adres)}</li>")
+    if hm_url: dart_li.append(f"<li><strong>웹사이트:</strong> <a href='{html.escape(hm_url)}' target='_blank'>{html.escape(hm_url.replace('http://', '').replace('https://', ''))}</a></li>")
     
     overview_html = ""
     if dart_li:
@@ -276,11 +280,11 @@ def get_stock_data(code, market):
         
     company_summary = f"""
 <div class="summary-formatted">
-<div class="summary-subtitle"><strong>"글로벌 경쟁력 기반의 {industry} 선도 기업"</strong></div>
+<div class="summary-subtitle"><strong>"글로벌 경쟁력 기반의 {html.escape(industry)} 선도 기업"</strong></div>
 {overview_html}
 <div class="summary-section">
     <h4 class="summary-heading">2. 핵심 사업 영역 (주요 활동)</h4>
-    <p class="summary-desc">{translated_desc}</p>
+    <p class="summary-desc">{html.escape(translated_desc)}</p>
 </div>
 </div>"""
 
@@ -389,7 +393,8 @@ def register():
         res = supabase_global.auth.sign_up({"email": email, "password": password})
         return jsonify({"success": True, "message": "회원가입 성공. 이제 로그인할 수 있습니다."})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
+        print(f"Auth error (sign_up): {e}")
+        return jsonify({"success": False, "message": "회원가입 중 오류가 발생했습니다."}), 400
 
 @app.route("/api/login", methods=["POST"])
 def login():
@@ -421,7 +426,13 @@ def auth_google():
         return jsonify({"success": False, "message": "Supabase 환경 설정이 안되어 있습니다."}), 500
         
     try:
-        redirect_url = f"{request.url_root}auth/callback"
+        # 분리된 프론트엔드 URL을 동적으로 감지하거나 환경 변수로 처리
+        origin = request.headers.get("Origin")
+        if origin:
+            redirect_url = f"{origin}/callback.html"
+        else:
+            frontend_url = os.environ.get("FRONTEND_URL", request.url_root.rstrip('/'))
+            redirect_url = f"{frontend_url}/callback.html"
         
         # supabase-py 의 sign_in_with_oauth()는 기본적으로 PKCE flow를 강제하므로
         # code_challenge를 URL에 붙이고, 콜백에서 ?code= 를 반환하게 됩니다.
@@ -434,12 +445,8 @@ def auth_google():
         
         return jsonify({"success": True, "url": oauth_url})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
-
-@app.route("/auth/callback", methods=["GET"])
-def auth_callback():
-    """OAuth 진행 후 리다이렉트되어 돌아오는 콜백 페이지 렌더링"""
-    return render_template("callback.html")
+        print(f"Auth error (google): {e}")
+        return jsonify({"success": False, "message": "Google 로그인 설정 중 오류가 발생했습니다."}), 400
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
@@ -510,14 +517,12 @@ def manage_watchlist():
             return jsonify({"success": True})
             
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 400
+        print(f"Watchlist error: {e}")
+        return jsonify({"success": False, "message": "관심목록 처리 중 오류가 발생했습니다."}), 400
 
 # ─────────────────────────────────────────────
 # 라우트
 # ─────────────────────────────────────────────
-@app.route("/")
-def index():
-    return render_template("index.html")
 
 
 @app.route("/api/suggest")
@@ -583,4 +588,5 @@ load_all_stocks()
 print(f"🕯️  캔들 패턴 분석 엔진 활성화")
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001, use_reloader=False)
+    debug_mode = os.environ.get("FLASK_ENV") == "development"
+    app.run(debug=debug_mode, port=5001, use_reloader=False)

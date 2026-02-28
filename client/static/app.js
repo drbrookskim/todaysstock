@@ -1,3 +1,4 @@
+const API_BASE_URL = 'https://todaysstock.onrender.com';
 /**
  * Stock Finder — Frontend Logic
  * 코스피/코스닥 종목 검색, 결과 표시, 캔들 패턴 분석 리포트
@@ -11,6 +12,11 @@ const errorMessage = document.getElementById('errorMessage');
 const resultSection = document.getElementById('resultSection');
 
 // ── State ──
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
 let suggestItems = [];
 let activeIndex = -1;
 let debounceTimer = null;
@@ -55,8 +61,8 @@ function renderRecentSearches() {
 
     container.classList.remove('hidden');
     list.innerHTML = recents.map(r =>
-        `<button class="recent-chip" data-code="${r.code}" data-market="${r.market}" data-name="${r.name}">
-            ${r.name}
+        `<button class="recent-chip" data-code="${escapeHtml(r.code)}" data-market="${escapeHtml(r.market)}" data-name="${escapeHtml(r.name)}">
+            ${escapeHtml(r.name)}
         </button>`
     ).join('');
 
@@ -180,7 +186,7 @@ async function addToWatchlist(item) {
     // DB 동기화
     if (authUser && authUser.logged_in) {
         try {
-            await fetch('/api/watchlist', {
+            await fetch(API_BASE_URL + '/api/watchlist', {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
@@ -196,7 +202,7 @@ async function addToWatchlist(item) {
 async function removeFromWatchlist(code) {
     if (authUser && authUser.logged_in) {
         try {
-            await fetch('/api/watchlist', {
+            await fetch(API_BASE_URL + '/api/watchlist', {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ code: code })
@@ -230,14 +236,14 @@ function renderWatchlist() {
     emptyMsg.style.display = 'none';
     container.innerHTML = list.map(item => {
         const isActive = currentStock && currentStock.code === item.code;
-        return `<div class="watchlist-item ${isActive ? 'active' : ''}" data-code="${item.code}" data-market="${item.market}" data-name="${item.name}">
+        return `<div class="watchlist-item ${isActive ? 'active' : ''}" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
             <div class="watchlist-item-info">
-                <span class="watchlist-item-name">${item.name}
-                    <span class="watchlist-item-market ${item.market.toLowerCase()}">${item.market}</span>
+                <span class="watchlist-item-name">${escapeHtml(item.name)}
+                    <span class="watchlist-item-market ${escapeHtml(item.market).toLowerCase()}">${escapeHtml(item.market)}</span>
                 </span>
-                <span class="watchlist-item-code">${item.code}</span>
+                <span class="watchlist-item-code">${escapeHtml(item.code)}</span>
             </div>
-            <button class="watchlist-item-remove" data-code="${item.code}" title="삭제">✕</button>
+            <button class="watchlist-item-remove" data-code="${escapeHtml(item.code)}" title="삭제">✕</button>
         </div>`;
     }).join('');
 
@@ -342,7 +348,7 @@ document.addEventListener('click', (e) => {
 // ── Suggestions API ──
 async function fetchSuggestions(query) {
     try {
-        const res = await fetch(`/api/suggest?q=${encodeURIComponent(query)}`);
+        const res = await fetch(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         suggestItems = data;
         activeIndex = -1;
@@ -364,8 +370,8 @@ function renderSuggestions(items, query) {
     }
 
     suggestDropdown.innerHTML = items.map((item, idx) => {
-        const marketClass = item.market.toLowerCase();
-        const highlightedName = highlightMatch(item.name, query);
+        const marketClass = escapeHtml(item.market).toLowerCase();
+        const highlightedName = highlightMatch(escapeHtml(item.name), escapeHtml(query));
         return `
             <div class="suggest-item ${idx === activeIndex ? 'active' : ''}"
                  data-index="${idx}"
@@ -373,8 +379,8 @@ function renderSuggestions(items, query) {
                  onclick="selectStockByIndex(${idx})">
                 <span class="suggest-item-name">${highlightedName}</span>
                 <span class="suggest-item-meta">
-                    <span class="suggest-item-code">${item.code}</span>
-                    <span class="suggest-item-market ${marketClass}">${item.market}</span>
+                    <span class="suggest-item-code">${escapeHtml(item.code)}</span>
+                    <span class="suggest-item-market ${marketClass}">${escapeHtml(item.market)}</span>
                 </span>
             </div>
         `;
@@ -1090,7 +1096,7 @@ async function initAuth() {
 
     if (sidebarLogoutBtn) {
         sidebarLogoutBtn.addEventListener('click', async () => {
-            await fetch('/api/logout', { method: 'POST', headers: getAuthHeaders() });
+            await fetch(API_BASE_URL + '/api/logout', { method: 'POST', headers: getAuthHeaders() });
             removeSupaToken();
             authUser = null;
             currentWatchlist = [];
@@ -1136,7 +1142,7 @@ async function initAuth() {
             try {
                 oauthContinueBtn.disabled = true;
                 oauthContinueBtn.style.opacity = '0.7';
-                const res = await fetch('/api/auth/google');
+                const res = await fetch(API_BASE_URL + '/api/auth/google');
                 const data = await res.json();
                 if (data.success && data.url) {
                     window.location.href = data.url;
@@ -1223,7 +1229,7 @@ async function initAuth() {
     const fetchUserSession = async () => {
         try {
             const token = getSupaToken();
-            const res = await fetch('/api/me', {
+            const res = await fetch(API_BASE_URL + '/api/me', {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             const data = await res.json();
@@ -1231,7 +1237,7 @@ async function initAuth() {
 
             if (authUser.logged_in) {
                 // 로그인 상태면 DB의 Watchlist를 다운로드하여 로컬에 동기화
-                const watchRes = await fetch('/api/watchlist', { headers: getAuthHeaders() });
+                const watchRes = await fetch(API_BASE_URL + '/api/watchlist', { headers: getAuthHeaders() });
                 const watchData = await watchRes.json();
                 currentWatchlist = watchData;
 
@@ -1242,7 +1248,7 @@ async function initAuth() {
                         for (const item of guestList) {
                             // 중복 방지
                             if (!currentWatchlist.some(w => w.code === item.code)) {
-                                await fetch('/api/watchlist', {
+                                await fetch(API_BASE_URL + '/api/watchlist', {
                                     method: 'POST',
                                     headers: getAuthHeaders(),
                                     body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
