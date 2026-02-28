@@ -426,13 +426,18 @@ def auth_google():
         return jsonify({"success": False, "message": "Supabase 환경 설정이 안되어 있습니다."}), 500
         
     try:
-        # 분리된 프론트엔드 URL을 동적으로 감지하거나 환경 변수로 처리
-        origin = request.headers.get("Origin")
-        if origin:
-            redirect_url = f"{origin}/callback.html"
+        # 프론트엔드에서 명시적으로 전달한 콜백 주소 우선 사용
+        client_redirect = request.args.get("redirect_to")
+        if client_redirect:
+            redirect_url = client_redirect
         else:
-            frontend_url = os.environ.get("FRONTEND_URL", request.url_root.rstrip('/'))
-            redirect_url = f"{frontend_url}/callback.html"
+            # 분리된 프론트엔드 URL을 동적으로 감지하거나 환경 변수로 처리
+            origin = request.headers.get("Origin")
+            if origin:
+                redirect_url = f"{origin}/callback.html"
+            else:
+                frontend_url = os.environ.get("FRONTEND_URL", request.url_root.rstrip('/'))
+                redirect_url = f"{frontend_url}/callback.html"
         
         # supabase-py 의 sign_in_with_oauth()는 기본적으로 PKCE flow를 강제하므로
         # code_challenge를 URL에 붙이고, 콜백에서 ?code= 를 반환하게 됩니다.
