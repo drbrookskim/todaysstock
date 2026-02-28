@@ -1142,7 +1142,7 @@ async function initAuth() {
             try {
                 oauthContinueBtn.disabled = true;
                 oauthContinueBtn.style.opacity = '0.7';
-                const redirectTarget = window.location.origin + '/callback.html';
+                const redirectTarget = window.location.origin + '/callback';
                 const res = await fetch(API_BASE_URL + `/api/auth/google?redirect_to=${encodeURIComponent(redirectTarget)}`);
                 const data = await res.json();
                 if (data.success && data.url) {
