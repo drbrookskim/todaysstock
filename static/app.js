@@ -132,27 +132,78 @@ function closeSidebar() {
 
 // ── Watchlist (관심종목) ──
 const WATCHLIST_KEY = 'stockfinder-watchlist';
+const SUPA_TOKEN_KEY = 'supa-access-token';
+let authUser = null; // { logged_in: boolean, username: string }
+let currentWatchlist = []; // 메모리 캐시 (로그인 유저용)
+
+function getSupaToken() {
+    return localStorage.getItem(SUPA_TOKEN_KEY);
+}
+
+function setSupaToken(token) {
+    if (token) localStorage.setItem(SUPA_TOKEN_KEY, token);
+}
+
+function removeSupaToken() {
+    localStorage.removeItem(SUPA_TOKEN_KEY);
+}
+
+function getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getSupaToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
 
 function getWatchlist() {
+    if (authUser && authUser.logged_in) {
+        return currentWatchlist;
+    }
     try {
         return JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
     } catch { return []; }
 }
 
 function saveWatchlist(list) {
-    localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
+    if (authUser && authUser.logged_in) {
+        currentWatchlist = list;
+    } else {
+        localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
+    }
     renderWatchlist();
 }
 
-function addToWatchlist(item) {
+async function addToWatchlist(item) {
     const list = getWatchlist();
     if (list.some(w => w.code === item.code)) return; // duplicate
+
+    // DB 동기화
+    if (authUser && authUser.logged_in) {
+        try {
+            await fetch('/api/watchlist', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
+            });
+        } catch (e) { console.error('Watchlist sync error', e); }
+    }
+
     list.push({ code: item.code, market: item.market, name: item.name });
     saveWatchlist(list);
     updateWatchlistBtn();
 }
 
-function removeFromWatchlist(code) {
+async function removeFromWatchlist(code) {
+    if (authUser && authUser.logged_in) {
+        try {
+            await fetch('/api/watchlist', {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ code: code })
+            });
+        } catch (e) { console.error('Watchlist sync error', e); }
+    }
+
     const list = getWatchlist().filter(w => w.code !== code);
     saveWatchlist(list);
     updateWatchlistBtn();
@@ -245,6 +296,7 @@ function formatNumber(num) {
 
 function formatPrice(price) {
     if (price == null) return '-';
+    if (typeof price === 'string') return price;
     return price.toLocaleString('ko-KR') + '원';
 }
 
@@ -419,6 +471,10 @@ function renderResult(data) {
 
     document.getElementById('stockName').textContent = data.name;
     document.getElementById('stockCode').textContent = data.code;
+
+    document.getElementById('stockIndustry').textContent = data.industry || '분류되지 않음';
+    document.getElementById('stockSummary').innerHTML = data.company_summary || '기업 개요 정보가 제공되지 않았습니다.';
+
     document.getElementById('stockDate').textContent = `기준일: ${data.date}`;
 
     // Price
@@ -556,19 +612,36 @@ function renderVisualBars(data) {
         const diffClass = diff > 0 ? 'up' : diff < 0 ? 'down' : '';
 
         return `
-            <div class="ma-bar-row">
+            <div class="ma-bar-row" style="animation: slideInRight 0.5s ease-out forwards; opacity: 0; animation-delay: ${0.1 * bar.cssClass.replace('ma', '')}s;">
                 <span class="ma-bar-label">${bar.label}</span>
                 <div class="ma-bar-track">
-                    <div class="ma-bar-fill ${bar.cssClass}" style="width: ${barPct}%">
+                    <div class="ma-bar-fill ${bar.cssClass}" style="width: 0%; transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1) 0.3s;" data-target-width="${barPct}">
                         ${formatNumber(bar.value)}
                     </div>
-                    <div class="ma-bar-current-price" style="left: ${currentPricePct}%"></div>
+                    <div class="ma-bar-current-price" style="left: 0%; transition: left 1s cubic-bezier(0.25, 0.8, 0.25, 1) 0.5s;" data-target-left="${currentPricePct}"></div>
                 </div>
                 <span class="ma-bar-diff ${diffClass}">${diffSign}${diffPct}%</span>
             </div>
         `;
     }).join('');
+
+    // Trigger reflow to apply CSS transitions safely
+    // MA Bars will wait for observer
 }
+
+// ── Intersection Observer for Scroll Animations ──
+const observeElement = (el, callback) => {
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                callback(entry.target);
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    observer.observe(el);
+};
+
 
 
 // ═══════════════════════════════════════════════════
@@ -627,8 +700,14 @@ function renderAnalysisReport(data) {
     trendBadge.className = `trend-badge ${cfg.cls}`;
     trendIcon.textContent = cfg.icon;
     trendLabel.textContent = data.trend_label;
-    trendFill.style.width = `${data.trend_strength}%`;
+    trendFill.style.width = '0%';
     trendFill.style.background = `linear-gradient(90deg, ${cfg.color}88, ${cfg.color})`;
+    trendFill.style.transition = 'width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) 0.1s';
+
+    observeElement(trendFill, (el) => {
+        el.style.width = `${data.trend_strength}%`;
+    });
+
     trendText.textContent = `추세 강도: ${data.trend_strength}%`;
 
     // ── Patterns List ──
@@ -662,7 +741,7 @@ function renderAnalysisReport(data) {
                     <div class="pattern-confidence">
                         <span class="confidence-label">신뢰도</span>
                         <div class="confidence-bar">
-                            <div class="confidence-fill ${signalCls}" style="width: ${confidencePct}%"></div>
+                            <div class="confidence-fill ${signalCls}" style="width: 0%; transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1) ${0.3 + (data.patterns.indexOf(p) * 0.2)}s;" data-target-width="${confidencePct}"></div>
                         </div>
                         <span class="confidence-pct">${confidencePct}%</span>
                     </div>
@@ -671,19 +750,53 @@ function renderAnalysisReport(data) {
         }).join('');
     }
 
+    observeElement(patternsCard, (el) => {
+        el.querySelectorAll('.confidence-fill').forEach(fillEl => {
+            fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
+        });
+    });
+
     // ── Mini Candlestick Chart ──
     const candleChartCard = document.getElementById('candleChartCard');
     candleChartCard.classList.remove('hidden');
     renderCandleChart(data.recent_candles);
+
+    // ── Recent Week Analysis ──
+    const recentWeekAnalysis = document.getElementById('recentWeekAnalysis');
+    const recentWeekList = document.getElementById('recentWeekList');
+
+    if (data.recent_week_analysis && data.recent_week_analysis.length > 0) {
+        if (recentWeekAnalysis) recentWeekAnalysis.classList.remove('hidden');
+        if (recentWeekList) {
+            recentWeekList.innerHTML = '';
+            data.recent_week_analysis.forEach(item => {
+                const li = document.createElement('li');
+                li.style.fontSize = "0.85rem";
+                li.style.color = "var(--text-muted)";
+                li.style.display = "flex";
+                li.style.alignItems = "baseline";
+                li.style.gap = "8px";
+
+                let colorStr = "var(--text-muted)";
+                if (item.desc.includes('양봉')) colorStr = "#ef4444";
+                else if (item.desc.includes('음봉')) colorStr = "#3b82f6";
+
+                li.innerHTML = `<span style="font-weight: 600; color: var(--text-color); font-size: 0.8rem; background: var(--hover-bg); padding: 2px 6px; border-radius: 4px; min-width: 45px; text-align: center;">${item.date}</span> <span style="color: ${colorStr}; line-height: 1.4;">${item.desc}</span>`;
+                recentWeekList.appendChild(li);
+            });
+        }
+    } else {
+        if (recentWeekAnalysis) recentWeekAnalysis.classList.add('hidden');
+    }
 
     // ── Buy/Sell Reports ──
     const reportGrid = document.getElementById('reportGrid');
     const hasBuyReport = renderBuyReport(data.buy_report);
     const hasSellReport = renderSellReport(data.sell_report);
     if (hasBuyReport || hasSellReport) {
-        reportGrid.classList.remove('hidden');
+        if (reportGrid) reportGrid.classList.remove('hidden');
     } else {
-        reportGrid.classList.add('hidden');
+        if (reportGrid) reportGrid.classList.add('hidden');
     }
 }
 
@@ -700,20 +813,33 @@ function renderCandleChart(candles) {
         if (c.ma5 != null) prices.push(c.ma5);
         if (c.ma10 != null) prices.push(c.ma10);
         if (c.ma20 != null) prices.push(c.ma20);
+        if (c.ma60 != null) prices.push(c.ma60);
         return prices;
     });
     const minP = Math.min(...allPrices);
     const maxP = Math.max(...allPrices);
     const range = maxP - minP || 1;
-    const chartH = 200;
-    const barW = Math.max(14, Math.min(40, (container.clientWidth - 40) / candles.length));
+    const maxV = Math.max(...candles.map(c => c.volume)) || 1;
+
+    // Layout Constants
+    const chartH = 200; // Candlestick area height
+    const volH = 50;    // Volume area height
+    const gap = 15;     // Gap between candles and volume
+    const legendTopPad = 35; // Space for legend at the top
+    const topAreaH = chartH + gap + volH; // 265
+    const legendPad = 25; // Space for date labels at the bottom
+
+    const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / candles.length));
     const svgW = candles.length * barW + 20;
 
-    const toY = (price) => chartH - ((price - minP) / range) * (chartH - 20) - 10;
+    const toY = (price) => legendTopPad + chartH - ((price - minP) / range) * (chartH - 20) - 10;
 
-    let html = `<svg width="100%" height="${chartH + 50}" viewBox="0 0 ${svgW} ${chartH + 50}">`;
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const textFill = isLight ? '#1e293b' : '#f8fafc';
 
-    // ── Candle sticks ──
+    let html = `<svg width="100%" height="${legendTopPad + topAreaH + legendPad}" viewBox="0 0 ${svgW} ${legendTopPad + topAreaH + legendPad}">`;
+
+    // ── Candle sticks & Volume bars ──
     candles.forEach((c, i) => {
         const x = i * barW + 10;
         const cx = x + barW / 2;
@@ -722,26 +848,53 @@ function renderCandleChart(candles) {
         const bodyH = Math.max(1, bodyBot - bodyTop);
         const wickTop = toY(c.high);
         const wickBot = toY(c.low);
-        // 블루 = 양봉(꽉찬), 레드 = 음봉(꽉찬)
-        const color = c.is_bullish ? '#3b82f6' : '#ef4444';
+        // 한국 시장은 양봉=빨강, 음봉=파랑
+        const color = c.is_bullish ? '#ef4444' : '#3b82f6';
         const fill = color;
+
+        // Animate up from the bottom of the main chart
+        html += `<g class="candle-group" style="transform-origin: 0px ${chartH - 10}px; transform: scaleY(0); transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) ${i * 0.02}s;">`;
 
         // Wick
         html += `<line x1="${cx}" y1="${wickTop}" x2="${cx}" y2="${wickBot}" stroke="${color}" stroke-width="1.5"/>`;
         // Body
         html += `<rect x="${x + barW * 0.2}" y="${bodyTop}" width="${barW * 0.6}" height="${bodyH}"
                     fill="${fill}" stroke="${color}" stroke-width="1.5" rx="1"/>`;
-        // Date label
-        html += `<text x="${cx}" y="${chartH + 22}" text-anchor="middle" fill="var(--text-muted)"
-                    font-size="9" font-family="Inter">${c.date}</text>`;
+        html += `</g>`;
+
+        // Volume Bar
+        const vRectH = Math.max(1, (c.volume / maxV) * volH);
+        const vRectY = legendTopPad + topAreaH - vRectH;
+        html += `<rect class="vol-group" x="${x + barW * 0.2}" y="${vRectY}" width="${barW * 0.6}" height="${vRectH}"
+                    fill="${fill}" opacity="0.6" style="transform-origin: 0px ${legendTopPad + topAreaH}px; transform: scaleY(0); transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) ${i * 0.02}s;"/>`;
+
+        // Date label (겹치지 않게 조절, 최대 12개 내외만 표시)
+        const step = Math.max(1, Math.ceil(candles.length / 12));
+        if (i % step === 0 || i === candles.length - 1) {
+            html += `<text x="${cx}" y="${legendTopPad + topAreaH + 20}" text-anchor="middle" fill="${textFill}"
+                        font-size="11" font-weight="600" font-family="Inter">${c.date}</text>`;
+        }
     });
 
+    // ── Support & Resistance Lines ──
+    const highestC = Math.max(...candles.map(c => c.high));
+    const lowestC = Math.min(...candles.map(c => c.low));
+    const resY = toY(highestC);
+    const supY = toY(lowestC);
+
+    html += `<line x1="10" y1="${resY}" x2="${svgW - 10}" y2="${resY}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>`;
+    html += `<text x="15" y="${resY - 6}" fill="#ef4444" font-size="10" font-weight="600" opacity="0.8">단기 저항선</text>`;
+
+    html += `<line x1="10" y1="${supY}" x2="${svgW - 10}" y2="${supY}" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>`;
+    html += `<text x="15" y="${supY + 12}" fill="#3b82f6" font-size="10" font-weight="600" opacity="0.8">단기 지지선</text>`;
+
     // ── Moving Average lines ──
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     const maConfigs = [
-        { key: 'ma5', color: isLight ? '#1e293b' : '#ffffff', label: '5일선' },
-        { key: 'ma10', color: '#3b82f6', label: '10일선' },
-        { key: 'ma20', color: '#f59e0b', label: '20일선' },
+        { key: 'ma5', color: isLight ? '#000000' : '#ffffff', label: '5일선' },
+        { key: 'ma10', color: '#2563eb', label: '10일선' }, // 파랑
+        { key: 'ma20', color: '#ea580c', label: '20일선' }, // 주황
+        { key: 'ma60', color: '#16a34a', label: '60일선' }, // 초록
+        { key: 'ma120', color: '#9ca3af', label: '120일선' }, // 회색
     ];
 
     maConfigs.forEach(ma => {
@@ -757,23 +910,45 @@ function renderCandleChart(candles) {
             html += `<polyline points="${points.join(' ')}" 
                         fill="none" stroke="${ma.color}" stroke-width="1.5" 
                         stroke-linecap="round" stroke-linejoin="round" 
-                        stroke-opacity="0.85"/>`;
+                        stroke-opacity="0.85" 
+                        class="ma-line"
+                        pathLength="100" />`;
         }
     });
 
-    // ── MA Legend ──
-    const legendY = chartH + 36;
-    const legendStartX = 10;
+    // ── MA Legend (Moved to Top) ──
+    const legendY = 15;
+    const legendStartX = 5;
     maConfigs.forEach((ma, idx) => {
-        const lx = legendStartX + idx * 70;
-        html += `<line x1="${lx}" y1="${legendY}" x2="${lx + 14}" y2="${legendY}" 
-                    stroke="${ma.color}" stroke-width="2"/>`;
-        html += `<text x="${lx + 18}" y="${legendY + 4}" fill="var(--text-muted)" 
-                    font-size="9" font-family="Inter">${ma.label}</text>`;
+        const lx = legendStartX + idx * 64;
+        html += `<line x1="${lx}" y1="${legendY - 3}" x2="${lx + 12}" y2="${legendY - 3}" 
+                    stroke="${ma.color}" stroke-width="2.5"/>`;
+        html += `<text x="${lx + 15}" y="${legendY + 1}" fill="${textFill}" 
+                    font-size="11" font-weight="600" font-family="Inter">${ma.label}</text>`;
     });
 
     html += '</svg>';
     container.innerHTML = html;
+
+    observeElement(container, (el) => {
+        el.querySelectorAll('.candle-group').forEach(cg => {
+            cg.style.transform = 'scaleY(1)';
+        });
+        el.querySelectorAll('.ma-line').forEach((line, index) => {
+            line.style.animation = `drawLine 2s ease-out ${index * 0.3}s forwards`;
+        });
+    });
+
+    const maVisualBarsContainer = document.getElementById('maVisualBars');
+    observeElement(maVisualBarsContainer, (el) => {
+        el.querySelectorAll('.ma-bar-fill').forEach(fillEl => {
+            fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
+        });
+        el.querySelectorAll('.ma-bar-current-price').forEach(priceEl => {
+            priceEl.style.left = priceEl.getAttribute('data-target-left') + '%';
+        });
+    });
+
 }
 
 function renderBuyReport(report) {
@@ -786,13 +961,14 @@ function renderBuyReport(report) {
 
     document.getElementById('buySignalBadge').textContent = `신호 ${report.signal_strength}%`;
     document.getElementById('buyPattern').textContent = `핵심 패턴: ${report.primary_pattern}`;
+    document.getElementById('buyDesc').textContent = report.primary_pattern_desc;
     document.getElementById('buyAggressive').textContent = formatPrice(report.aggressive_entry);
     document.getElementById('buyConservative').textContent = formatPrice(report.conservative_entry);
     document.getElementById('buyTarget').textContent = formatPrice(report.target_price);
     document.getElementById('buyStopLoss').textContent = formatPrice(report.stop_loss);
     document.getElementById('buyRiskReward').textContent = `리스크:리워드 = ${report.risk_reward}`;
     document.getElementById('buyVolume').textContent = report.volume_note;
-    document.getElementById('buyTip').textContent = `💡 ${report.entry_tip}`;
+    document.getElementById('buyTip').innerHTML = `<i class="ph ph-lightbulb" style="color:var(--text-muted); margin-right:4px;"></i> ${report.entry_tip}`;
     return true;
 }
 
@@ -806,13 +982,14 @@ function renderSellReport(report) {
 
     document.getElementById('sellSignalBadge').textContent = `신호 ${report.signal_strength}%`;
     document.getElementById('sellPattern').textContent = `핵심 패턴: ${report.primary_pattern}`;
+    document.getElementById('sellDesc').textContent = report.primary_pattern_desc;
     document.getElementById('sellPrice').textContent = formatPrice(report.sell_price);
     document.getElementById('sellConservative').textContent = formatPrice(report.conservative_sell);
     document.getElementById('sellTarget').textContent = formatPrice(report.target_price);
     document.getElementById('sellStopLoss').textContent = formatPrice(report.stop_loss);
     document.getElementById('sellRiskReward').textContent = `리스크:리워드 = ${report.risk_reward}`;
     document.getElementById('sellVolume').textContent = report.volume_note;
-    document.getElementById('sellTip').textContent = `💡 ${report.exit_tip}`;
+    document.getElementById('sellTip').innerHTML = `<i class="ph ph-lightbulb" style="color:var(--text-muted); margin-right:4px;"></i> ${report.exit_tip}`;
     return true;
 }
 
@@ -866,4 +1043,231 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('sidebarToggle').addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+    // Auth Init
+    initAuth();
 });
+
+// ── Auth & User Session ──
+async function initAuth() {
+    const authBtn = document.getElementById('authBtn');
+    const authModalOverlay = document.getElementById('authModalOverlay');
+    const authModal = document.getElementById('authModal');
+    const closeAuthModal = document.getElementById('closeAuthModal');
+
+    // Sidebar Logout Btn
+    const sidebarFooter = document.getElementById('sidebarFooter');
+    const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+
+    const googleAuthBtn = document.getElementById('googleAuthBtn');
+    const authForm = document.getElementById('authForm');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const authSwitchBtn = document.getElementById('authSwitchBtn');
+    const authSwitchText = document.getElementById('authSwitchText');
+    const authModalTitle = document.getElementById('authModalTitle');
+    const authErrorMsg = document.getElementById('authErrorMsg');
+
+    let isLoginMode = true;
+
+    // 모달 열기/닫기 로직
+    const showModal = () => {
+        authModalOverlay.classList.add('show');
+        authModal.classList.add('show');
+    };
+
+    const hideModal = () => {
+        authModalOverlay.classList.remove('show');
+        authModal.classList.remove('show');
+        authErrorMsg.textContent = '';
+    };
+
+    authBtn.addEventListener('click', () => {
+        showModal();
+    });
+
+    closeAuthModal.addEventListener('click', hideModal);
+    authModalOverlay.addEventListener('click', hideModal);
+
+    if (sidebarLogoutBtn) {
+        sidebarLogoutBtn.addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST', headers: getAuthHeaders() });
+            removeSupaToken();
+            authUser = null;
+            currentWatchlist = [];
+            updateAuthUI();
+            renderWatchlist();
+            updateWatchlistBtn();
+            // Optionally close sidebar after logging out
+            if (!isSidebarPinned()) closeSidebar();
+        });
+    }
+
+    // Google Auth Button Click
+    const oauthConfirmOverlay = document.getElementById('oauthConfirmOverlay');
+    const oauthConfirmModal = document.getElementById('oauthConfirmModal');
+    const oauthCancelBtn = document.getElementById('oauthCancelBtn');
+    const oauthContinueBtn = document.getElementById('oauthContinueBtn');
+
+    if (googleAuthBtn) {
+        googleAuthBtn.addEventListener('click', () => {
+            if (oauthConfirmOverlay && oauthConfirmModal) {
+                // 기존 로그인 팝업과 오버레이 숨기기
+                hideModal();
+
+                // 확인 모달 띄우기
+                oauthConfirmOverlay.classList.add('active');
+                oauthConfirmModal.classList.add('active');
+            }
+        });
+    }
+
+    if (oauthCancelBtn) {
+        oauthCancelBtn.addEventListener('click', () => {
+            oauthConfirmOverlay.classList.remove('active');
+            oauthConfirmModal.classList.remove('active');
+
+            // 취소 시 다시 기존 로그인 창 띄워주기 (선택적)
+            showModal();
+        });
+    }
+
+    if (oauthContinueBtn) {
+        oauthContinueBtn.addEventListener('click', async () => {
+            try {
+                oauthContinueBtn.disabled = true;
+                oauthContinueBtn.style.opacity = '0.7';
+                const res = await fetch('/api/auth/google');
+                const data = await res.json();
+                if (data.success && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert(data.message || '인증 연결 오류가 발생했습니다.');
+                    oauthConfirmOverlay.classList.remove('active');
+                    oauthConfirmModal.classList.remove('active');
+                }
+            } catch (err) {
+                alert('네트워크 오류가 발생했습니다.');
+                oauthConfirmOverlay.classList.remove('active');
+                oauthConfirmModal.classList.remove('active');
+            } finally {
+                oauthContinueBtn.disabled = false;
+                oauthContinueBtn.style.opacity = '1';
+            }
+        });
+    }
+
+    // 로그인 <-> 회원가입 전환
+    if (authSwitchBtn) {
+        authSwitchBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            authModalTitle.textContent = isLoginMode ? '로그인' : '회원가입';
+            authSubmitBtn.textContent = isLoginMode ? '로그인' : '회원가입';
+            authSwitchText.textContent = isLoginMode ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?';
+            authSwitchBtn.textContent = isLoginMode ? '회원가입' : '로그인';
+            authErrorMsg.textContent = '';
+        });
+    }
+
+    // 폼 전송
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!username || !password) return;
+
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
+            try {
+                authSubmitBtn.disabled = true;
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    if (isLoginMode) {
+                        setSupaToken(data.access_token);
+                        hideModal();
+                        await fetchUserSession(); // 로그인 시 세션 갱신
+                    } else {
+                        alert(data.message);
+                        authSwitchBtn.click(); // 자동 로그인 모드 전환
+                    }
+                } else {
+                    authErrorMsg.textContent = data.message;
+                }
+            } catch (error) {
+                authErrorMsg.textContent = '네트워크 오류가 발생했습니다.';
+            } finally {
+                authSubmitBtn.disabled = false;
+            }
+        });
+    }
+
+    const updateAuthUI = () => {
+        if (authUser && authUser.logged_in) {
+            authBtn.style.display = 'none';
+            if (sidebarFooter) sidebarFooter.style.display = 'block';
+        } else {
+            authBtn.style.display = 'flex';
+            authBtn.innerHTML = `<span class="auth-icon">👤</span> 로그인`;
+            if (sidebarFooter) sidebarFooter.style.display = 'none';
+        }
+    };
+
+    // 서버에서 세션(및 관심종목) 가져오기
+    const fetchUserSession = async () => {
+        try {
+            const token = getSupaToken();
+            const res = await fetch('/api/me', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            const data = await res.json();
+            authUser = data;
+
+            if (authUser.logged_in) {
+                // 로그인 상태면 DB의 Watchlist를 다운로드하여 로컬에 동기화
+                const watchRes = await fetch('/api/watchlist', { headers: getAuthHeaders() });
+                const watchData = await watchRes.json();
+                currentWatchlist = watchData;
+
+                // 로그인 전 게스트 상태로 저장된 로컬 관심종목이 있다면 DB로 병합 시도
+                try {
+                    const guestList = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
+                    if (guestList.length > 0) {
+                        for (const item of guestList) {
+                            // 중복 방지
+                            if (!currentWatchlist.some(w => w.code === item.code)) {
+                                await fetch('/api/watchlist', {
+                                    method: 'POST',
+                                    headers: getAuthHeaders(),
+                                    body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
+                                });
+                                currentWatchlist.push(item);
+                            }
+                        }
+                        // 동기화가 모두 성공하면 로컬 스토리지 비우기
+                        localStorage.removeItem(WATCHLIST_KEY);
+                    }
+                } catch (e) { console.error('Guest Watchlist merge error', e); }
+
+                renderWatchlist();
+                updateWatchlistBtn();
+            } else {
+                // 미로그인 게스트용 환경 렌더링
+                renderWatchlist();
+                updateWatchlistBtn();
+            }
+        } catch (error) {
+            console.warn("Session check failed", error);
+        }
+        updateAuthUI();
+    };
+
+    // 로드 시 초기 세션 확인
+    await fetchUserSession();
+}

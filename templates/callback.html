@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 처리 중 | 오늘의 주식</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --surface-color: #1e2130;
+            --primary-color: #6366f1;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Abstract Background Elements */
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: var(--primary-gradient);
+            filter: blur(150px);
+            opacity: 0.15;
+            border-radius: 50%;
+            z-index: 0;
+            animation: pulse-glow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                transform: scale(0.8) translate(-10%, -10%);
+                opacity: 0.1;
+            }
+
+            100% {
+                transform: scale(1.1) translate(10%, 10%);
+                opacity: 0.2;
+            }
+        }
+
+        /* Main Container */
+        .auth-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(30, 33, 48, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 80%;
+            text-align: center;
+        }
+
+        /* Modern Spinner */
+        .spinner-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 32px;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .spinner-indicator {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--primary-color);
+            border-right-color: #a855f7;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        .spinner-center {
+            position: absolute;
+            inset: 20px;
+            background: var(--surface-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .spinner-center svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-primary);
+            animation: pulse-icon 2s ease infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse-icon {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        /* Typography */
+        h1 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Fade Out Animation */
+        .fade-out {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="auth-container" id="loadingContainer">
+        <div class="spinner-wrapper">
+            <div class="spinner-ring"></div>
+            <div class="spinner-indicator"></div>
+            <div class="spinner-center">
+                <!-- Lock Icon -->
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+            </div>
+        </div>
+
+        <h1>Google 인증 확인 중</h1>
+        <p>안전하게 로그인 세션을 연결하고 있습니다.<br>잠시만 기다려주세요.</p>
+    </div>
+
+    <script>
+        // Supabase Implicit Flow 파싱 로직
+        const processToken = () => {
+            const hash = window.location.hash.substring(1);
+            let accessToken = null;
+
+            if (hash) {
+                const params = new URLSearchParams(hash);
+                accessToken = params.get('access_token');
+
+                // Fallback Regex Extraction
+                if (!accessToken) {
+                    const match = hash.match(/access_token=([^&]+)/);
+                    if (match) accessToken = match[1];
+                }
+            }
+
+            if (accessToken) {
+                // 성공 시 localStorage 저장 후 딜레이(UX용)를 두고 부드럽게 퇴장 애니메이션 적용
+                localStorage.setItem('supa-access-token', accessToken);
+                console.log("Authentication token successfully parsed & stored.");
+
+                setTimeout(() => {
+                    document.getElementById('loadingContainer').classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.replace('/');
+                    }, 500); // Wait for fade out animation
+                }, 800); // Deliberate slight pause to show the premium loader
+            } else {
+                console.warn("No access token found in URL hash. URL:", window.location.href);
+                // 에러 발생 시 부드럽게 홈으로 리다이렉트 (프론트에서 미로그인 상태로 처리됨)
+                setTimeout(() => { window.location.replace('/'); }, 1500);
+            }
+        };
+
+        // DOM 로드 즉시 실행
+        processToken();
+    </script>
+</body>
+
+</html>

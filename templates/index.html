@@ -4,21 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주식 종목 검색 | Stock Finder</title>
+    <title>TODAY'S STOCK | Stock Search</title>
     <meta name="description" content="코스피, 코스닥 종목을 검색하고 주가 및 이동평균선 정보를 확인하세요.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+KR:wght@300..700&display=swap"
         rel="stylesheet">
+    <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-    <!-- Ambient background effects -->
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
+    <!-- Cinematic CSS Background -->
+    <div class="bg-cinematic">
+        <div class="bg-grid"></div>
+        <div class="bg-flare flare-1"></div>
+        <div class="bg-flare flare-2"></div>
+        <div class="bg-flare flare-3"></div>
+        <div class="bg-data-stream stream-1"></div>
+        <div class="bg-data-stream stream-2"></div>
+        <div class="bg-data-stream stream-3"></div>
+        <div class="bg-overlay"></div>
+    </div>
 
     <div class="app-layout">
         <!-- Sidebar Hamburger Toggle (visible when unpinned) -->
@@ -37,7 +47,7 @@
         <!-- Watchlist Sidebar -->
         <aside id="watchlistSidebar" class="watchlist-sidebar">
             <div class="sidebar-header">
-                <h2 class="sidebar-title">📋 관심종목</h2>
+                <h2 class="sidebar-title"><i class="ph ph-list-checks"></i> 관심종목</h2>
                 <div class="sidebar-header-actions">
                     <span id="watchlistCount" class="sidebar-count">0</span>
                     <button id="sidebarPinBtn" class="sidebar-pin-btn" title="사이드바 고정" aria-label="사이드바 고정">
@@ -53,8 +63,13 @@
             </div>
             <div id="watchlistItems" class="watchlist-items"></div>
             <div id="watchlistEmpty" class="watchlist-empty">
-                <span class="empty-icon">📌</span>
+                <span class="empty-icon"><i class="ph ph-push-pin"></i></span>
                 <p>종목을 검색하고<br>"종목추가" 버튼으로<br>관심 목록에 추가하세요</p>
+            </div>
+            <div class="sidebar-footer" id="sidebarFooter">
+                <button id="sidebarLogoutBtn" class="sidebar-logout-btn" aria-label="로그아웃" title="로그아웃">
+                    <span class="logout-icon">로그아웃</span>
+                </button>
             </div>
         </aside>
 
@@ -62,20 +77,53 @@
             <!-- Header -->
             <header class="header">
                 <div class="header-row">
-                    <div class="logo">
-                        <img src="/static/favicon.svg" alt="Stock Finder" class="logo-icon" width="36" height="36">
-                        <h1>Stock Finder</h1>
+                    <div class="header-left">
+                        <button id="authBtn" class="auth-btn auth-btn-left">
+                            <span class="auth-icon"><i class="ph ph-user"></i></span> 로그인
+                        </button>
                     </div>
-                    <button id="themeToggle" class="theme-toggle" aria-label="테마 변경" title="다크/라이트 모드 전환">
-                        <span class="theme-icon-sun">☀️</span>
-                        <span class="theme-icon-moon">🌙</span>
-                    </button>
+                    <div class="logo-placeholder"></div>
+                    <div class="header-actions">
+                        <div class="theme-switch-wrapper">
+                            <i class="ph ph-sun theme-icon-sun"></i>
+                            <button id="themeToggle" class="theme-switch-btn" aria-label="테마 변경" title="다크/라이트 모드 전환">
+                                <span class="theme-switch-thumb"></span>
+                            </button>
+                            <i class="ph ph-moon theme-icon-moon"></i>
+                        </div>
+                    </div>
                 </div>
                 <p class="subtitle">코스피 · 코스닥 종목 검색</p>
             </header>
 
             <!-- Search Section -->
             <section class="search-section">
+                <!-- Unified Center Logo -->
+                <div class="unified-logo-container">
+                    <div class="unified-logo-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" class="primary-logo-svg"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <!-- Chart Line Background -->
+                            <path d="M3 17L8 10L12 13L18 3" stroke="#006eb8" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" opacity="0.6" />
+                            <!-- Magnifying Glass -->
+                            <circle cx="14" cy="11" r="7" stroke="url(#logoGradient)" stroke-width="2.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M19 16L22.5 19.5" stroke="url(#logoGradient)" stroke-width="2.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <!-- Crosshair / Inspection Focus Point -->
+                            <circle cx="14" cy="11" r="1.5" fill="#02e079" />
+                            <defs>
+                                <linearGradient id="logoGradient" x1="7" y1="4" x2="21" y2="18"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#02e079" />
+                                    <stop offset="100%" stop-color="#0096ff" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h1 class="unified-logo-text">TODAY's STOCK</h1>
+                </div>
                 <p class="search-guide">종목명 또는 종목번호(6자리)로 검색할 수 있습니다</p>
                 <div class="search-wrapper">
                     <div class="search-icon">
@@ -104,7 +152,7 @@
                 <!-- Recent Searches -->
                 <div id="recentSearches" class="recent-searches hidden">
                     <div class="recent-header">
-                        <span class="recent-label">🕐 최근 검색</span>
+                        <span class="recent-label"><i class="ph ph-clock-counter-clockwise"></i> 최근 검색</span>
                         <button id="clearRecent" class="recent-clear">전체 삭제</button>
                     </div>
                     <div id="recentList" class="recent-list"></div>
@@ -127,11 +175,13 @@
                     <div class="stock-title-row">
                         <div class="stock-name-group">
                             <span id="stockMarketBadge" class="market-badge">KOSPI</span>
+                            <span id="stockIndustry" class="industry-badge"></span>
                             <h2 id="stockName" class="stock-name">삼성전자</h2>
                             <span id="stockCode" class="stock-code">005930</span>
                         </div>
                         <div id="stockDate" class="stock-date"></div>
                     </div>
+                    <div id="stockSummary" class="stock-summary-container"></div>
                     <div class="price-row">
                         <span id="stockPrice" class="current-price">0</span>
                         <span id="stockChange" class="price-change">0 (0.00%)</span>
@@ -244,6 +294,10 @@
                         이동평균 대비 현재가 위치
                     </h3>
                     <div id="maVisualBars" class="ma-visual-bars"></div>
+                    <div class="ma-visual-legend">
+                        <span class="ma-visual-legend-line"></span>
+                        세로선은 <strong>현재가</strong>를 의미합니다.
+                    </div>
                 </div>
 
                 <!-- AI Candle Pattern Analysis Report -->
@@ -279,7 +333,7 @@
                     <!-- Detected Patterns -->
                     <div class="patterns-card" id="patternsCard">
                         <h4 class="card-subtitle">
-                            🕯️ 감지된 캔들 패턴
+                            <i class="ph ph-chart-bar" style="margin-right: 6px;"></i> 감지된 캔들 패턴
                         </h4>
                         <div id="patternsList" class="patterns-list"></div>
                         <div id="noPatternsMsg" class="no-patterns hidden">
@@ -290,9 +344,22 @@
                     <!-- Candlestick Mini Chart -->
                     <div class="candle-chart-card" id="candleChartCard">
                         <h4 class="card-subtitle">
-                            📊 최근 캔들 차트
+                            <i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 3개월 간 캔들 차트
                         </h4>
                         <div id="candleChart" class="candle-chart"></div>
+
+                        <!-- Recent Week Analysis -->
+                        <div id="recentWeekAnalysis" class="recent-week-analysis hidden"
+                            style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                            <h5
+                                style="font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                <i class="ph ph-calendar-check" style="color: var(--primary);"></i> 최근 1주일 캔들 상세 분석
+                            </h5>
+                            <ul id="recentWeekList"
+                                style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                                <!-- JS injected -->
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- Buy / Sell Reports Grid -->
@@ -300,12 +367,15 @@
                         <!-- Buy Report -->
                         <div id="buyReport" class="report-card report-buy hidden">
                             <div class="report-header report-header-buy">
-                                <span class="report-icon">📈</span>
+                                <span class="report-icon"><i class="ph ph-trend-up"></i></span>
                                 <span class="report-title">매수 리포트</span>
                                 <span id="buySignalBadge" class="signal-badge signal-buy"></span>
                             </div>
                             <div class="report-body">
                                 <div class="report-pattern" id="buyPattern"></div>
+                                <div class="report-desc" id="buyDesc"
+                                    style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+                                </div>
                                 <div class="report-prices">
                                     <div class="price-row-item">
                                         <span class="price-label">적극 매수가</span>
@@ -335,12 +405,15 @@
                         <!-- Sell Report -->
                         <div id="sellReport" class="report-card report-sell hidden">
                             <div class="report-header report-header-sell">
-                                <span class="report-icon">📉</span>
+                                <span class="report-icon"><i class="ph ph-trend-down"></i></span>
                                 <span class="report-title">매도 리포트</span>
                                 <span id="sellSignalBadge" class="signal-badge signal-sell"></span>
                             </div>
                             <div class="report-body">
                                 <div class="report-pattern" id="sellPattern"></div>
+                                <div class="report-desc" id="sellDesc"
+                                    style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+                                </div>
                                 <div class="report-prices">
                                     <div class="price-row-item">
                                         <span class="price-label">즉시 매도가</span>
@@ -376,6 +449,84 @@
             </section>
         </div>
     </div> <!-- .app-layout -->
+
+    <!-- Auth Modal Overlay -->
+    <div id="authModalOverlay" class="modal-overlay"></div>
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="modal-header">
+            <h3 id="authModalTitle">로그인</h3>
+            <button id="closeAuthModal" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div id="authErrorMsg" class="auth-error-msg"></div>
+
+            <button id="googleAuthBtn" class="google-auth-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4" />
+                    <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853" />
+                    <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05" />
+                    <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335" />
+                </svg>
+                Continue with Google
+            </button>
+
+            <div class="divider">
+                <span>또는</span>
+            </div>
+
+            <form id="authForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" placeholder="아이디를 입력하세요" required
+                        autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required
+                        autocomplete="current-password">
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="primary-btn">로그인</button>
+            </form>
+
+            <div class="auth-switch">
+                <span id="authSwitchText">아직 계정이 없으신가요?</span>
+                <button class="text-btn" id="authSwitchBtn">회원가입</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OAuth Confirm Modal Overlay -->
+    <div id="oauthConfirmOverlay" class="modal-overlay"></div>
+    <!-- OAuth Confirm Modal -->
+    <div id="oauthConfirmModal" class="confirm-modal">
+        <div class="confirm-modal-body">
+            <h3 class="confirm-title">"오늘의 주식" Wants to Use "google.com" to Sign In</h3>
+            <p class="confirm-desc">This allows the app and website to share information about you.</p>
+
+            <div class="confirm-actions">
+                <button id="oauthCancelBtn" class="confirm-btn-secondary">Cancel</button>
+                <button id="oauthContinueBtn" class="confirm-btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/app.js"></script>
 </body>

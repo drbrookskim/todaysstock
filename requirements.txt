@@ -4,3 +4,6 @@ pykrx
 pandas
 requests
 gunicorn
+supabase
+python-dotenv
+Werkzeug
