@@ -510,87 +510,49 @@ body {
     position: relative;
 }
 
-/* ── Vertical Theme Toggle Switch (Bottom Right) ── */
-.vertical-theme-switch-wrapper {
+/* ── Theme Icon Button (Bottom Right) ── */
+.theme-icon-btn {
     position: fixed;
     right: 24px;
     bottom: 24px;
     z-index: 50;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    background: var(--bg-card);
-    padding: 14px 10px;
-    border-radius: 40px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
     border: 1px solid var(--border-color);
+    background: var(--bg-card);
     backdrop-filter: blur(10px);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.vertical-theme-switch-wrapper i {
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-}
-
-/* Dark mode: Active moon icon */
-html:not([data-theme="light"]) .theme-icon-moon {
-    color: #e2e8f0;
-    text-shadow: 0 0 10px rgba(226, 232, 240, 0.5);
-}
-
-/* Light mode: Active sun icon */
-html[data-theme="light"] .theme-icon-sun {
-    color: #facc15;
-    text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-}
-
-/* ── Pill Button (Vertical Orientation) ── */
-.theme-switch-btn {
-    position: relative;
-    width: 24px;
-    height: 48px;
-    border-radius: 12px;
-    border: none;
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
     padding: 0;
     outline: none;
-    transition: background-color 0.3s ease;
 }
 
-/* Dark mode: Pill Background */
-html:not([data-theme="light"]) .theme-switch-btn {
-    background: #475569;
+.theme-icon-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* Light mode: Pill Background */
-html[data-theme="light"] .theme-switch-btn {
-    background: #cbd5e1;
+.theme-icon-btn i {
+    font-size: 1.35rem;
+    display: block;
+    line-height: 1;
+    transition: color 0.3s ease;
 }
 
-/* ── Switch Thumb ── */
-.theme-switch-thumb {
-    position: absolute;
-    left: 3px;
-    top: 4px;
-    width: 18px;
-    height: 18px;
-    background: #ffffff;
-    border-radius: 50%;
-    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+/* Dark mode: show sun (to switch to light) */
+html:not([data-theme="light"]) .theme-icon-btn i {
+    color: #facc15;
 }
 
-/* Dark mode: Thumb on bottom (Moon) */
-html:not([data-theme="light"]) .theme-switch-thumb {
-    transform: translateY(22px);
-}
-
-/* Light mode: Thumb on top (Sun) */
-html[data-theme="light"] .theme-switch-thumb {
-    transform: translateY(0);
+/* Light mode: show moon (to switch to dark) */
+html[data-theme="light"] .theme-icon-btn i {
+    color: #6366f1;
 }
 
 .logo-placeholder {

@@ -82,9 +82,7 @@
                     </div>
                     <div class="logo-placeholder"></div>
                     <div class="header-actions">
-                        <button id="authBtn" class="auth-btn">
-                            <span class="auth-icon"><i class="ph ph-user"></i></span> 로그인
-                        </button>
+                        <button id="authBtn" class="auth-btn">로그인</button>
                     </div>
                 </div>
                 <p class="subtitle">코스피 · 코스닥 종목 검색</p>
@@ -444,14 +442,10 @@
         </div>
     </div> <!-- .app-layout -->
 
-    <!-- Vertical Theme Switch (Bottom Right) -->
-    <div class="vertical-theme-switch-wrapper">
-        <i class="ph ph-sun theme-icon-sun"></i>
-        <button id="themeToggle" class="theme-switch-btn vertical-switch" aria-label="테마 변경" title="다크/라이트 모드 전환">
-            <span class="theme-switch-thumb"></span>
-        </button>
-        <i class="ph ph-moon theme-icon-moon"></i>
-    </div>
+    <!-- Theme Icon Toggle (Bottom Right) -->
+    <button id="themeToggle" class="theme-icon-btn" aria-label="테마 변경" title="테마 전환">
+        <i class="ph ph-sun" id="themeIcon"></i>
+    </button>
 
     <!-- Auth Modal Overlay -->
     <div id="authModalOverlay" class="modal-overlay"></div>

@@ -5,7 +5,7 @@
 - 캔들 패턴 분석 및 AI 매매 리포트
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from supabase import create_client, Client, ClientOptions
 import os
@@ -174,61 +174,70 @@ def search_stocks(query):
 
 
 def download_stock_df(code, market):
-    """공공데이터포털(data.go.kr) 주식 시세 API 정보를 통해 DataFrame을 캐싱/동적으로 생성합니다."""
-    # API 호출 기본 구조 설정 (예: 최대 300영업일)
+    """공공데이터포털(data.go.kr) 주식 시세 API + yfinance 이중 소스로 DataFrame을 생성합니다."""
+    import urllib.parse
+
     api_key = os.getenv("DATA_GO_KR_API_KEY")
-    if not api_key:
-        print("⚠️ DATA_GO_KR_API_KEY 환경 변수가 설정되지 않았습니다.")
-        return None
 
+    # ── 1차: 공공데이터포털 API ──
+    if api_key:
+        try:
+            encoded_key = urllib.parse.unquote(api_key)
+            url = "http://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo"
+            params = {
+                "serviceKey": encoded_key,
+                "numOfRows": "300",
+                "pageNo": "1",
+                "resultType": "json",
+                "likeSrtnCd": code
+            }
+            resp = http_requests.get(url, params=params, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+
+            items = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+            if items:
+                records = []
+                for row in reversed(items):
+                    try:
+                        dt = datetime.strptime(row["basDt"], "%Y%m%d")
+                        records.append({
+                            "Date": dt,
+                            "Open": float(row["mkp"]),
+                            "High": float(row["hipr"]),
+                            "Low": float(row["lopr"]),
+                            "Close": float(row["clpr"]),
+                            "Volume": float(row["trqu"])
+                        })
+                    except Exception:
+                        continue
+
+                if records:
+                    df = pd.DataFrame(records)
+                    df.set_index("Date", inplace=True)
+                    print(f"✅ 공공데이터 API ({code}): {len(df)}일 데이터")
+                    return df
+
+            print(f"⚠️ 공공데이터 API 결과 없음 ({code}), yfinance 로 대체합니다.")
+        except Exception as e:
+            print(f"⚠️ 공공데이터 API 오류 ({code}): {e}, yfinance 로 대체합니다.")
+
+    # ── 2차 폴백: yfinance ──
     try:
-        import urllib.parse
-        encoded_key = urllib.parse.unquote(api_key)
-        url = "http://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo"
-        params = {
-            "serviceKey": encoded_key,
-            "numOfRows": "300",
-            "pageNo": "1",
-            "resultType": "json",
-            "likeSrtnCd": code
-        }
-        
-        resp = http_requests.get(url, params=params, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        
-        items = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-        if not items:
-            print(f"공공데이터 API 결과 없음 ({code}).")
+        suffix = ".KS" if market == "KOSPI" else ".KQ"
+        ticker = code + suffix
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=450)
+        df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+        if df.empty:
+            print(f"❌ yfinance 결과 없음 ({ticker})")
             return None
-            
-        # 데이터를 오름차순(과거 -> 최신)으로 정렬하기 위해 파싱
-        # (공공데이터 포털은 가장 최근 날짜가 배열 첫번째로 내려옴)
-        records = []
-        for row in reversed(items):
-            try:
-                dt_str = row["basDt"] # 20260226
-                dt = datetime.strptime(dt_str, "%Y%m%d")
-                records.append({
-                    "Date": dt,
-                    "Open": float(row["mkp"]),
-                    "High": float(row["hipr"]),
-                    "Low": float(row["lopr"]),
-                    "Close": float(row["clpr"]),
-                    "Volume": float(row["trqu"])
-                })
-            except Exception as e:
-                continue
-                
-        if not records:
-            return None
-            
-        df = pd.DataFrame(records)
-        df.set_index("Date", inplace=True)
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+        print(f"✅ yfinance ({ticker}): {len(df)}일 데이터")
         return df
-
     except Exception as e:
-        print(f"공공데이터 API 조회 오류 ({code}): {e}")
+        print(f"❌ yfinance 오류 ({code}): {e}")
         return None
 
 
@@ -642,6 +651,14 @@ def stock_analysis():
 load_dart_corp_codes()
 load_all_stocks()
 print(f"🕯️  캔들 패턴 분석 엔진 활성화")
+
+@app.route("/")
+def serve_index():
+    return send_from_directory("client", "index.html")
+
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory("client", path)
 
 if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_ENV") == "development"

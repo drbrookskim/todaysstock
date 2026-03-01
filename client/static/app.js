@@ -1012,11 +1012,20 @@ function renderSellReport(report) {
 }
 
 // ── Theme Toggle ──
+function updateThemeIcon() {
+    const icon = document.getElementById('themeIcon');
+    if (!icon) return;
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    // In dark mode → show sun (click to go light). In light mode → show moon (click to go dark).
+    icon.className = isLight ? 'ph ph-moon' : 'ph ph-sun';
+}
+
 function initTheme() {
     const saved = localStorage.getItem('stockfinder-theme');
     if (saved === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
     }
+    updateThemeIcon();
 }
 
 let _lastAnalysisData = null;
@@ -1031,6 +1040,7 @@ function toggleTheme() {
         html.setAttribute('data-theme', 'light');
         localStorage.setItem('stockfinder-theme', 'light');
     }
+    updateThemeIcon();
     // Re-render candle chart so MA5 color adapts
     if (_lastAnalysisData && _lastAnalysisData.recent_candles) {
         renderCandleChart(_lastAnalysisData.recent_candles);
