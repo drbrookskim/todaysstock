@@ -1249,10 +1249,11 @@ async function initAuth() {
     const updateAuthUI = () => {
         if (authUser && authUser.logged_in) {
             authBtn.style.display = 'none';
-            if (sidebarFooter) sidebarFooter.style.display = 'block';
+            // 'flex' 를 사용해야 sidebar-footer의 justify-content: flex-end 가 적용됨
+            if (sidebarFooter) sidebarFooter.style.display = 'flex';
         } else {
             authBtn.style.display = 'flex';
-            authBtn.innerHTML = `<span class="auth-icon">👤</span> 로그인`;
+            authBtn.textContent = '로그인';
             if (sidebarFooter) sidebarFooter.style.display = 'none';
         }
     };
