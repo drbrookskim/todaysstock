@@ -283,11 +283,17 @@ def get_stock_data(code, market):
         except Exception as e:
             print(f"DART API 호출 실패: {e}")
 
+    # Defaults for fields that may not be populated
+    industry = "분류되지 않음"
+    translated_desc = "기업 상세 정보를 불러오는 중 오류가 발생했습니다."
+    suffix = ".KS" if market == "KOSPI" else ".KQ"
+    ticker = code + suffix
+
     # 1. 네이버 금융 업종 (WICS) 파싱 시도 (가장 정확한 한국어 업종 우선 적용)
     try:
         import re
-        url = f"https://finance.naver.com/item/main.naver?code={code}"
-        resp = http_requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
+        nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
+        resp = http_requests.get(nav_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
         if resp.status_code == 200:
             resp.encoding = 'euc-kr'
             match = re.search(r'<h4 class="h_sub sub_tit7">.*?<a[^>]*>(.*?)</a>', resp.text, re.DOTALL)
