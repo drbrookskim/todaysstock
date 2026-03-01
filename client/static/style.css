@@ -510,26 +510,27 @@ body {
     position: relative;
 }
 
-/* ── Theme Toggle Switch ── */
-.theme-switch-wrapper {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+/* ── Vertical Theme Toggle Switch (Bottom Right) ── */
+.vertical-theme-switch-wrapper {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 50;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    background: transparent;
-    /* No background card styling */
-    padding: 6px 12px;
-    border-radius: 30px;
-    box-shadow: none;
-    /* No shadow */
-    z-index: 10;
+    gap: 12px;
+    background: var(--bg-card);
+    padding: 14px 10px;
+    border-radius: 40px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.theme-switch-wrapper i {
-    font-size: 1.1rem;
+.vertical-theme-switch-wrapper i {
+    font-size: 1.2rem;
     color: var(--text-muted);
     transition: color 0.3s ease, text-shadow 0.3s ease;
 }
@@ -546,11 +547,11 @@ html[data-theme="light"] .theme-icon-sun {
     text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
 }
 
-/* ── Pill Button ── */
+/* ── Pill Button (Vertical Orientation) ── */
 .theme-switch-btn {
     position: relative;
-    width: 44px;
-    height: 24px;
+    width: 24px;
+    height: 48px;
     border-radius: 12px;
     border: none;
     cursor: pointer;
@@ -572,8 +573,8 @@ html[data-theme="light"] .theme-switch-btn {
 /* ── Switch Thumb ── */
 .theme-switch-thumb {
     position: absolute;
-    top: 3px;
-    left: 4px;
+    left: 3px;
+    top: 4px;
     width: 18px;
     height: 18px;
     background: #ffffff;
@@ -582,14 +583,14 @@ html[data-theme="light"] .theme-switch-btn {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Dark mode: Thumb on right */
+/* Dark mode: Thumb on bottom (Moon) */
 html:not([data-theme="light"]) .theme-switch-thumb {
-    transform: translateX(18px);
+    transform: translateY(22px);
 }
 
-/* Light mode: Thumb on left */
+/* Light mode: Thumb on top (Sun) */
 html[data-theme="light"] .theme-switch-thumb {
-    transform: translateX(0);
+    transform: translateY(0);
 }
 
 .logo-placeholder {
