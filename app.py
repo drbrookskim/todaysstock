@@ -10,6 +10,9 @@ from flask_cors import CORS
 from supabase import create_client, Client, ClientOptions
 import os
 import html
+import time
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 import yfinance as yf
 import pandas as pd
@@ -17,7 +20,22 @@ import requests as http_requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from candle_patterns import analyze_candle_patterns
-import os
+
+# ── 인메모리 TTL 캐시 (5분) ──────────────────────────────────────
+# {cache_key: (timestamp, result)}
+_STOCK_CACHE: dict = {}
+_CACHE_TTL = 300  # 5분 (초)
+
+def _cache_get(key: str):
+    entry = _STOCK_CACHE.get(key)
+    if entry and (time.time() - entry[0]) < _CACHE_TTL:
+        return entry[1]
+    return None
+
+def _cache_set(key: str, value):
+    _STOCK_CACHE[key] = (time.time(), value)
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -242,136 +260,174 @@ def download_stock_df(code, market):
 
 
 def get_stock_data(code, market):
-    """이동평균선을 포함한 주가 요약 데이터를 반환합니다."""
+    """이동평균선을 포함한 주가 요약 데이터를 반환합니다. TTL 캐시 + 병렬 API 호출."""
+    # -- 캐시 우선 확인 --
+    cache_key = f"stock:{code}:{market}"
+    cached = _cache_get(cache_key)
+    if cached:
+        print(f"캐시 히트 ({code})")
+        return cached
+
     df = download_stock_df(code, market)
     if df is None:
         return None
 
-    df["MA5"] = df["Close"].rolling(window=5).mean()
+    df["MA5"]  = df["Close"].rolling(window=5).mean()
     df["MA10"] = df["Close"].rolling(window=10).mean()
     df["MA20"] = df["Close"].rolling(window=20).mean()
     df["MA60"] = df["Close"].rolling(window=60).mean()
 
     latest = df.iloc[-1]
-    prev = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
+    prev   = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
 
     close_price = float(latest["Close"])
-    prev_close = float(prev["Close"])
-    change = close_price - prev_close
-    change_pct = (change / prev_close) * 100 if prev_close != 0 else 0
+    prev_close  = float(prev["Close"])
+    change      = close_price - prev_close
+    change_pct  = (change / prev_close) * 100 if prev_close != 0 else 0
 
-    # Open DART 기업 기본정보
-    est_dt = ""
-    ceo = ""
-    hm_url = ""
-    adres = ""
-    
-    if DART_API_KEY and code in DART_CORP_CODES:
-        try:
-            corp_code = DART_CORP_CODES[code]
-            dart_url = f"https://opendart.fss.or.kr/api/company.json?crtfc_key={DART_API_KEY}&corp_code={corp_code}"
-            dart_resp = http_requests.get(dart_url, timeout=5).json()
-            if dart_resp.get("status") == "000":
-                est_dt_raw = dart_resp.get("est_dt", "")
-                if est_dt_raw and len(est_dt_raw) == 8:
-                    est_dt = f"{est_dt_raw[:4]}년 {est_dt_raw[4:6]}월 {est_dt_raw[6:]}일"
-                ceo = dart_resp.get("ceo_nm", "")
-                hm_url = dart_resp.get("hm_url", "")
-                if hm_url and not hm_url.startswith("http"):
-                    hm_url = "http://" + hm_url
-                adres = dart_resp.get("adres", "")
-        except Exception as e:
-            print(f"DART API 호출 실패: {e}")
-
-    # Defaults for fields that may not be populated
-    industry = "분류되지 않음"
-    translated_desc = "기업 상세 정보를 불러오는 중 오류가 발생했습니다."
     suffix = ".KS" if market == "KOSPI" else ".KQ"
     ticker = code + suffix
 
-    # 1. 네이버 금융 업종 (WICS) 파싱 시도
-    try:
-        import re
-        nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
-        resp = http_requests.get(nav_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
-        if resp.status_code == 200:
-            # resp.text 사용 (requests가 Content-Type에서 UTF-8 자동 감지)
-            html_text = resp.text
-            match = re.search(r'h_sub sub_tit7.*?<a[^>]*>(.*?)</a>', html_text, re.DOTALL)
-            if match:
-                parsed_industry = re.sub(r'<[^>]+>', '', match.group(1)).strip()
-                if parsed_industry and len(parsed_industry) < 30:
-                    industry = parsed_industry
-    except Exception as e:
-        print(f"네이버 업종 파싱 오류 ({code}): {e}")
+    # 기본값
+    est_dt = ceo = hm_url = adres = ""
+    industry = "분류되지 않음"
+    translated_desc = "기업 상세 정보를 불러오는 중 오류가 발생했습니다."
 
-    # 2. 기업 개요 번역 (yfinance + deep-translator)
-    try:
-        from deep_translator import GoogleTranslator
-        translator = GoogleTranslator(source='en', target='ko')
-        
-        info = yf.Ticker(ticker).info
-        en_summary = info.get("longBusinessSummary")
-        en_industry = info.get("industry")
-        
-        if en_summary:
-            translated_desc = translator.translate(en_summary[:2000])
-        if industry == "분류되지 않음" and en_industry:
-            # 네이버 파싱 실패 시에만 yfinance 제공 업종을 번역해서 사용
-            industry = translator.translate(en_industry)
-            
-    except Exception as e:
-        print(f"기업 정보 조회/번역 오류 ({ticker}): {e}")
-        
-    # 예외 하드코딩: 이오테크닉스(039030)는 yfinance 데이터가 부실하므로 상세 요약본 수동 주입
+    # -- 병렬 외부 API 호출 --
+    def fetch_dart():
+        if not (DART_API_KEY and code in DART_CORP_CODES):
+            return {}
+        try:
+            corp_code = DART_CORP_CODES[code]
+            url = (f"https://opendart.fss.or.kr/api/company.json"
+                   f"?crtfc_key={DART_API_KEY}&corp_code={corp_code}")
+            d = http_requests.get(url, timeout=5).json()
+            if d.get("status") == "000":
+                res = {}
+                raw = d.get("est_dt", "")
+                if raw and len(raw) == 8:
+                    res["est_dt"] = f"{raw[:4]}년 {raw[4:6]}월 {raw[6:]}일"
+                res["ceo"]   = d.get("ceo_nm", "")
+                res["adres"] = d.get("adres", "")
+                u = d.get("hm_url", "")
+                if u and not u.startswith("http"):
+                    u = "http://" + u
+                res["hm_url"] = u
+                return res
+        except Exception as e:
+            print(f"DART API 오류: {e}")
+        return {}
+
+    def fetch_naver_industry():
+        try:
+            nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
+            resp = http_requests.get(
+                nav_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=3)
+            if resp.status_code == 200:
+                m = re.search(
+                    r'h_sub sub_tit7.*?<a[^>]*>(.*?)</a>', resp.text, re.DOTALL)
+                if m:
+                    parsed = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+                    if parsed and len(parsed) < 30:
+                        return parsed
+        except Exception as e:
+            print(f"네이버 업종 파싱 오류 ({code}): {e}")
+        return None
+
+    def fetch_yf_info():
+        try:
+            from deep_translator import GoogleTranslator
+            tr = GoogleTranslator(source='en', target='ko')
+            info = yf.Ticker(ticker).info
+            en_sum = info.get("longBusinessSummary")
+            en_ind = info.get("industry")
+            return {
+                "desc":     tr.translate(en_sum[:2000]) if en_sum else None,
+                "industry": tr.translate(en_ind)        if en_ind else None,
+            }
+        except Exception as e:
+            print(f"yfinance/번역 오류 ({ticker}): {e}")
+        return {}
+
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        f_dart  = ex.submit(fetch_dart)
+        f_naver = ex.submit(fetch_naver_industry)
+        f_yf    = ex.submit(fetch_yf_info)
+        dart_r  = f_dart.result()
+        naver_r = f_naver.result()
+        yf_r    = f_yf.result()
+
+    est_dt = dart_r.get("est_dt", "")
+    ceo    = dart_r.get("ceo", "")
+    adres  = dart_r.get("adres", "")
+    hm_url = dart_r.get("hm_url", "")
+
+    if naver_r:
+        industry = naver_r
+    elif yf_r.get("industry"):
+        industry = yf_r["industry"]
+
+    if yf_r.get("desc"):
+        translated_desc = yf_r["desc"]
+
+    # 이오테크닉스 예외 하드코딩
     if code == "039030":
         industry = "반도체 장비 및 재료"
-        translated_desc = "(주)이오테크닉스는 레이저 가공 장비를 전세계적으로 제조, 공급하고 있습니다. 이 회사는 스트립 마커, 트레이 마커, 웨이퍼 뒷면 마커, 웨이퍼 상단 마커 및 웨이퍼 ID 마커로 구성된 반도체 제품을 제공합니다. 그루빙 및 다이싱 제품; 기판 절단 장비; 스트립 및 웨이퍼 유형의 POP를 위한 드릴링 장비. 또한 레이저 리프트 오프, PI 유리 컷, 셰이프 컷, 챔퍼 컷, UV 레이저 어닐링, FPD 마커, 정렬 키 마커, 레이저 트리머 OLED/TFT/CF 트리머, 필름 커터, Pol과 같은 디스플레이 제품도 제공합니다. 필름 절단기, 마스크 수리, 유리창 절단기, 레이저 패터닝 제품; 드릴링 및 마킹 애플리케이션용 PCB 장비; 노칭/절단, 용접, 접합, 납땜 및 마킹 응용 분야에 사용되는 매크로 장비; 그리고 레이저 제품. EO Technics Co., Ltd.는 1989년에 설립되었으며 대한민국 안양시에 본사를 두고 있습니다."
-        
-    # DART 정보를 활용해 동일한 포맷의 HTML 동적 생성
+        translated_desc = (
+            "(주)이오테크닉스는 레이저 가공 장비를 전세계적으로 제조, 공급하고 있습니다."
+        )
+
     dart_li = []
     if est_dt: dart_li.append(f"<li><strong>설립일:</strong> {html.escape(est_dt)}</li>")
-    if ceo: dart_li.append(f"<li><strong>대표이사:</strong> {html.escape(ceo)}</li>")
-    if adres: dart_li.append(f"<li><strong>본사:</strong> {html.escape(adres)}</li>")
-    if hm_url: dart_li.append(f"<li><strong>웹사이트:</strong> <a href='{html.escape(hm_url)}' target='_blank'>{html.escape(hm_url.replace('http://', '').replace('https://', ''))}</a></li>")
-    
+    if ceo:    dart_li.append(f"<li><strong>대표이사:</strong> {html.escape(ceo)}</li>")
+    if adres:  dart_li.append(f"<li><strong>본사:</strong> {html.escape(adres)}</li>")
+    if hm_url:
+        dh = html.escape(hm_url)
+        dt = html.escape(hm_url.replace("http://","").replace("https://",""))
+        dart_li.append(
+            f"<li><strong>웹사이트:</strong> <a href='{dh}' target='_blank'>{dt}</a></li>")
+
     overview_html = ""
     if dart_li:
-        overview_html = f"""
-<div class="summary-section">
-    <h4 class="summary-heading">1. 기업 개요</h4>
-    <ul class="summary-list">
-        {"".join(dart_li)}
-    </ul>
-</div>"""
-        
-    company_summary = f"""
-<div class="summary-formatted">
-<div class="summary-subtitle"><strong>"글로벌 경쟁력 기반의 {html.escape(industry)} 선도 기업"</strong></div>
-{overview_html}
-<div class="summary-section">
-    <h4 class="summary-heading">2. 핵심 사업 영역 (주요 활동)</h4>
-    <p class="summary-desc">{html.escape(translated_desc)}</p>
-</div>
-</div>"""
+        rows = "".join(dart_li)
+        overview_html = (
+            '<div class="summary-section">'
+            '<h4 class="summary-heading">1. 기업 개요</h4>'
+            f'<ul class="summary-list">{rows}</ul>'
+            '</div>'
+        )
 
+    ei = html.escape(industry)
+    ed = html.escape(translated_desc)
+    company_summary = (
+        '<div class="summary-formatted">'
+        f'<div class="summary-subtitle"><strong>"글로벌 경쟁력 기반의 {ei} 선도 기업"</strong></div>'
+        f'{overview_html}'
+        '<div class="summary-section">'
+        '<h4 class="summary-heading">2. 핵심 사업 영역 (주요 활동)</h4>'
+        f'<p class="summary-desc">{ed}</p>'
+        '</div></div>'
+    )
 
-    return {
-        "price": int(close_price),
-        "change": int(change),
+    result = {
+        "price":      int(close_price),
+        "change":     int(change),
         "change_pct": round(change_pct, 2),
-        "high": int(float(latest["High"])),
-        "low": int(float(latest["Low"])),
-        "open": int(float(latest["Open"])),
+        "high":   int(float(latest["High"])),
+        "low":    int(float(latest["Low"])),
+        "open":   int(float(latest["Open"])),
         "volume": int(float(latest["Volume"])),
-        "ma5": int(float(latest["MA5"])) if pd.notna(latest["MA5"]) else None,
+        "ma5":  int(float(latest["MA5"]))  if pd.notna(latest["MA5"])  else None,
         "ma10": int(float(latest["MA10"])) if pd.notna(latest["MA10"]) else None,
         "ma20": int(float(latest["MA20"])) if pd.notna(latest["MA20"]) else None,
         "ma60": int(float(latest["MA60"])) if pd.notna(latest["MA60"]) else None,
-        "date": df.index[-1].strftime("%Y-%m-%d"),
+        "date":            df.index[-1].strftime("%Y-%m-%d"),
         "company_summary": company_summary,
-        "industry": industry,
+        "industry":        industry,
     }
+
+    _cache_set(cache_key, result)
+    return result
 
 
 def get_nxt_price(code):
