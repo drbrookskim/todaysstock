@@ -8,3 +8,4 @@ supabase
 python-dotenv
 Werkzeug
 flask-cors
+deep-translator

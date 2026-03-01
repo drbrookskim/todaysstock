@@ -234,12 +234,22 @@ def get_stock_data(code, market):
         except Exception as e:
             print(f"DART API 호출 실패: {e}")
 
-    # yfinance를 통해 기업 개요 및 섹터(산업군) 정보 조회 후 한국어 번역
-    suffix = ".KS" if market == "KOSPI" else ".KQ"
-    ticker = code + suffix
-    translated_desc = "제공된 기업 개요가 없습니다."
-    industry = "분류되지 않음"
-    
+    # 1. 네이버 금융 업종 (WICS) 파싱 시도 (가장 정확한 한국어 업종 우선 적용)
+    try:
+        import re
+        url = f"https://finance.naver.com/item/main.naver?code={code}"
+        resp = http_requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
+        if resp.status_code == 200:
+            resp.encoding = 'euc-kr'
+            match = re.search(r'<h4 class="h_sub sub_tit7">.*?<a[^>]*>(.*?)</a>', resp.text, re.DOTALL)
+            if match:
+                parsed_industry = match.group(1).replace("동일업종비교", "").strip()
+                if parsed_industry:
+                    industry = parsed_industry
+    except Exception as e:
+        print(f"네이버 업종 파싱 오류 ({code}): {e}")
+
+    # 2. 기업 개요 번역 (yfinance + deep-translator)
     try:
         from deep_translator import GoogleTranslator
         translator = GoogleTranslator(source='en', target='ko')
@@ -250,7 +260,8 @@ def get_stock_data(code, market):
         
         if en_summary:
             translated_desc = translator.translate(en_summary[:2000])
-        if en_industry:
+        if industry == "분류되지 않음" and en_industry:
+            # 네이버 파싱 실패 시에만 yfinance 제공 업종을 번역해서 사용
             industry = translator.translate(en_industry)
             
     except Exception as e:

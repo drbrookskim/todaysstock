@@ -813,6 +813,18 @@ function renderCandleChart(candles) {
         return;
     }
 
+    // 모바일 1개월, 데스크탑 3개월 차트 분기
+    const isMobile = window.innerWidth <= 700;
+    const maxCandles = isMobile ? 22 : 65;
+    if (candles.length > maxCandles) {
+        candles = candles.slice(-maxCandles);
+    }
+
+    const titleEl = document.getElementById('chartTitle');
+    if (titleEl) {
+        titleEl.innerHTML = `<i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 ${isMobile ? '1' : '3'}개월 간 캔들 차트`;
+    }
+
     // Collect all price points including MAs for proper scaling
     const allPrices = candles.flatMap(c => {
         const prices = [c.high, c.low];

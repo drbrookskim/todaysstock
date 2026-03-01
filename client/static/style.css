@@ -226,7 +226,8 @@ body {
     flex-direction: column;
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 100%;
+    height: 100dvh;
     overflow: hidden;
     z-index: 12;
     transition: transform 0.3s ease, opacity 0.3s ease;
@@ -1566,8 +1567,8 @@ html[data-theme="light"] .theme-switch-thumb {
     }
 
     .auth-btn-left {
-        left: 52px;
-        /* Prevent overlap with the hamburger menu */
+        left: 68px;
+        /* Safely dodge the expanding hamburger menu bounds */
     }
 
     .report-grid {
