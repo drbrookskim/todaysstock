@@ -353,9 +353,18 @@ def get_stock_data(code, market):
         f_dart  = ex.submit(fetch_dart)
         f_naver = ex.submit(fetch_naver_industry)
         f_yf    = ex.submit(fetch_yf_info)
-        dart_r  = f_dart.result()
-        naver_r = f_naver.result()
-        yf_r    = f_yf.result()
+        try:
+            dart_r  = f_dart.result(timeout=15)
+        except Exception:
+            dart_r = {}
+        try:
+            naver_r = f_naver.result(timeout=8)
+        except Exception:
+            naver_r = None
+        try:
+            yf_r    = f_yf.result(timeout=20)
+        except Exception:
+            yf_r = {}
 
     est_dt = dart_r.get("est_dt", "")
     ceo    = dart_r.get("ceo", "")
@@ -378,14 +387,14 @@ def get_stock_data(code, market):
         )
 
     dart_li = []
-    if est_dt: dart_li.append(f"<li><strong>설립일:</strong> {html.escape(est_dt)}</li>")
-    if ceo:    dart_li.append(f"<li><strong>대표이사:</strong> {html.escape(ceo)}</li>")
-    if adres:  dart_li.append(f"<li><strong>본사:</strong> {html.escape(adres)}</li>")
+    sv = 'class="summary-value"'
+    if est_dt: dart_li.append(f'<li><strong>설립일:</strong><span {sv}>{html.escape(est_dt)}</span></li>')
+    if ceo:    dart_li.append(f'<li><strong>대표이사:</strong><span {sv}>{html.escape(ceo)}</span></li>')
+    if adres:  dart_li.append(f'<li><strong>본사:</strong><span {sv}>{html.escape(adres)}</span></li>')
     if hm_url:
         dh = html.escape(hm_url)
-        dt = html.escape(hm_url.replace("http://","").replace("https://",""))
-        dart_li.append(
-            f"<li><strong>웹사이트:</strong> <a href='{dh}' target='_blank'>{dt}</a></li>")
+        dt_text = html.escape(hm_url.replace('http://','').replace('https://','')).rstrip('/')
+        dart_li.append(f'<li><strong>웹사이트:</strong><span {sv}><a href="{dh}" target="_blank">{dt_text}</a></span></li>')
 
     overview_html = ""
     if dart_li:
