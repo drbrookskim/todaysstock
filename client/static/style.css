@@ -1008,7 +1008,23 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .stock-name-group {
     display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Row 1: market badge + industry badge */
+.stock-badges-row {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 8px;
+}
+
+/* Row 2: stock name + code */
+.stock-name-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
     gap: 10px;
 }
 
@@ -1018,6 +1034,7 @@ html[data-theme="light"] .theme-icon-btn i {
     border-radius: 6px;
     font-weight: 700;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .market-badge.kospi {
@@ -1032,22 +1049,44 @@ html[data-theme="light"] .theme-icon-btn i {
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+/* Purple industry badge */
+.industry-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    background: rgba(139, 92, 246, 0.18);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .stock-name {
     font-size: 1.5rem;
     font-weight: 700;
+    word-break: keep-all;
+    line-height: 1.2;
 }
 
 .stock-code {
     color: var(--text-muted);
     font-family: 'Space Grotesk', monospace;
     font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .stock-date {
     color: var(--text-muted);
     font-size: 0.8rem;
     font-family: 'Space Grotesk', monospace;
+    white-space: nowrap;
 }
+
 
 .price-row {
     display: flex;

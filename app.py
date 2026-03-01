@@ -289,19 +289,18 @@ def get_stock_data(code, market):
     suffix = ".KS" if market == "KOSPI" else ".KQ"
     ticker = code + suffix
 
-    # 1. 네이버 금융 업종 (WICS) 파싱 시도 (가장 정확한 한국어 업종 우선 적용)
+    # 1. 네이버 금융 업종 (WICS) 파싱 시도
     try:
         import re
         nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
         resp = http_requests.get(nav_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
         if resp.status_code == 200:
-            # resp.content 를 직접 euc-kr 로 decode (네이버 금융은 EUC-KR 인코딩)
-            html_text = resp.content.decode('euc-kr', errors='ignore')
-            match = re.search(r'<h4 class="h_sub sub_tit7">.*?<a[^>]*>(.*?)</a>', html_text, re.DOTALL)
+            # resp.text 사용 (requests가 Content-Type에서 UTF-8 자동 감지)
+            html_text = resp.text
+            match = re.search(r'h_sub sub_tit7.*?<a[^>]*>(.*?)</a>', html_text, re.DOTALL)
             if match:
-                parsed_industry = match.group(1).replace("동일업종비교", "").strip()
-                # 유효한 한국어/영문자 여부 검증 (깨진 문자 거름)
-                if parsed_industry and all(ord(c) < 0xFFFD for c in parsed_industry):
+                parsed_industry = re.sub(r'<[^>]+>', '', match.group(1)).strip()
+                if parsed_industry and len(parsed_industry) < 30:
                     industry = parsed_industry
     except Exception as e:
         print(f"네이버 업종 파싱 오류 ({code}): {e}")
