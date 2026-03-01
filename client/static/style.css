@@ -703,6 +703,8 @@ html[data-theme="light"] .theme-switch-thumb {
 
 .search-input {
     flex: 1;
+    min-width: 0;
+    text-overflow: ellipsis;
     background: transparent;
     border: none;
     outline: none;
@@ -1565,6 +1567,10 @@ html[data-theme="light"] .theme-switch-thumb {
     .search-shortcut {
         display: none;
     }
+    
+    .auth-btn-left {
+        left: 52px; /* Prevent overlap with the hamburger menu */
+    }
 
     .report-grid {
         grid-template-columns: 1fr !important;
@@ -2085,7 +2091,7 @@ html[data-theme="light"] .theme-switch-thumb {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -45%);
+    transform: translate(-50%, -50%);
     width: 90%;
     max-width: 400px;
     background: var(--bg-secondary);
