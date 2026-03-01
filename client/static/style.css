@@ -506,7 +506,7 @@ body {
 .header-row {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
 }
 
@@ -2243,11 +2243,11 @@ html[data-theme="light"] .theme-icon-btn i {
 
 /* ── Sidebar Footer & Logout Button ── */
 .sidebar-footer {
-    padding: 16px;
+    padding: 16px 20px;
     border-top: 1px solid var(--border-color);
     margin-top: auto;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
 }
 
 .sidebar-logout-btn {

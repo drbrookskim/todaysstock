@@ -444,6 +444,15 @@ async function selectStock(item) {
     try {
         const url = API_BASE_URL + `/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
         const res = await fetch(url);
+
+        // Guard: if the server returns an error page (HTML), res.json() would throw
+        const contentType = res.headers.get('content-type') || '';
+        if (!res.ok || !contentType.includes('application/json')) {
+            loadingSpinner.classList.add('hidden');
+            showError('서버 연결 오류가 발생했습니다. (서버 재시작 중일 수 있습니다. 잠시 후 다시 시도해주세요.)');
+            return;
+        }
+
         const data = await res.json();
 
         loadingSpinner.classList.add('hidden');
@@ -459,7 +468,7 @@ async function selectStock(item) {
         fetchAnalysis(item);
     } catch (err) {
         loadingSpinner.classList.add('hidden');
-        showError('데이터를 가져오는 중 오류가 발생했습니다: ' + err.message);
+        showError('데이터를 가져오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
 }
 
