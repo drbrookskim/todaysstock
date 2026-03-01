@@ -295,11 +295,13 @@ def get_stock_data(code, market):
         nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
         resp = http_requests.get(nav_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
         if resp.status_code == 200:
-            resp.encoding = 'euc-kr'
-            match = re.search(r'<h4 class="h_sub sub_tit7">.*?<a[^>]*>(.*?)</a>', resp.text, re.DOTALL)
+            # resp.content 를 직접 euc-kr 로 decode (네이버 금융은 EUC-KR 인코딩)
+            html_text = resp.content.decode('euc-kr', errors='ignore')
+            match = re.search(r'<h4 class="h_sub sub_tit7">.*?<a[^>]*>(.*?)</a>', html_text, re.DOTALL)
             if match:
                 parsed_industry = match.group(1).replace("동일업종비교", "").strip()
-                if parsed_industry:
+                # 유효한 한국어/영문자 여부 검증 (깨진 문자 거름)
+                if parsed_industry and all(ord(c) < 0xFFFD for c in parsed_industry):
                     industry = parsed_industry
     except Exception as e:
         print(f"네이버 업종 파싱 오류 ({code}): {e}")

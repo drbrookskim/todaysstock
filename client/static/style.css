@@ -2248,34 +2248,36 @@ html[data-theme="light"] .theme-icon-btn i {
     margin-top: auto;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
 }
 
 .sidebar-logout-btn {
     width: auto;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-xl);
-    padding: 8px 14px;
+    background: transparent;
+    border: 1.5px solid var(--border-color);
+    border-radius: 999px;
+    padding: 8px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(12px);
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ef4444;
+    letter-spacing: 0.01em;
 }
 
 .sidebar-logout-btn:hover {
-    border-color: var(--border-hover);
-    transform: scale(1.1);
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+    background: rgba(239, 68, 68, 0.08);
+    border-color: #ef4444;
+    transform: scale(1.04);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.18);
 }
 
 .sidebar-logout-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.97);
 }
 
 .auth-btn:hover {
