@@ -227,7 +227,7 @@ body {
     position: sticky;
     top: 0;
     height: 100vh;
-    overflow-y: auto;
+    overflow: hidden;
     z-index: 12;
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
@@ -1506,36 +1506,33 @@ html[data-theme="light"] .theme-switch-thumb {
         flex-direction: column;
     }
 
-    .watchlist-sidebar {
-        width: 100%;
-        min-width: 100%;
-        height: auto;
-        max-height: 180px;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
+    /* On mobile, force unpinned state behavior and hide the pin button to save space. */
+    .watchlist-sidebar,
+    .app-layout.sidebar-pinned .watchlist-sidebar {
+        width: 85%;
+        max-width: 300px;
+        position: fixed !important;
+        transform: translateX(-100%) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        box-shadow: none !important;
     }
 
-    .watchlist-items {
+    .watchlist-sidebar.open,
+    .app-layout.sidebar-pinned .watchlist-sidebar.open {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        box-shadow: var(--shadow-card) !important;
+    }
+
+    /* Bring back the hamburger menu on mobile even if pinned was saved from desktop */
+    .app-layout.sidebar-pinned .sidebar-toggle {
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 8px 12px;
     }
 
-    .watchlist-item {
-        padding: 6px 10px;
-        border-left: none;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-    }
-
-    .watchlist-empty {
-        padding: 16px;
-    }
-
-    .watchlist-empty p br {
-        display: none;
+    .sidebar-pin-btn {
+        display: none !important;
     }
 }
 
@@ -1567,9 +1564,10 @@ html[data-theme="light"] .theme-switch-thumb {
     .search-shortcut {
         display: none;
     }
-    
+
     .auth-btn-left {
-        left: 52px; /* Prevent overlap with the hamburger menu */
+        left: 52px;
+        /* Prevent overlap with the hamburger menu */
     }
 
     .report-grid {
