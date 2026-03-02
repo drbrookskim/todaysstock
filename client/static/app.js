@@ -1139,19 +1139,24 @@ async function initAuth() {
         });
     }
 
-    // Google Auth Button Click
-    const oauthConfirmOverlay = document.getElementById('oauthConfirmOverlay');
-    const oauthConfirmModal = document.getElementById('oauthConfirmModal');
-    const oauthCancelBtn = document.getElementById('oauthCancelBtn');
-    const oauthContinueBtn = document.getElementById('oauthContinueBtn');
+    // ── Supabase JS 클라이언트 초기화 (브라우저 직통 인증용) ──
+    let sbClient = null;
+    try {
+        const cfgRes = await fetch(API_BASE_URL + '/api/config');
+        const cfg = await cfgRes.json();
+        if (cfg.supabase_url && cfg.supabase_anon_key) {
+            sbClient = supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+        }
+    } catch (e) {
+        console.warn('Supabase JS 초기화 실패, 백엔드 폴백 모드 사용:', e);
+    }
 
+    // ── Google OAuth ──
     if (googleAuthBtn) {
-        googleAuthBtn.addEventListener('click', () => {
+        googleAuthBtn.addEventListener('click', async () => {
+            if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
             if (oauthConfirmOverlay && oauthConfirmModal) {
-                // 기존 로그인 팝업과 오버레이 숨기기
                 hideModal();
-
-                // 확인 모달 띄우기
                 oauthConfirmOverlay.classList.add('active');
                 oauthConfirmModal.classList.add('active');
             }
@@ -1162,29 +1167,25 @@ async function initAuth() {
         oauthCancelBtn.addEventListener('click', () => {
             oauthConfirmOverlay.classList.remove('active');
             oauthConfirmModal.classList.remove('active');
-
-            // 취소 시 다시 기존 로그인 창 띄워주기 (선택적)
             showModal();
         });
     }
 
     if (oauthContinueBtn) {
         oauthContinueBtn.addEventListener('click', async () => {
+            if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
             try {
                 oauthContinueBtn.disabled = true;
                 oauthContinueBtn.style.opacity = '0.7';
-                const redirectTarget = window.location.origin + '/callback.html';
-                const res = await fetch(API_BASE_URL + `/api/auth/google?redirect_to=${encodeURIComponent(redirectTarget)}`);
-                const data = await res.json();
-                if (data.success && data.url) {
-                    window.location.href = data.url;
-                } else {
-                    alert(data.message || '인증 연결 오류가 발생했습니다.');
-                    oauthConfirmOverlay.classList.remove('active');
-                    oauthConfirmModal.classList.remove('active');
-                }
+                const redirectTo = window.location.origin + '/callback.html';
+                const { error } = await sbClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo }
+                });
+                if (error) throw error;
+                // Supabase redirects the browser — nothing more to do here
             } catch (err) {
-                alert('네트워크 오류가 발생했습니다.');
+                alert('Google 로그인 오류: ' + (err.message || '알 수 없는 오류'));
                 oauthConfirmOverlay.classList.remove('active');
                 oauthConfirmModal.classList.remove('active');
             } finally {
@@ -1194,7 +1195,7 @@ async function initAuth() {
         });
     }
 
-    // 로그인 <-> 회원가입 전환
+    // ── 로그인 ↔ 회원가입 전환 ──
     if (authSwitchBtn) {
         authSwitchBtn.addEventListener('click', () => {
             isLoginMode = !isLoginMode;
@@ -1206,7 +1207,7 @@ async function initAuth() {
         });
     }
 
-    // 폼 전송
+    // ── 로그인/회원가입 폼 ──
     if (authForm) {
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1215,31 +1216,58 @@ async function initAuth() {
             const password = document.getElementById('password').value.trim();
             if (!username || !password) return;
 
-            const endpoint = isLoginMode ? API_BASE_URL + '/api/login' : API_BASE_URL + '/api/register';
+            // email 형식 통일 (username@stockfinder.local 우회)
+            const email = username.includes('@') ? username : `${username}@stockfinder.local`;
 
             try {
                 authSubmitBtn.disabled = true;
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
+                authErrorMsg.textContent = '';
 
-                if (data.success) {
+                if (sbClient) {
+                    // ── 빠른 경로: Supabase JS SDK 직접 호출 ──
                     if (isLoginMode) {
-                        setSupaToken(data.access_token);
+                        const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
+                        if (error) throw error;
+                        setSupaToken(data.session.access_token);
                         hideModal();
-                        await fetchUserSession(); // 로그인 시 세션 갱신
+                        await fetchUserSession();
                     } else {
-                        alert(data.message);
-                        authSwitchBtn.click(); // 자동 로그인 모드 전환
+                        const { error } = await sbClient.auth.signUp({ email, password });
+                        if (error) throw error;
+                        alert('회원가입 성공! 이제 로그인할 수 있습니다.');
+                        authSwitchBtn.click();
                     }
                 } else {
-                    authErrorMsg.textContent = data.message;
+                    // ── 폴백: Render 백엔드 경유 ──
+                    const endpoint = isLoginMode ? API_BASE_URL + '/api/login' : API_BASE_URL + '/api/register';
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        if (isLoginMode) {
+                            setSupaToken(data.access_token);
+                            hideModal();
+                            await fetchUserSession();
+                        } else {
+                            alert(data.message);
+                            authSwitchBtn.click();
+                        }
+                    } else {
+                        authErrorMsg.textContent = data.message;
+                    }
                 }
             } catch (error) {
-                authErrorMsg.textContent = '네트워크 오류가 발생했습니다.';
+                const msg = error?.message || '';
+                if (msg.includes('Invalid login credentials')) {
+                    authErrorMsg.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+                } else if (msg.includes('User already registered')) {
+                    authErrorMsg.textContent = '이미 등록된 아이디입니다.';
+                } else {
+                    authErrorMsg.textContent = msg || '오류가 발생했습니다. 다시 시도해주세요.';
+                }
             } finally {
                 authSubmitBtn.disabled = false;
             }

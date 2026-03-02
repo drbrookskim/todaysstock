@@ -506,6 +506,16 @@ def get_nxt_price(code):
 # ─────────────────────────────────────────────
 # 인증 및 관심종목 DB 라우트
 # ─────────────────────────────────────────────
+
+@app.route("/api/config", methods=["GET"])
+def public_config():
+    """프론트엔드가 Supabase JS SDK를 직접 초기화할 수 있도록 공개 설정을 반환합니다.
+    SUPABASE_KEY 는 anon (공개) 키입니다 — RLS로 보호되므로 노출이 안전합니다."""
+    return jsonify({
+        "supabase_url":      SUPABASE_URL,
+        "supabase_anon_key": SUPABASE_KEY,
+    })
+
 @app.route("/api/register", methods=["POST"])
 def register():
     """Supabase를 이용한 회원가입 (이메일 폼으로 우회)"""
