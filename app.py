@@ -613,6 +613,37 @@ def me():
             pass
     return jsonify({"logged_in": False})
 
+@app.route("/api/session", methods=["GET"])
+def session():
+    """/api/me + /api/watchlist(GET) 를 한 번의 요청으로 처리 — 로그인 속도 최적화"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token or not supabase_global:
+        return jsonify({"logged_in": False, "watchlist": []})
+    try:
+        user_res = supabase_global.auth.get_user(token)
+        metadata  = user_res.user.user_metadata or {}
+        full_name = metadata.get("full_name") or metadata.get("name")
+        email     = user_res.user.email or ""
+        username  = full_name or (email.split('@')[0] if email else "사용자")
+
+        # Watchlist: 토큰 기반 RLS client 로 가져오기
+        try:
+            client = get_user_supabase()
+            wl_res = client.table("watchlist").select("stock_code,stock_name,market").execute()
+            watchlist = [
+                {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
+                for item in wl_res.data
+            ]
+        except Exception as wl_err:
+            print(f"session watchlist error: {wl_err}")
+            watchlist = []
+
+        return jsonify({"logged_in": True, "username": username, "watchlist": watchlist})
+    except Exception as e:
+        print(f"session auth error: {e}")
+        return jsonify({"logged_in": False, "watchlist": []})
+
+
 @app.route("/api/watchlist", methods=["GET", "POST", "DELETE"])
 def manage_watchlist():
     """Data Minimization 및 RLS가 적용된 Supabase DB 접근 라우트"""

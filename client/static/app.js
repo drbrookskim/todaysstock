@@ -1258,28 +1258,28 @@ async function initAuth() {
         }
     };
 
-    // 서버에서 세션(및 관심종목) 가져오기
+    // 서버에서 세션(및 관심종목) 가져오기 — /api/session 으로 1회 호출
     const fetchUserSession = async () => {
         try {
             const token = getSupaToken();
-            const res = await fetch(API_BASE_URL + '/api/me', {
+            const res = await fetch(API_BASE_URL + '/api/session', {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             const data = await res.json();
-            authUser = data;
 
-            if (authUser.logged_in) {
-                // 로그인 상태면 DB의 Watchlist를 다운로드하여 로컬에 동기화
-                const watchRes = await fetch(API_BASE_URL + '/api/watchlist', { headers: getAuthHeaders() });
-                const watchData = await watchRes.json();
-                currentWatchlist = watchData;
+            // authUser 형식 유지 (logged_in, username)
+            authUser = { logged_in: data.logged_in, username: data.username };
 
-                // 로그인 전 게스트 상태로 저장된 로컬 관심종목이 있다면 DB로 병합 시도
+            if (data.logged_in) {
+                // watchlist 가 이미 세션 응답에 포함되어 있음
+                const serverList = data.watchlist || [];
+                currentWatchlist = serverList;
+
+                // 로그인 전 게스트 상태로 저장된 로컬 관심종목이 있다면 DB로 병합
                 try {
                     const guestList = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
                     if (guestList.length > 0) {
                         for (const item of guestList) {
-                            // 중복 방지
                             if (!currentWatchlist.some(w => w.code === item.code)) {
                                 await fetch(API_BASE_URL + '/api/watchlist', {
                                     method: 'POST',
@@ -1289,18 +1289,13 @@ async function initAuth() {
                                 currentWatchlist.push(item);
                             }
                         }
-                        // 동기화가 모두 성공하면 로컬 스토리지 비우기
                         localStorage.removeItem(WATCHLIST_KEY);
                     }
                 } catch (e) { console.error('Guest Watchlist merge error', e); }
-
-                renderWatchlist();
-                updateWatchlistBtn();
-            } else {
-                // 미로그인 게스트용 환경 렌더링
-                renderWatchlist();
-                updateWatchlistBtn();
             }
+
+            renderWatchlist();
+            updateWatchlistBtn();
         } catch (error) {
             console.warn("Session check failed", error);
         }
