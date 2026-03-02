@@ -349,20 +349,42 @@ def get_stock_data(code, market):
             print(f"yfinance/번역 오류 ({ticker}): {e}")
         return {}
 
-    with ThreadPoolExecutor(max_workers=3) as ex:
-        f_dart  = ex.submit(fetch_dart)
-        f_naver = ex.submit(fetch_naver_industry)
-        f_yf    = ex.submit(fetch_yf_info)
+    def fetch_naver_desc():
+        """네이버 금융 종목 주요 현황 요약 (이미 한국어, 번역 불필요)"""
         try:
-            dart_r  = f_dart.result(timeout=15)
+            nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
+            resp = http_requests.get(
+                nav_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+            if resp.status_code != 200:
+                return None
+            m = re.search(r'summary_info.*?<p>(.*?)</p>', resp.text, re.DOTALL)
+            if m:
+                txt = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+                if txt and 10 < len(txt) < 1000:
+                    return txt
+        except Exception as e:
+            print(f"Naver 기업요약 파싱 오류 ({code}): {e}")
+        return None
+
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        f_dart      = ex.submit(fetch_dart)
+        f_naver_ind = ex.submit(fetch_naver_industry)
+        f_naver_dsc = ex.submit(fetch_naver_desc)
+        f_yf        = ex.submit(fetch_yf_info)
+        try:
+            dart_r    = f_dart.result(timeout=15)
         except Exception:
             dart_r = {}
         try:
-            naver_r = f_naver.result(timeout=8)
+            naver_r   = f_naver_ind.result(timeout=8)
         except Exception:
             naver_r = None
         try:
-            yf_r    = f_yf.result(timeout=20)
+            naver_dsc = f_naver_dsc.result(timeout=8)
+        except Exception:
+            naver_dsc = None
+        try:
+            yf_r      = f_yf.result(timeout=20)
         except Exception:
             yf_r = {}
 
@@ -376,7 +398,10 @@ def get_stock_data(code, market):
     elif yf_r.get("industry"):
         industry = yf_r["industry"]
 
-    if yf_r.get("desc"):
+    # 기업 설명: 네이버(한국어, 우선) → yfinance 번역 → 기본 오류 문자열
+    if naver_dsc:
+        translated_desc = naver_dsc
+    elif yf_r.get("desc"):
         translated_desc = yf_r["desc"]
 
     # 이오테크닉스 예외 하드코딩
