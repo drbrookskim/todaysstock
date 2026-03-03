@@ -1395,4 +1395,243 @@ def analyze_candle_patterns(df):
         "recent_candles": recent_candles,
         "recent_week_analysis": analyze_recent_week(df),
         "volume_note": volume_note,
+        # ── 신규: 정밀 목표가/손절가, 확률 점수, 이상 거래량 ──
+        "atr_targets":        compute_atr_targets(df),
+        "trade_probability":  compute_trade_probability(df, detected),
+        "volume_anomaly":     detect_volume_anomaly(df),
+    }
+
+
+# ─────────────────────────────────────────────
+# [NEW] 1. ATR 기반 목표가 / 손절가 정밀 산출
+# ─────────────────────────────────────────────
+
+def _compute_atr(df, period=14):
+    """Average True Range (ATR) 계산"""
+    high = df["High"]
+    low  = df["Low"]
+    prev_close = df["Close"].shift(1)
+    tr = pd.concat([
+        high - low,
+        (high - prev_close).abs(),
+        (low  - prev_close).abs(),
+    ], axis=1).max(axis=1)
+    return tr.rolling(window=period).mean()
+
+
+def compute_atr_targets(df, atr_mult_target=2.0, atr_mult_sl=1.0):
+    """
+    ATR 기반 목표가 / 손절가 / 리스크-리워드 비율을 반환합니다.
+
+    공식:
+        목표가  = 현재가 + ATR × atr_mult_target  (기본 2배)
+        손절가  = 현재가 - ATR × atr_mult_sl       (기본 1배)
+        R:R     = (목표가 - 현재가) / (현재가 - 손절가)
+
+    산출 근거:
+        ATR은 '시장이 자연스럽게 움직이는 일일 변동폭'을 대표합니다.
+        - 손절가를 ATR×1 로 설정하면 잡음(noise)에 의한 과도한 손절 방지
+        - 목표가를 ATR×2 로 설정하면 리스크 대비 보상을 최소 1:2 로 확보
+    """
+    if df is None or len(df) < 20:
+        return None
+    atr_series = _compute_atr(df)
+    atr = float(atr_series.iloc[-1])
+    if pd.isna(atr) or atr == 0:
+        return None
+    price = float(df["Close"].iloc[-1])
+    target   = round(price + atr * atr_mult_target)
+    stop     = round(price - atr * atr_mult_sl)
+    gain     = target - price
+    loss     = price  - stop
+    rr_ratio = round(gain / loss, 2) if loss > 0 else None
+    return {
+        "atr":         round(atr),
+        "current":     round(price),
+        "target":      target,
+        "stop_loss":   stop,
+        "gain_pct":    round(gain  / price * 100, 2),
+        "loss_pct":    round(loss  / price * 100, 2),
+        "rr_ratio":    rr_ratio,           # 리스크:리워드 (목표: ≥1.5)
+        "atr_mult":    {"target": atr_mult_target, "stop": atr_mult_sl},
+    }
+
+
+# ─────────────────────────────────────────────
+# [NEW] 2. 매수/매도 확률 점수 (0~100)
+# ─────────────────────────────────────────────
+
+def _compute_rsi(df, period=14):
+    """RSI (Relative Strength Index) 계산"""
+    delta = df["Close"].diff()
+    gain  = delta.clip(lower=0)
+    loss  = (-delta).clip(lower=0)
+    avg_gain = gain.rolling(window=period).mean()
+    avg_loss = loss.rolling(window=period).mean()
+    rs  = avg_gain / avg_loss.replace(0, float("inf"))
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+
+def _compute_macd(df, fast=12, slow=26, signal=9):
+    """MACD 라인, 시그널, 히스토그램"""
+    ema_fast   = df["Close"].ewm(span=fast,   adjust=False).mean()
+    ema_slow   = df["Close"].ewm(span=slow,   adjust=False).mean()
+    macd_line  = ema_fast - ema_slow
+    signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+    histogram  = macd_line - signal_line
+    return macd_line, signal_line, histogram
+
+
+def compute_trade_probability(df, detected_patterns):
+    """
+    매수 확률 점수(0~100)를 4가지 요소의 가중합으로 산출합니다.
+
+    가중치:
+        MA 배열  35% — 단기/중기/장기 이동평균의 정배열 여부 (추세 방향성)
+        RSI      25% — 과매도(30이하)=매수, 과매수(70이상)=매도, 50 중심 선형
+        MACD     25% — 골든크로스(+)/데드크로스(-)와 히스토그램 부호
+        거래량   15% — 상승 시 거래량 증가 = 매수 신호 강화
+
+    반환:
+        score      : 0(강한 매도) ~ 100(강한 매수)
+        label      : "강한매수" | "매수우세" | "중립" | "매도우세" | "강한매도"
+        breakdown  : 항목별 기여 점수 딕셔너리
+    """
+    if df is None or len(df) < 30:
+        return {"score": 50, "label": "중립 (데이터 부족)", "breakdown": {}}
+
+    latest = df.iloc[-1]
+    price  = float(latest["Close"])
+
+    # ── MA 배열 점수 (35점 만점) ──
+    ma5  = float(df["Close"].rolling(5).mean().iloc[-1])
+    ma20 = float(df["Close"].rolling(20).mean().iloc[-1])
+    ma60 = float(df["Close"].rolling(60).mean().iloc[-1]) if len(df) >= 60 else ma20
+    ma_score = 0
+    if price > ma5:  ma_score += 10
+    if ma5   > ma20: ma_score += 12
+    if ma20  > ma60: ma_score += 13
+
+    # ── RSI 점수 (25점 만점) ──
+    rsi_series = _compute_rsi(df)
+    rsi = float(rsi_series.iloc[-1]) if not pd.isna(rsi_series.iloc[-1]) else 50.0
+    # RSI 30 이하: 25점, 70 이상: 0점, 선형 보간
+    if rsi <= 30:
+        rsi_score = 25
+    elif rsi >= 70:
+        rsi_score = 0
+    else:
+        rsi_score = round(25 * (70 - rsi) / 40)
+
+    # ── MACD 점수 (25점 만점) ──
+    macd_line, macd_signal, macd_hist = _compute_macd(df)
+    hist_now  = float(macd_hist.iloc[-1])  if not pd.isna(macd_hist.iloc[-1])  else 0
+    hist_prev = float(macd_hist.iloc[-2])  if not pd.isna(macd_hist.iloc[-2])  else 0
+    ml_now    = float(macd_line.iloc[-1])  if not pd.isna(macd_line.iloc[-1])  else 0
+    ms_now    = float(macd_signal.iloc[-1])if not pd.isna(macd_signal.iloc[-1])else 0
+    macd_score = 0
+    if ml_now > ms_now:          macd_score += 13  # MACD 골든크로스
+    if hist_now > 0:             macd_score  += 7  # 히스토그램 양수
+    if hist_now > hist_prev:     macd_score  += 5  # 히스토그램 증가 (가속)
+
+    # ── 거래량 점수 (15점 만점) ──
+    avg_vol  = float(df["Volume"].rolling(20).mean().iloc[-1])
+    cur_vol  = float(latest["Volume"])
+    vol_ratio = cur_vol / avg_vol if avg_vol > 0 else 1.0
+    is_up    = float(latest["Close"]) > float(latest["Open"])
+    vol_score = 0
+    if is_up and vol_ratio >= 1.5:  vol_score = 15
+    elif is_up and vol_ratio >= 1.0: vol_score = 10
+    elif not is_up and vol_ratio >= 1.5: vol_score = 3
+    else:                            vol_score = 7   # 중립
+
+    # ── 패턴 보너스 (최대 ±5점) ──
+    pattern_bonus = 0
+    for p in detected_patterns:
+        if p["signal"] == "bullish":
+            pattern_bonus += min(3, round(p["confidence"] * 3))
+        elif p["signal"] == "bearish":
+            pattern_bonus -= min(3, round(p["confidence"] * 3))
+    pattern_bonus = max(-5, min(5, pattern_bonus))
+
+    total = ma_score + rsi_score + macd_score + vol_score + pattern_bonus
+    score = max(0, min(100, total))
+
+    if   score >= 75: label = "강한 매수"
+    elif score >= 60: label = "매수 우세"
+    elif score >= 40: label = "중립"
+    elif score >= 25: label = "매도 우세"
+    else:             label = "강한 매도"
+
+    return {
+        "score":   score,
+        "label":   label,
+        "rsi":     round(rsi, 1),
+        "breakdown": {
+            "ma_alignment": ma_score,
+            "rsi":          rsi_score,
+            "macd":         macd_score,
+            "volume":       vol_score,
+            "pattern_bonus":pattern_bonus,
+        },
+    }
+
+
+# ─────────────────────────────────────────────
+# [NEW] 3. 이상 거래량 감지
+# ─────────────────────────────────────────────
+
+def detect_volume_anomaly(df, period=20):
+    """
+    Z-score + 배율 기반으로 이상 거래량을 감지합니다.
+
+    산출 방법:
+        1) 20일 평균 거래량(μ)과 표준편차(σ) 계산
+        2) Z-score = (오늘 거래량 - μ) / σ
+        3) 배율  = 오늘 거래량 / μ
+
+    심각도 레벨:
+        "normal"    — Z < 1.5, 배율 < 1.5 : 정상 범위
+        "watch"     — Z ≥ 1.5, 배율 ≥ 1.5 : 주의 (평소보다 눈에 띄게 많음)
+        "surge"     — Z ≥ 2.0, 배율 ≥ 2.0 : 급증 (세력 개입 가능)
+        "explosion" — Z ≥ 3.0, 배율 ≥ 3.0 : 폭발적 (상/하방 모멘텀 극강)
+    """
+    if df is None or len(df) < period + 1:
+        return None
+
+    window = df["Volume"].iloc[-(period + 1):-1]  # 오늘 제외 20일
+    mu    = float(window.mean())
+    sigma = float(window.std())
+    today = float(df["Volume"].iloc[-1])
+    ratio = today / mu if mu > 0 else 1.0
+    zscore = (today - mu) / sigma if sigma > 0 else 0.0
+
+    if   zscore >= 3.0 and ratio >= 3.0:
+        level   = "explosion"
+        label   = "🔥 폭발적 거래량"
+        message = f"평소 대비 {ratio:.1f}배 — 강력한 세력 개입 또는 뉴스 이벤트 의심. 방향성 확인 필수."
+    elif zscore >= 2.0 and ratio >= 2.0:
+        level   = "surge"
+        label   = "⚡ 거래량 급증"
+        message = f"평소 대비 {ratio:.1f}배 — 큰 손의 관심 증가. 추세 신호 신뢰도 상승."
+    elif zscore >= 1.5 and ratio >= 1.5:
+        level   = "watch"
+        label   = "👀 거래량 주의"
+        message = f"평소 대비 {ratio:.1f}배 — 평균보다 유의미하게 많음. 추세 전환 가능성 모니터링."
+    else:
+        level   = "normal"
+        label   = "거래량 정상"
+        message = f"평소 대비 {ratio:.1f}배 — 특이 사항 없음."
+
+    is_up = float(df["Close"].iloc[-1]) > float(df["Open"].iloc[-1])
+    return {
+        "level":      level,
+        "label":      label,
+        "message":    message,
+        "ratio":      round(ratio, 2),
+        "zscore":     round(zscore, 2),
+        "avg_volume": round(mu),
+        "cur_volume": round(today),
+        "direction":  "up" if is_up else "down",
     }
