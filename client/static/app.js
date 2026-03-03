@@ -804,6 +804,9 @@ function renderAnalysisReport(data) {
         if (recentWeekAnalysis) recentWeekAnalysis.classList.add('hidden');
     }
 
+    // ── AI Insights: 확률점수 / ATR 목표가 / 거래량 이상 ──
+    renderAiInsights(data);
+
     // ── Buy/Sell Reports ──
     const reportGrid = document.getElementById('reportGrid');
     const hasBuyReport = renderBuyReport(data.buy_report);
@@ -814,6 +817,146 @@ function renderAnalysisReport(data) {
         if (reportGrid) reportGrid.classList.add('hidden');
     }
 }
+
+function renderAiInsights(data) {
+    const container = document.getElementById('aiInsightsCard');
+    if (!container) return;
+
+    const prob  = data.trade_probability;
+    const atr   = data.atr_targets;
+    const vol   = data.volume_anomaly;
+
+    if (!prob && !atr && !vol) {
+        container.classList.add('hidden');
+        return;
+    }
+    container.classList.remove('hidden');
+
+    // ── 1. 매수확률 게이지 ──
+    let probHtml = '';
+    if (prob) {
+        const score = prob.score;
+        const scoreColor = score >= 75 ? '#10b981'
+                         : score >= 60 ? '#34d399'
+                         : score >= 40 ? '#f59e0b'
+                         : score >= 25 ? '#f97316'
+                         : '#ef4444';
+        const bd = prob.breakdown || {};
+        const items = [
+            { label: 'MA 배열', val: bd.ma_alignment ?? 0, max: 35 },
+            { label: 'RSI',    val: bd.rsi ?? 0,          max: 25 },
+            { label: 'MACD',   val: bd.macd ?? 0,         max: 25 },
+            { label: '거래량', val: bd.volume ?? 0,       max: 15 },
+        ];
+        const breakdownBars = items.map(it => {
+            const pct = Math.round((it.val / it.max) * 100);
+            return `<div class="ai-breakdown-row">
+                <span class="ai-breakdown-label">${it.label}</span>
+                <div class="ai-breakdown-track">
+                    <div class="ai-breakdown-fill" style="width:${pct}%; background:${scoreColor};"></div>
+                </div>
+                <span class="ai-breakdown-val">${it.val}/${it.max}</span>
+            </div>`;
+        }).join('');
+
+        const dashOffset = Math.round((1 - score / 100) * 251);
+        probHtml = `
+        <div class="ai-insight-widget">
+            <div class="ai-widget-title">매수 확률 점수</div>
+            <div class="ai-gauge-wrap">
+                <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="90" height="90">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="10"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="${scoreColor}" stroke-width="10"
+                        stroke-dasharray="251" stroke-dashoffset="${dashOffset}"
+                        stroke-linecap="round" transform="rotate(-90 50 50)"
+                        style="transition: stroke-dashoffset 1.2s cubic-bezier(.25,.8,.25,1);"/>
+                    <text x="50" y="46" text-anchor="middle" font-size="18" font-weight="700" fill="${scoreColor}">${score}</text>
+                    <text x="50" y="60" text-anchor="middle" font-size="9" fill="var(--text-muted)">/ 100</text>
+                </svg>
+                <div class="ai-gauge-label" style="color:${scoreColor};">${prob.label}</div>
+                <div class="ai-gauge-rsi">RSI ${prob.rsi}</div>
+            </div>
+            <div class="ai-breakdown">${breakdownBars}</div>
+        </div>`;
+    }
+
+    // ── 2. ATR 목표가/손절가 ──
+    let atrHtml = '';
+    if (atr) {
+        const rrColor = (atr.rr_ratio ?? 0) >= 1.5 ? '#10b981' : '#f59e0b';
+        atrHtml = `
+        <div class="ai-insight-widget">
+            <div class="ai-widget-title">ATR 목표가 / 손절가</div>
+            <div class="ai-price-range">
+                <div class="ai-price-row target">
+                    <span class="ai-price-arrow">▲</span>
+                    <div>
+                        <span class="ai-price-label">목표가</span>
+                        <span class="ai-price-val">${atr.target?.toLocaleString()}원</span>
+                        <span class="ai-price-pct up">+${atr.gain_pct}%</span>
+                    </div>
+                </div>
+                <div class="ai-price-row current">
+                    <span class="ai-price-arrow neutral">●</span>
+                    <div>
+                        <span class="ai-price-label">현재가</span>
+                        <span class="ai-price-val">${atr.current?.toLocaleString()}원</span>
+                    </div>
+                </div>
+                <div class="ai-price-row stop">
+                    <span class="ai-price-arrow down">▼</span>
+                    <div>
+                        <span class="ai-price-label">손절가</span>
+                        <span class="ai-price-val">${atr.stop_loss?.toLocaleString()}원</span>
+                        <span class="ai-price-pct down">-${atr.loss_pct}%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-rr-badge" style="color:${rrColor};">
+                R:R &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
+                <span class="ai-atr-note">ATR ${atr.atr?.toLocaleString()}원 기준</span>
+            </div>
+        </div>`;
+    }
+
+    // ── 3. 이상 거래량 배지 ──
+    let volHtml = '';
+    if (vol) {
+        const volColors = {
+            normal:    { bg: 'var(--hover-bg)',  text: 'var(--text-muted)' },
+            watch:     { bg: '#fef3c7',           text: '#92400e' },
+            surge:     { bg: '#fff7ed',           text: '#c2410c' },
+            explosion: { bg: '#fef2f2',           text: '#b91c1c' },
+        };
+        const vc = volColors[vol.level] || volColors.normal;
+        const dirIcon = vol.direction === 'up' ? '🔴' : '🔵';
+        volHtml = `
+        <div class="ai-insight-widget">
+            <div class="ai-widget-title">거래량 이상 감지</div>
+            <div class="ai-vol-badge" style="background:${vc.bg}; color:${vc.text};">
+                ${vol.label}
+            </div>
+            <div class="ai-vol-stats">
+                <div class="ai-vol-stat">
+                    <span class="ai-vol-stat-label">배율</span>
+                    <span class="ai-vol-stat-val">${vol.ratio}×</span>
+                </div>
+                <div class="ai-vol-stat">
+                    <span class="ai-vol-stat-label">Z-score</span>
+                    <span class="ai-vol-stat-val">${vol.zscore}</span>
+                </div>
+                <div class="ai-vol-stat">
+                    <span class="ai-vol-stat-label">방향</span>
+                    <span class="ai-vol-stat-val">${dirIcon}</span>
+                </div>
+            </div>
+            <div class="ai-vol-msg">${vol.message}</div>
+        </div>`;
+    }
+
+    container.innerHTML = `<div class="ai-insights-grid">${probHtml}${atrHtml}${volHtml}</div>`;
+}
+
 
 function renderCandleChart(candles) {
     const container = document.getElementById('candleChart');

@@ -1850,6 +1850,137 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 /* Report Grid */
+/* ── AI Insights 3-위젯 그리드 ── */
+#aiInsightsCard {
+    margin-bottom: 16px;
+}
+.ai-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+.ai-insight-widget {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    backdrop-filter: blur(20px);
+}
+.ai-widget-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* ── 확률 게이지 ── */
+.ai-gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.ai-gauge-svg { display: block; }
+.ai-gauge-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+.ai-gauge-rsi {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+.ai-breakdown { display: flex; flex-direction: column; gap: 5px; }
+.ai-breakdown-row {
+    display: grid;
+    grid-template-columns: 42px 1fr 36px;
+    align-items: center;
+    gap: 6px;
+}
+.ai-breakdown-label { font-size: 0.68rem; color: var(--text-muted); }
+.ai-breakdown-track {
+    height: 5px;
+    background: var(--hover-bg);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.ai-breakdown-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(.25,.8,.25,1);
+}
+.ai-breakdown-val { font-size: 0.65rem; color: var(--text-muted); text-align: right; }
+
+/* ── ATR 가격 레인지 ── */
+.ai-price-range { display: flex; flex-direction: column; gap: 8px; }
+.ai-price-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ai-price-row.target .ai-price-arrow { color: #10b981; font-size: 0.8rem; }
+.ai-price-row.stop   .ai-price-arrow { color: #ef4444; font-size: 0.8rem; }
+.ai-price-arrow.neutral { color: var(--text-muted); font-size: 0.7rem; }
+.ai-price-arrow.down    { color: #ef4444; }
+.ai-price-label { font-size: 0.68rem; color: var(--text-muted); display: block; }
+.ai-price-val   { font-size: 0.9rem; font-weight: 700; color: var(--text-color); }
+.ai-price-pct   { font-size: 0.7rem; font-weight: 600; margin-left: 4px; }
+.ai-price-pct.up   { color: #10b981; }
+.ai-price-pct.down { color: #ef4444; }
+.ai-rr-badge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    background: var(--hover-bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.ai-atr-note { font-size: 0.65rem; color: var(--text-muted); margin-left: auto; }
+
+/* ── 거래량 이상 ── */
+.ai-vol-badge {
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+.ai-vol-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+}
+.ai-vol-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    background: var(--hover-bg);
+    border-radius: 8px;
+    padding: 6px 4px;
+}
+.ai-vol-stat-label { font-size: 0.62rem; color: var(--text-muted); }
+.ai-vol-stat-val   { font-size: 0.85rem; font-weight: 700; color: var(--text-color); }
+.ai-vol-msg {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* ── 모바일 ── */
+@media (max-width: 700px) {
+    .ai-insights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .report-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
