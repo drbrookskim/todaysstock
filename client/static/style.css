@@ -1902,9 +1902,24 @@ html[data-theme="light"] .theme-icon-btn i {
     font-weight: 700;
 }
 
-.ai-gauge-rsi {
-    font-size: 0.72rem;
+.ai-gauge-indicators {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ai-ind {
+    font-size: 0.68rem;
     color: var(--text-muted);
+    background: var(--hover-bg);
+    padding: 2px 7px;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+
+.ai-ind strong {
+    font-weight: 700;
 }
 
 .ai-breakdown {

@@ -1568,6 +1568,11 @@ def compute_trade_probability(df, detected_patterns):
         "score":   score,
         "label":   label,
         "rsi":     round(rsi, 1),
+        # ── MACD 실제 수치 (UI 표시용) ──
+        "macd_line":   round(ml_now, 2),
+        "macd_signal": round(ms_now, 2),
+        "macd_hist":   round(hist_now, 2),
+        "macd_golden": ml_now > ms_now,   # True = 골든크로스
         "breakdown": {
             "ma_alignment": ma_score,
             "rsi":          rsi_score,

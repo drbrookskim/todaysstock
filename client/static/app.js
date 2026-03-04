@@ -875,7 +875,13 @@ function renderAiInsights(data) {
                     <text x="50" y="60" text-anchor="middle" font-size="9" fill="var(--text-muted)">/ 100</text>
                 </svg>
                 <div class="ai-gauge-label" style="color:${scoreColor};">${prob.label}</div>
-                <div class="ai-gauge-rsi">RSI ${prob.rsi}</div>
+                <div class="ai-gauge-indicators">
+                    <span class="ai-ind">RSI <strong>${prob.rsi}</strong></span>
+                    <span class="ai-ind" style="color:${(prob.macd_golden ?? false) ? '#10b981' : '#ef4444'};">
+                        MACD ${(prob.macd_golden ?? false) ? '골든↑' : '데드↓'}
+                        <strong>${(prob.macd_hist ?? 0) >= 0 ? '+' : ''}${(prob.macd_hist ?? 0).toFixed(1)}</strong>
+                    </span>
+                </div>
             </div>
             <div class="ai-breakdown">${breakdownBars}</div>
         </div>`;
@@ -1035,7 +1041,8 @@ function renderCandleChart(candles) {
                     fill="${fill}" opacity="0.6" style="transform-origin: 0px ${legendTopPad + topAreaH}px; transform: scaleY(0); transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) ${i * 0.02}s;"/>`;
 
         // Date label (겹치지 않게 조절, 최대 12개 내외만 표시)
-        const step = Math.max(1, Math.ceil(candles.length / 12));
+        // 날짜 레이블: 7 캔들(영업일) 간격으로 표시 (≈ 1주일), 마지막 캔들은 항상 표시
+        const step = 7;
         if (i % step === 0 || i === candles.length - 1) {
             html += `<text x="${cx}" y="${legendTopPad + topAreaH + 20}" text-anchor="middle" fill="${textFill}"
                         font-size="11" font-weight="600" font-family="Inter">${c.date}</text>`;
