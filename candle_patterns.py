@@ -1612,24 +1612,44 @@ def detect_volume_anomaly(df, period=20):
     ratio = today / mu if mu > 0 else 1.0
     zscore = (today - mu) / sigma if sigma > 0 else 0.0
 
-    if   zscore >= 3.0 and ratio >= 3.0:
-        level   = "explosion"
-        label   = "🔥 폭발적 거래량"
-        message = f"평소 대비 {ratio:.1f}배 — 강력한 세력 개입 또는 뉴스 이벤트 의심. 방향성 확인 필수."
+    is_up = float(df["Close"].iloc[-1]) > float(df["Open"].iloc[-1])
+
+    # ── 방향(매수/매도 압력) + 레벨 결합 레이블 ──
+    if zscore >= 3.0 and ratio >= 3.0:
+        level = "explosion"
+        if is_up:
+            label   = "🔥 폭발적 매수 신호"
+            message = (f"평소 대비 {ratio:.1f}배 — 강한 매수 세력 진입 또는 호재 이벤트 의심. "
+                       f"추세가 상승을 확인하면 매수 진입 검토. 과热 급등 구간은 단기 차익매물 주의.")
+        else:
+            label   = "🔥 폭발적 매도 신호"
+            message = (f"평소 대비 {ratio:.1f}배 — 강한 매도 세력 출현 또는 악재 이벤트 의심. "
+                       f"추가 하락 가능성 높음. 보유자는 손절 기준 점검 필수.")
     elif zscore >= 2.0 and ratio >= 2.0:
-        level   = "surge"
-        label   = "⚡ 거래량 급증"
-        message = f"평소 대비 {ratio:.1f}배 — 큰 손의 관심 증가. 추세 신호 신뢰도 상승."
+        level = "surge"
+        if is_up:
+            label   = "⚡ 매수세 급증"
+            message = (f"평소 대비 {ratio:.1f}배 — 큰 손의 적극적 매수 포착. "
+                       f"패턴 신뢰도 상승, 상승 추세 강화 구간. 분할 매수 고려.")
+        else:
+            label   = "⚡ 매도 압력 급증"
+            message = (f"평소 대비 {ratio:.1f}배 — 적극적 매도 물량 출회. "
+                       f"반등 시 저항이 강해질 수 있음. 섣부른 저점 매수 금지.")
     elif zscore >= 1.5 and ratio >= 1.5:
-        level   = "watch"
-        label   = "👀 거래량 주의"
-        message = f"평소 대비 {ratio:.1f}배 — 평균보다 유의미하게 많음. 추세 전환 가능성 모니터링."
+        level = "watch"
+        if is_up:
+            label   = "� 매수세 증가 감지"
+            message = (f"평소 대비 {ratio:.1f}배 — 상승 거래량 증가로 단기 매수 우위. "
+                       f"추세 전환 초기 신호일 수 있으나 추가 확인 후 진입 권장.")
+        else:
+            label   = "📉 매도세 증가 감지"
+            message = (f"평소 대비 {ratio:.1f}배 — 하락 거래량 증가로 단기 매도 우위. "
+                       f"지지선 이탈 여부를 확인하고 추가 하락 대비 손절 점검.")
     else:
         level   = "normal"
         label   = "거래량 정상"
-        message = f"평소 대비 {ratio:.1f}배 — 특이 사항 없음."
+        message = f"평소 대비 {ratio:.1f}배 — 특이 거래량 없음. 추세 방향성은 다른 지표 참조."
 
-    is_up = float(df["Close"].iloc[-1]) > float(df["Open"].iloc[-1])
     return {
         "level":      level,
         "label":      label,
