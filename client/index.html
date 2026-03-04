@@ -14,12 +14,47 @@
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0a0f1e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Apple / iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TODAY'S STOCK">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <!-- Microsoft -->
+    <meta name="msapplication-TileImage" content="/static/icons/icon-192.png">
+    <meta name="msapplication-TileColor" content="#0a0f1e">
     <link rel="stylesheet" href="/static/style.css">
     <!-- Supabase JS SDK v2 — for direct browser auth (bypasses Render round-trip) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 
 <body>
+    <!-- ── PWA 설치 배너 (Chrome/Edge: beforeinstallprompt) ── -->
+    <div id="pwaInstallBanner" class="pwa-banner" style="display:none;" role="dialog" aria-label="앱 설치 안내">
+        <div class="pwa-banner-icon">
+            <img src="/static/icons/icon-192.png" alt="TODAY'S STOCK" width="40" height="40">
+        </div>
+        <div class="pwa-banner-text">
+            <strong>TODAY'S STOCK 앱 설치</strong>
+            <span>홈 화면에 추가해 빠르게 실행하세요</span>
+        </div>
+        <div class="pwa-banner-actions">
+            <button id="pwaInstallBtn" class="pwa-btn-install">설치하기</button>
+            <button id="pwaDismissBtn" class="pwa-btn-dismiss">나중에</button>
+        </div>
+    </div>
+
+    <!-- ── iOS Safari 수동 설치 가이드 배너 ── -->
+    <div id="pwaIosBanner" class="pwa-banner pwa-ios" style="display:none;" role="dialog" aria-label="iOS 설치 안내">
+        <div class="pwa-banner-text">
+            <strong>📲 홈 화면에 추가하기</strong>
+            <span>Safari 하단 공유 버튼(<strong>□↑</strong>) → <strong>"홈 화면에 추가"</strong> 선택</span>
+        </div>
+        <button id="pwaIosDismissBtn" class="pwa-btn-dismiss">✕</button>
+    </div>
     <!-- Cinematic CSS Background -->
     <div class="bg-cinematic">
         <div class="bg-grid"></div>
@@ -539,6 +574,84 @@
         </div>
     </div>
 
+    <script>
+        // ── PWA Service Worker 등록 ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => { });
+            });
+        }
+
+        // ── 설치 프롬프트 제어 ──
+        (function () {
+            const PWA_DISMISSED_KEY = 'pwa-dismissed-at';
+            const COOLDOWN_DAYS = 30;
+
+            function wasDismissedRecently() {
+                const ts = localStorage.getItem(PWA_DISMISSED_KEY);
+                if (!ts) return false;
+                return (Date.now() - Number(ts)) < COOLDOWN_DAYS * 86400000;
+            }
+
+            function dismiss(bannerId) {
+                document.getElementById(bannerId).style.display = 'none';
+                localStorage.setItem(PWA_DISMISSED_KEY, String(Date.now()));
+            }
+
+            // ── 이미 설치된 앱 (standalone) 이면 배너 불필요 ──
+            const isStandalone =
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+
+            if (isStandalone || wasDismissedRecently()) return;
+
+            // ── Chrome / Edge : beforeinstallprompt 이벤트 ──
+            let deferredPrompt = null;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                // 배너 표시 (약간의 딜레이로 UX 충격 완화)
+                setTimeout(() => {
+                    document.getElementById('pwaInstallBanner').style.display = 'flex';
+                }, 3000);
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                // 설치 버튼
+                document.getElementById('pwaInstallBtn')?.addEventListener('click', async () => {
+                    if (!deferredPrompt) return;
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    dismiss('pwaInstallBanner');
+                });
+                // 나중에 버튼
+                document.getElementById('pwaDismissBtn')?.addEventListener('click', () => {
+                    dismiss('pwaInstallBanner');
+                });
+                // iOS Safari 닫기 버튼
+                document.getElementById('pwaIosDismissBtn')?.addEventListener('click', () => {
+                    dismiss('pwaIosBanner');
+                });
+            });
+
+            // ── iOS Safari : beforeinstallprompt 미지원 ——
+            // iPhone/iPad + Safari + 비설치 상태일 때만 가이드 배너 표시
+            const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const isSafariBrowser = /safari/i.test(navigator.userAgent) && !/chrome|crios|fxios/i.test(navigator.userAgent);
+            if (isIos && isSafariBrowser && !isStandalone && !wasDismissedRecently()) {
+                setTimeout(() => {
+                    document.getElementById('pwaIosBanner').style.display = 'flex';
+                }, 3000);
+            }
+
+            // ── 설치 완료 시 배너 숨기기 ──
+            window.addEventListener('appinstalled', () => {
+                document.getElementById('pwaInstallBanner').style.display = 'none';
+                localStorage.setItem(PWA_DISMISSED_KEY, String(Date.now()));
+            });
+        })();
+    </script>
     <script src="/static/app.js"></script>
 </body>
 

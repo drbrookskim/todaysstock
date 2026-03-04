@@ -2885,3 +2885,149 @@ html[data-theme="light"] .theme-icon-btn i {
     margin: 0;
     line-height: 1.6;
 }
+
+/* ──────────────────────────────────────────
+   PWA 설치 배너
+   ────────────────────────────────────────── */
+.pwa-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    /* 다크 글라스모피즘 */
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    max-width: calc(100vw - 32px);
+    width: max-content;
+    animation: pwaSlideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+/* 라이트 모드 */
+[data-theme="light"] .pwa-banner {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.pwa-banner-icon img {
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.pwa-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.pwa-banner-text strong {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.pwa-banner-text span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pwa-banner-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.pwa-btn-install {
+    background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.pwa-btn-install:hover {
+    opacity: 0.88;
+}
+
+.pwa-btn-dismiss {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.pwa-btn-dismiss:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+/* iOS 배너: 가이드 텍스트 위주, 닫기 버튼만 */
+.pwa-ios {
+    gap: 16px;
+}
+
+.pwa-ios .pwa-banner-text span {
+    white-space: normal;
+    max-width: 240px;
+}
+
+@keyframes pwaSlideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .pwa-banner {
+        bottom: 0;
+        border-radius: 16px 16px 0 0;
+        width: 100%;
+        max-width: 100%;
+        left: 0;
+        transform: none;
+        padding: 16px 20px;
+    }
+
+    @keyframes pwaSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
