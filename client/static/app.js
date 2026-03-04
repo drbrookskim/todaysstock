@@ -258,8 +258,9 @@ function renderWatchlist() {
             };
             searchInput.value = item.name;
             selectStock(item);
-            // Auto-close sidebar if unpinned
-            if (!isSidebarPinned()) closeSidebar();
+            // 모바일에서는 항상 닫기, 데스크탑에서는 고정 해제 시에만 닫기
+            const isMobileView = window.innerWidth <= 768;
+            if (isMobileView || !isSidebarPinned()) closeSidebar();
         });
     });
 
@@ -810,7 +811,7 @@ function renderAnalysisReport(data) {
     // ── Buy/Sell Reports ──
     const reportGrid = document.getElementById('reportGrid');
     const hasBuyReport = renderBuyReport(data.buy_report);
-    const hasSellReport = renderSellReport(data.sell_report);
+    const hasSellReport = renderSellReport(data.sell_report, data.atr_targets);
     if (hasBuyReport || hasSellReport) {
         if (reportGrid) reportGrid.classList.remove('hidden');
     } else {
@@ -822,9 +823,9 @@ function renderAiInsights(data) {
     const container = document.getElementById('aiInsightsCard');
     if (!container) return;
 
-    const prob  = data.trade_probability;
-    const atr   = data.atr_targets;
-    const vol   = data.volume_anomaly;
+    const prob = data.trade_probability;
+    const atr = data.atr_targets;
+    const vol = data.volume_anomaly;
 
     if (!prob && !atr && !vol) {
         container.classList.add('hidden');
@@ -837,16 +838,16 @@ function renderAiInsights(data) {
     if (prob) {
         const score = prob.score;
         const scoreColor = score >= 75 ? '#10b981'
-                         : score >= 60 ? '#34d399'
-                         : score >= 40 ? '#f59e0b'
-                         : score >= 25 ? '#f97316'
-                         : '#ef4444';
+            : score >= 60 ? '#34d399'
+                : score >= 40 ? '#f59e0b'
+                    : score >= 25 ? '#f97316'
+                        : '#ef4444';
         const bd = prob.breakdown || {};
         const items = [
             { label: 'MA 배열', val: bd.ma_alignment ?? 0, max: 35 },
-            { label: 'RSI',    val: bd.rsi ?? 0,          max: 25 },
-            { label: 'MACD',   val: bd.macd ?? 0,         max: 25 },
-            { label: '거래량', val: bd.volume ?? 0,       max: 15 },
+            { label: 'RSI', val: bd.rsi ?? 0, max: 25 },
+            { label: 'MACD', val: bd.macd ?? 0, max: 25 },
+            { label: '거래량', val: bd.volume ?? 0, max: 15 },
         ];
         const breakdownBars = items.map(it => {
             const pct = Math.round((it.val / it.max) * 100);
@@ -922,18 +923,13 @@ function renderAiInsights(data) {
     // ── 3. 이상 거래량 배지 ──
     let volHtml = '';
     if (vol) {
-        const volColors = {
-            normal:    { bg: 'var(--hover-bg)',  text: 'var(--text-muted)' },
-            watch:     { bg: '#fef3c7',           text: '#92400e' },
-            surge:     { bg: '#fff7ed',           text: '#c2410c' },
-            explosion: { bg: '#fef2f2',           text: '#b91c1c' },
-        };
-        const vc = volColors[vol.level] || volColors.normal;
+        // CSS 클래스 기반 — 라이트/다크 테마 자동 대응
+        const levelClass = vol.level !== 'normal' ? `vol-${vol.level}` : '';
         const dirIcon = vol.direction === 'up' ? '🔴' : '🔵';
         volHtml = `
         <div class="ai-insight-widget">
             <div class="ai-widget-title">거래량 이상 감지</div>
-            <div class="ai-vol-badge" style="background:${vc.bg}; color:${vc.text};">
+            <div class="ai-vol-badge ${levelClass}">
                 ${vol.label}
             </div>
             <div class="ai-vol-stats">
@@ -1142,7 +1138,7 @@ function renderBuyReport(report) {
     return true;
 }
 
-function renderSellReport(report) {
+function renderSellReport(report, atrTargets) {
     const card = document.getElementById('sellReport');
     if (!report) {
         card.classList.add('hidden');
@@ -1160,6 +1156,27 @@ function renderSellReport(report) {
     document.getElementById('sellRiskReward').textContent = `리스크:리워드 = ${report.risk_reward}`;
     document.getElementById('sellVolume').textContent = report.volume_note;
     document.getElementById('sellTip').innerHTML = `<i class="ph ph-lightbulb" style="color:var(--text-muted); margin-right:4px;"></i> ${report.exit_tip}`;
+
+    // ATR 비교 노트 표시
+    const sellAtrNote = document.getElementById('sellAtrNote');
+    if (sellAtrNote && atrTargets) {
+        // 매도 리포트 손절가(MA20 기준) vs ATR 손절가(변동성 기준) 비교
+        const patternSL = typeof report.stop_loss === 'number' ? report.stop_loss : null;
+        const atrSL = atrTargets.stop_loss;
+        let noteHtml = `<i class="ph ph-info" style="margin-right:4px;"></i>`
+            + `<strong>ATR 기준 손절가:</strong> ${atrSL ? atrSL.toLocaleString() + '원' : '-'}`;
+        if (patternSL && atrSL) {
+            const diff = patternSL - atrSL;
+            const pct = ((Math.abs(diff) / atrSL) * 100).toFixed(1);
+            const dir = diff > 0 ? `패턴 기준이 ${pct}% 더 높음 (더 엄격)` : diff < 0 ? `ATR 기준이 ${pct}% 더 높음 (더 여유)` : '동일';
+            noteHtml += ` <span style="color:var(--text-muted); font-size:0.7rem;">vs 패턴·MA 기준 ${formatPrice(patternSL)}원 — ${dir}</span>`;
+        }
+        noteHtml += `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">📌 매도 리포트는 <strong>캔들 패턴·이동평균</strong> 기준 / ATR 패널은 <strong>시장 변동폭(14일 ATR)</strong> 기준으로 산출됩니다.</div>`;
+        sellAtrNote.innerHTML = noteHtml;
+        sellAtrNote.style.display = 'block';
+    } else if (sellAtrNote) {
+        sellAtrNote.style.display = 'none';
+    }
     return true;
 }
 

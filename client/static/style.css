@@ -1565,7 +1565,12 @@ html[data-theme="light"] .theme-icon-btn i {
     }
 
     .search-shortcut {
-        display: none;
+        display: block;
+    }
+
+    .search-shortcut kbd {
+        font-size: 0.78rem;
+        padding: 5px 10px;
     }
 
     .auth-btn-left {
@@ -1854,11 +1859,13 @@ html[data-theme="light"] .theme-icon-btn i {
 #aiInsightsCard {
     margin-bottom: 16px;
 }
+
 .ai-insights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
 }
+
 .ai-insight-widget {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -1869,6 +1876,7 @@ html[data-theme="light"] .theme-icon-btn i {
     gap: 10px;
     backdrop-filter: blur(20px);
 }
+
 .ai-widget-title {
     font-size: 0.72rem;
     font-weight: 700;
@@ -1884,52 +1892,116 @@ html[data-theme="light"] .theme-icon-btn i {
     align-items: center;
     gap: 4px;
 }
-.ai-gauge-svg { display: block; }
+
+.ai-gauge-svg {
+    display: block;
+}
+
 .ai-gauge-label {
     font-size: 0.85rem;
     font-weight: 700;
 }
+
 .ai-gauge-rsi {
     font-size: 0.72rem;
     color: var(--text-muted);
 }
-.ai-breakdown { display: flex; flex-direction: column; gap: 5px; }
+
+.ai-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 .ai-breakdown-row {
     display: grid;
     grid-template-columns: 42px 1fr 36px;
     align-items: center;
     gap: 6px;
 }
-.ai-breakdown-label { font-size: 0.68rem; color: var(--text-muted); }
+
+.ai-breakdown-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
 .ai-breakdown-track {
     height: 5px;
     background: var(--hover-bg);
     border-radius: 3px;
     overflow: hidden;
 }
+
 .ai-breakdown-fill {
     height: 100%;
     border-radius: 3px;
-    transition: width 1s cubic-bezier(.25,.8,.25,1);
+    transition: width 1s cubic-bezier(.25, .8, .25, 1);
 }
-.ai-breakdown-val { font-size: 0.65rem; color: var(--text-muted); text-align: right; }
+
+.ai-breakdown-val {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-align: right;
+}
 
 /* ── ATR 가격 레인지 ── */
-.ai-price-range { display: flex; flex-direction: column; gap: 8px; }
+.ai-price-range {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .ai-price-row {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-.ai-price-row.target .ai-price-arrow { color: #10b981; font-size: 0.8rem; }
-.ai-price-row.stop   .ai-price-arrow { color: #ef4444; font-size: 0.8rem; }
-.ai-price-arrow.neutral { color: var(--text-muted); font-size: 0.7rem; }
-.ai-price-arrow.down    { color: #ef4444; }
-.ai-price-label { font-size: 0.68rem; color: var(--text-muted); display: block; }
-.ai-price-val   { font-size: 0.9rem; font-weight: 700; color: var(--text-color); }
-.ai-price-pct   { font-size: 0.7rem; font-weight: 600; margin-left: 4px; }
-.ai-price-pct.up   { color: #10b981; }
-.ai-price-pct.down { color: #ef4444; }
+
+.ai-price-row.target .ai-price-arrow {
+    color: #10b981;
+    font-size: 0.8rem;
+}
+
+.ai-price-row.stop .ai-price-arrow {
+    color: #ef4444;
+    font-size: 0.8rem;
+}
+
+.ai-price-arrow.neutral {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.ai-price-arrow.down {
+    color: #ef4444;
+}
+
+.ai-price-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    display: block;
+}
+
+.ai-price-val {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.ai-price-pct {
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.ai-price-pct.up {
+    color: #10b981;
+}
+
+.ai-price-pct.down {
+    color: #ef4444;
+}
+
 .ai-rr-badge {
     font-size: 0.78rem;
     font-weight: 600;
@@ -1941,7 +2013,12 @@ html[data-theme="light"] .theme-icon-btn i {
     gap: 6px;
     flex-wrap: wrap;
 }
-.ai-atr-note { font-size: 0.65rem; color: var(--text-muted); margin-left: auto; }
+
+.ai-atr-note {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
 
 /* ── 거래량 이상 ── */
 .ai-vol-badge {
@@ -1950,12 +2027,68 @@ html[data-theme="light"] .theme-icon-btn i {
     padding: 8px 12px;
     border-radius: 8px;
     text-align: center;
+    /* 기본: 테마 중립 */
+    background: var(--hover-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--card-border);
 }
+
+/* 레벨별 CSS 클래스 (JS에서 inject) */
+.ai-vol-badge.vol-watch {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.ai-vol-badge.vol-surge {
+    background: rgba(249, 115, 22, 0.12);
+    color: #ea580c;
+    border-color: rgba(249, 115, 22, 0.3);
+}
+
+.ai-vol-badge.vol-explosion {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ATR vs 패턴 비교 노트 */
+.sell-atr-note {
+    margin-top: 8px;
+    padding: 9px 12px;
+    background: var(--hover-bg);
+    border: 1px dashed var(--card-border);
+    border-radius: 8px;
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.sell-atr-note strong {
+    color: var(--text-color);
+}
+
+[data-theme="light"] .ai-vol-badge.vol-watch {
+    background: rgba(245, 158, 11, 0.1);
+    color: #92400e;
+}
+
+[data-theme="light"] .ai-vol-badge.vol-surge {
+    background: rgba(249, 115, 22, 0.1);
+    color: #c2410c;
+}
+
+[data-theme="light"] .ai-vol-badge.vol-explosion {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+}
+
 .ai-vol-stats {
     display: flex;
     justify-content: space-between;
     gap: 6px;
 }
+
 .ai-vol-stat {
     display: flex;
     flex-direction: column;
@@ -1966,8 +2099,18 @@ html[data-theme="light"] .theme-icon-btn i {
     border-radius: 8px;
     padding: 6px 4px;
 }
-.ai-vol-stat-label { font-size: 0.62rem; color: var(--text-muted); }
-.ai-vol-stat-val   { font-size: 0.85rem; font-weight: 700; color: var(--text-color); }
+
+.ai-vol-stat-label {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+}
+
+.ai-vol-stat-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
 .ai-vol-msg {
     font-size: 0.72rem;
     color: var(--text-muted);
