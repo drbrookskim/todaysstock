@@ -2296,11 +2296,30 @@ html[data-theme="light"] .theme-icon-btn i {
 /* Disclaimer */
 .disclaimer {
     text-align: center;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    padding: 16px;
-    line-height: 1.5;
-    opacity: 0.7;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 14px 20px;
+    line-height: 1.7;
+    border-radius: 10px;
+    margin-top: 8px;
+    /* 다크 모드 기본: 노란색 */
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.06);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.disclaimer strong {
+    display: block;
+    margin-top: 4px;
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+/* 라이트 모드: 빨간색 */
+[data-theme="light"] .disclaimer {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.06);
+    border-color: rgba(220, 38, 38, 0.2);
 }
 
 /* Animations */
