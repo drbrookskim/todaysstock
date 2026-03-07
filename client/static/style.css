@@ -2353,9 +2353,19 @@ html[data-theme="light"] .theme-icon-btn i {
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 12px;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
+    cursor: pointer;
+    list-style: none;
+}
+
+.glossary-title::-webkit-details-marker {
+    display: none;
+}
+
+.glossary-section[open] .glossary-title {
+    margin-bottom: 12px;
 }
 
 .glossary-table {
