@@ -2262,7 +2262,8 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .price-label {
     font-size: 0.82rem;
-    color: var(--text-muted);
+    color: var(--text-color);
+    opacity: 0.7;
 }
 
 .price-val {
@@ -2293,7 +2294,8 @@ html[data-theme="light"] .theme-icon-btn i {
 .risk-reward,
 .volume-note {
     font-size: 0.78rem;
-    color: var(--text-muted);
+    color: var(--text-color);
+    opacity: 0.7;
     padding: 4px 10px;
     background: rgba(255, 255, 255, 0.04);
     border-radius: 8px;
