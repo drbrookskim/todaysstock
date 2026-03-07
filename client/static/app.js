@@ -955,9 +955,9 @@ function renderAiInsights(data) {
                         : '#ef4444';
         const bd = prob.breakdown || {};
         const items = [
-            { label: 'MA 배열', val: bd.ma_alignment ?? 0, max: 35 },
-            { label: 'RSI', val: bd.rsi ?? 0, max: 25 },
-            { label: 'MACD', val: bd.macd ?? 0, max: 25 },
+            { label: 'MA(이동평균) 배열', val: bd.ma_alignment ?? 0, max: 35 },
+            { label: 'RSI(상대강도지수)', val: bd.rsi ?? 0, max: 25 },
+            { label: 'MACD(수렴확산)', val: bd.macd ?? 0, max: 25 },
             { label: '거래량', val: bd.volume ?? 0, max: 15 },
         ];
         const breakdownBars = items.map(it => {
@@ -975,6 +975,7 @@ function renderAiInsights(data) {
         probHtml = `
         <div class="ai-insight-widget">
             <div class="ai-widget-title">매수 확률 점수</div>
+            <div class="ai-widget-desc">MA(Moving Average 이동평균선) 배열 35%, RSI(Relative Strength Index 상대강도지수) 25%, MACD(Moving Average Convergence Divergence 이동평균수렴확산) 25%, 거래량 15% 가중 합산 점수입니다. 캔들 패턴 보너스 ±5%가 추가됩니다.</div>
             <div class="ai-gauge-wrap">
                 <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="90" height="90">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="10"/>
@@ -987,9 +988,9 @@ function renderAiInsights(data) {
                 </svg>
                 <div class="ai-gauge-label" style="color:${scoreColor};">${prob.label}</div>
                 <div class="ai-gauge-indicators">
-                    <span class="ai-ind">RSI <strong>${prob.rsi}</strong></span>
+                    <span class="ai-ind">RSI(상대강도) <strong>${prob.rsi}</strong></span>
                     <span class="ai-ind" style="color:${(prob.macd_golden ?? false) ? '#10b981' : '#ef4444'};">
-                        MACD ${(prob.macd_golden ?? false) ? '골든↑' : '데드↓'}
+                        MACD(수렴확산) ${(prob.macd_golden ?? false) ? '골든↑' : '데드↓'}
                         <strong>${(prob.macd_hist ?? 0) >= 0 ? '+' : ''}${(prob.macd_hist ?? 0).toFixed(1)}</strong>
                     </span>
                 </div>
@@ -1004,7 +1005,8 @@ function renderAiInsights(data) {
         const rrColor = (atr.rr_ratio ?? 0) >= 1.5 ? '#10b981' : '#f59e0b';
         atrHtml = `
         <div class="ai-insight-widget">
-            <div class="ai-widget-title">ATR 목표가 / 손절가</div>
+            <div class="ai-widget-title">ATR(Average True Range 평균실질범위) 목표가 / 손절가</div>
+            <div class="ai-widget-desc">ATR은 일정 기간의 고가-저가 변동폭을 평균한 변동성 지표입니다. 목표가 = 현재가 + ATR×2.0, 손절가 = 현재가 - ATR×1.0으로 산출합니다.</div>
             <div class="ai-price-range">
                 <div class="ai-price-row target">
                     <span class="ai-price-arrow">▲</span>
@@ -1031,8 +1033,8 @@ function renderAiInsights(data) {
                 </div>
             </div>
             <div class="ai-rr-badge" style="color:${rrColor};">
-                R:R &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
-                <span class="ai-atr-note">ATR ${atr.atr?.toLocaleString()}원 기준</span>
+                R:R(Risk-Reward 위험보상비율) &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
+                <span class="ai-atr-note">ATR(평균실질범위) ${atr.atr?.toLocaleString()}원 기준</span>
             </div>
         </div>`;
     }
@@ -1046,16 +1048,17 @@ function renderAiInsights(data) {
         volHtml = `
         <div class="ai-insight-widget">
             <div class="ai-widget-title">거래량 이상 감지</div>
+            <div class="ai-widget-desc">최근 20일 평균 거래량(μ)과 표준편차(σ)를 기반으로 Z-score = (금일 거래량 - μ) / σ를 산출합니다. Z ≥ 1.5이면 주의, Z ≥ 2.0이면 급증, Z ≥ 3.0이면 폭발적으로 분류합니다.</div>
             <div class="ai-vol-badge ${levelClass}">
                 ${vol.label}
             </div>
             <div class="ai-vol-stats">
                 <div class="ai-vol-stat">
-                    <span class="ai-vol-stat-label">배율</span>
+                    <span class="ai-vol-stat-label">배율(20일 평균 대비)</span>
                     <span class="ai-vol-stat-val">${vol.ratio}×</span>
                 </div>
                 <div class="ai-vol-stat">
-                    <span class="ai-vol-stat-label">Z-score</span>
+                    <span class="ai-vol-stat-label">Z-score(표준편차 거리)</span>
                     <span class="ai-vol-stat-val">${vol.zscore}</span>
                 </div>
                 <div class="ai-vol-stat">

@@ -1885,6 +1885,22 @@ html[data-theme="light"] .theme-icon-btn i {
     color: var(--text-muted);
 }
 
+.ai-widget-desc {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin: 4px 0 8px;
+    opacity: 0.8;
+}
+
+.fund-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 6px 0 4px;
+    opacity: 0.8;
+}
+
 /* ── 확률 게이지 ── */
 .ai-gauge-wrap {
     display: flex;
