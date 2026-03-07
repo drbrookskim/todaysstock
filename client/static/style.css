@@ -81,7 +81,7 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -2336,6 +2336,79 @@ html[data-theme="light"] .theme-icon-btn i {
     color: #dc2626;
     background: rgba(220, 38, 38, 0.06);
     border-color: rgba(220, 38, 38, 0.2);
+}
+
+/* ── 주식 용어 정리 (Glossary) ── */
+.glossary-section {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.glossary-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.glossary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.glossary-table th {
+    text-align: left;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.glossary-table td {
+    padding: 5px 8px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.4;
+}
+
+.glossary-table td:first-child {
+    font-weight: 700;
+    color: var(--primary);
+    white-space: nowrap;
+    width: 70px;
+}
+
+.glossary-table td:nth-child(2) {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.7rem;
+}
+
+.glossary-table tr:last-child td {
+    border-bottom: none;
+}
+
+.glossary-table tbody tr:nth-child(even) {
+    background: var(--hover-bg);
+}
+
+@media (max-width: 640px) {
+    .glossary-table td:nth-child(2) {
+        display: none;
+    }
+
+    .glossary-table th:nth-child(2) {
+        display: none;
+    }
 }
 
 /* Animations */
