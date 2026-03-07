@@ -2886,6 +2886,337 @@ html[data-theme="light"] .theme-icon-btn i {
     line-height: 1.6;
 }
 
+/* ══════════════════════════════════════════════
+   🧠 Fundamental Analysis Panel
+   ══════════════════════════════════════════════ */
+.fundamental-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s;
+}
+
+.fundamental-card:hover {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* Header */
+.fund-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.fund-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.fund-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fund-brain-icon {
+    font-size: 1.1rem;
+}
+
+.fund-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fund-type-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    background: var(--hover-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2px 9px;
+}
+
+.fund-toggle-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    transition: color 0.2s;
+}
+
+.fund-toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Signal badge variants */
+.fund-signal-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+}
+
+.fund-signal-overweight,
+.fund-signal-event_buy {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.fund-signal-hold {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.fund-signal-underweight,
+.fund-signal-event_sell {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+/* Signal reason */
+.fund-signal-reason {
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+/* Body / collapse */
+.fund-body {
+    margin-top: 14px;
+}
+
+.fund-collapsed {
+    display: none;
+}
+
+/* 3-column axis grid */
+.fund-axis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .fund-axis-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.fund-axis-card {
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 120px;
+}
+
+.fund-axis-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+}
+
+.fund-axis-content {
+    font-size: 0.78rem;
+}
+
+/* Quant score */
+.fund-score-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+.fund-score-num {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.fund-score-grade {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.fund-score-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.fund-score-bar-bg {
+    background: var(--border-color);
+    border-radius: 4px;
+    height: 5px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.fund-score-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+}
+
+.fund-metric-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fund-metric-table td {
+    padding: 2px 0;
+}
+
+.fund-metric-table td:first-child {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    width: 60%;
+}
+
+.fund-metric-table td:last-child {
+    font-weight: 600;
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--text-primary);
+}
+
+.fund-period-note {
+    font-size: 0.67rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+/* Event items */
+.fund-event-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 7px;
+    margin-bottom: 5px;
+    border-left: 3px solid transparent;
+}
+
+.fund-event-bullish {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: #10b981;
+}
+
+.fund-event-bearish {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: #ef4444;
+}
+
+.fund-event-neutral {
+    background: var(--hover-bg);
+    border-color: var(--border-color);
+}
+
+.fund-event-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fund-event-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.fund-event-title {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+/* Macro rows */
+.fund-macro-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fund-macro-row:last-child {
+    border-bottom: none;
+}
+
+.fund-macro-key {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.fund-macro-val {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.fund-macro-chg {
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.fund-pos {
+    color: #10b981;
+}
+
+.fund-neg {
+    color: #ef4444;
+}
+
+/* Axes used pills */
+.fund-axes-used {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.fund-axis-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 20px;
+    padding: 2px 8px;
+}
+
+/* Loading / no-data */
+.fund-loading {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-style: italic;
+}
+
+.fund-no-data {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    padding: 8px 0;
+}
+
+
 /* ──────────────────────────────────────────
    PWA 설치 배너
    ────────────────────────────────────────── */

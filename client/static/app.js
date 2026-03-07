@@ -808,6 +808,9 @@ function renderAnalysisReport(data) {
     // ── AI Insights: 확률점수 / ATR 목표가 / 거래량 이상 ──
     renderAiInsights(data);
 
+    // ── Fundamental Analysis (async, 별도 API 호출) ──
+    renderFundamentalReport(data.code || data.ticker || '');
+
     // ── Buy/Sell Reports ──
     const reportGrid = document.getElementById('reportGrid');
     const hasBuyReport = renderBuyReport(data.buy_report);
@@ -816,6 +819,114 @@ function renderAnalysisReport(data) {
         if (reportGrid) reportGrid.classList.remove('hidden');
     } else {
         if (reportGrid) reportGrid.classList.add('hidden');
+    }
+}
+
+// ══════════════════════════════════════════════════════════
+// 🧠  Fundamental Analysis Panel
+// ══════════════════════════════════════════════════════════
+async function renderFundamentalReport(stockCode) {
+    const card = document.getElementById('fundamentalCard');
+    if (!card || !stockCode) return;
+
+    // 스켈레톤 로딩 표시
+    card.classList.remove('hidden');
+    document.getElementById('fundSignalReason').textContent = '데이터 로딩 중…';
+    document.getElementById('fundCompanyTypeBadge').textContent = '';
+    document.getElementById('fundSignalBadge').textContent = '';
+    document.getElementById('fundQuantContent').innerHTML = '<div class="fund-loading">분석 중…</div>';
+    document.getElementById('fundEventContent').innerHTML = '<div class="fund-loading">공시 스캔 중…</div>';
+    document.getElementById('fundMacroContent').innerHTML = '<div class="fund-loading">거시 조회 중…</div>';
+
+    let d;
+    try {
+        const res = await fetch(`/api/fundamental/${encodeURIComponent(stockCode)}`);
+        d = await res.json();
+    } catch (e) {
+        document.getElementById('fundSignalReason').textContent = '❌ 데이터 로드 실패';
+        return;
+    }
+
+    // ── 헤더 ──
+    document.getElementById('fundCompanyTypeBadge').textContent = d.company_type_label || '';
+
+    const sigBadge = document.getElementById('fundSignalBadge');
+    sigBadge.textContent = d.signal_label || '';
+    sigBadge.className = 'fund-signal-badge fund-signal-' + (d.signal || 'hold');
+
+    document.getElementById('fundSignalReason').textContent = d.signal_reason || '';
+
+    // ── Quant 축 ──
+    const q = d.quant || {};
+    const qRows = [
+        ['ROE', q.roe != null ? q.roe + '%' : '—'],
+        ['영업이익률', q.op_margin != null ? q.op_margin + '%' : '—'],
+        ['매출성장(연)', q.rev_growth != null ? (q.rev_growth >= 0 ? '+' : '') + q.rev_growth + '%' : '—'],
+        ['매출성장(분)', q.qtr_growth != null ? (q.qtr_growth >= 0 ? '+' : '') + q.qtr_growth + '%' : '—'],
+        ['부채비율', q.debt_ratio != null ? q.debt_ratio + '%' : '—'],
+    ];
+    const scoreColor = q.score >= 75 ? '#10b981' : q.score >= 55 ? '#f59e0b' : '#ef4444';
+    document.getElementById('fundQuantContent').innerHTML = `
+        <div class="fund-score-wrap">
+            <div class="fund-score-num" style="color:${scoreColor}">${q.score ?? '—'}</div>
+            <div class="fund-score-grade" style="color:${scoreColor}">${q.grade ?? ''}</div>
+            <div class="fund-score-label">/ 100</div>
+        </div>
+        <div class="fund-score-bar-bg">
+            <div class="fund-score-bar" style="width:${Math.min(q.score ?? 0, 100)}%;background:${scoreColor}"></div>
+        </div>
+        <table class="fund-metric-table">
+            ${qRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+        </table>
+        <div class="fund-period-note">${q.period || ''} ${q.qtr_period ? '/ ' + q.qtr_period : ''}</div>`;
+
+    // ── Event-Driven 축 ──
+    const evts = d.events || [];
+    if (evts.length === 0) {
+        document.getElementById('fundEventContent').innerHTML =
+            '<div class="fund-no-data">최근 30일 주요 공시 없음</div>';
+    } else {
+        document.getElementById('fundEventContent').innerHTML =
+            evts.map(ev => `
+            <div class="fund-event-item fund-event-${ev.signal}">
+                <span class="fund-event-label">${ev.label}</span>
+                <span class="fund-event-date">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
+                <span class="fund-event-title" title="${ev.title}">${ev.title.length > 28 ? ev.title.slice(0, 28) + '…' : ev.title}</span>
+            </div>`).join('');
+    }
+
+    // ── Macro 축 ──
+    const m = d.macro || {};
+    const macroItems = [];
+    if (m.usd_krw) macroItems.push(['USD/KRW', `${m.usd_krw.toLocaleString()}`, m.usd_krw_chg != null ? (m.usd_krw_chg >= 0 ? '+' : '') + m.usd_krw_chg + '%' : null]);
+    if (m.kospi) macroItems.push(['KOSPI', `${m.kospi.toLocaleString()}`, m.kospi_chg != null ? (m.kospi_chg >= 0 ? '+' : '') + m.kospi_chg + '%' : null]);
+    if (m.base_rate) macroItems.push(['기준금리', `${m.base_rate}%`, null]);
+    if (m.semi_export_yoy != null) macroItems.push(['반도체수출YoY', `${m.semi_export_yoy >= 0 ? '+' : ''}${m.semi_export_yoy}%`, null]);
+
+    if (macroItems.length === 0) {
+        document.getElementById('fundMacroContent').innerHTML = '<div class="fund-no-data">데이터 로드 실패</div>';
+    } else {
+        document.getElementById('fundMacroContent').innerHTML =
+            macroItems.map(([k, v, chg]) => {
+                const chgHtml = chg ? `<span class="fund-macro-chg ${parseFloat(chg) >= 0 ? 'fund-pos' : 'fund-neg'}">${chg}</span>` : '';
+                return `<div class="fund-macro-row"><span class="fund-macro-key">${k}</span><span class="fund-macro-val">${v}${chgHtml}</span></div>`;
+            }).join('');
+    }
+
+    // ── 사용 축 태그 ──
+    const axes = d.axes_used || [];
+    document.getElementById('fundAxesUsed').innerHTML =
+        axes.map(a => `<span class="fund-axis-tag">${a}</span>`).join('');
+
+    // ── 토글 버튼 ──
+    const toggleBtn = document.getElementById('fundToggleBtn');
+    const fundBody = document.getElementById('fundBody');
+    if (toggleBtn && !toggleBtn.dataset.bound) {
+        toggleBtn.dataset.bound = '1';
+        toggleBtn.addEventListener('click', () => {
+            const open = fundBody.classList.toggle('fund-collapsed');
+            toggleBtn.querySelector('i').className = open ? 'ph ph-caret-up' : 'ph ph-caret-down';
+        });
     }
 }
 

@@ -20,6 +20,7 @@ import requests as http_requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from candle_patterns import analyze_candle_patterns
+from fundamental_analysis import analyze_fundamental
 
 # ── 인메모리 TTL 캐시 (5분) ──────────────────────────────────────
 # {cache_key: (timestamp, result)}
@@ -67,6 +68,7 @@ STOCK_LIST = []
 
 # DART 기업별 고유번호 매핑 캐시
 DART_API_KEY = os.environ.get("DART_API_KEY", "")
+ECOS_KEY     = os.environ.get("ECOS_KEY", "")
 DART_CORP_CODES = {}
 
 def load_dart_corp_codes():
@@ -783,6 +785,43 @@ def stock_analysis():
     analysis["code"] = code
     analysis["market"] = market
     return jsonify(analysis)
+
+
+
+@app.route("/api/fundamental/<code>")
+def api_fundamental(code: str):
+    """4-Pillar 펀더멘탈 분석 API"""
+    if not code or len(code) > 10:
+        return jsonify({"error": "invalid code"}), 400
+
+    corp_code = DART_CORP_CODES.get(code.strip(), "")
+    # 종목명 조회
+    corp_name = ""
+    for s in STOCK_LIST:
+        if s.get("code") == code:
+            corp_name = s.get("name", "")
+            break
+    if not corp_name:
+        # 폴백: fallback 리스트
+        for s in FALLBACK_STOCK_LIST:
+            if s.get("code") == code:
+                corp_name = s.get("name", "")
+                break
+
+    cache_key = f"fundamental_{code}"
+    cached = _cache_get(cache_key)
+    if cached:
+        return jsonify(cached)
+
+    result = analyze_fundamental(
+        stock_code=code,
+        corp_name=corp_name,
+        corp_code=corp_code,
+        dart_key=DART_API_KEY,
+        ecos_key=ECOS_KEY,
+    )
+    _cache_set(cache_key, result)
+    return jsonify(result)
 
 
 # --- Gunicorn 등 프로덕션 환경에서도 시작 시 종목을 로드하도록 모듈 레벨에서 호출 ---

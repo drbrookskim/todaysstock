@@ -397,6 +397,45 @@
                         </div>
                     </div>
 
+                    <!-- 🧠 Fundamental Analysis Panel -->
+                    <div id="fundamentalCard" class="fundamental-card hidden">
+                        <div class="fund-header">
+                            <div class="fund-header-left">
+                                <span class="fund-brain-icon">🧠</span>
+                                <span class="fund-title">펀더멘탈 분석</span>
+                                <span id="fundCompanyTypeBadge" class="fund-type-badge"></span>
+                            </div>
+                            <div class="fund-header-right">
+                                <span id="fundSignalBadge" class="fund-signal-badge"></span>
+                                <button id="fundToggleBtn" class="fund-toggle-btn" aria-label="펼치기/접기">
+                                    <i class="ph ph-caret-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="fundSignalReason" class="fund-signal-reason"></div>
+                        <div id="fundBody" class="fund-body">
+                            <!-- 3-column axis grid -->
+                            <div class="fund-axis-grid">
+                                <!-- Quant -->
+                                <div class="fund-axis-card" id="fundQuantCard">
+                                    <div class="fund-axis-title">📊 Quant</div>
+                                    <div id="fundQuantContent" class="fund-axis-content"></div>
+                                </div>
+                                <!-- Event-Driven -->
+                                <div class="fund-axis-card" id="fundEventCard">
+                                    <div class="fund-axis-title">📰 Event</div>
+                                    <div id="fundEventContent" class="fund-axis-content"></div>
+                                </div>
+                                <!-- Macro -->
+                                <div class="fund-axis-card" id="fundMacroCard">
+                                    <div class="fund-axis-title">🌐 Macro</div>
+                                    <div id="fundMacroContent" class="fund-axis-content"></div>
+                                </div>
+                            </div>
+                            <div id="fundAxesUsed" class="fund-axes-used"></div>
+                        </div>
+                    </div>
+
                     <!-- AI Insights: 확률점수 / ATR 목표가 / 거래량이상 -->
                     <div id="aiInsightsCard" class="hidden"></div>
 
