@@ -929,8 +929,9 @@ async function renderFundamentalReport(stockCode) {
     if (toggleBtn && !toggleBtn.dataset.bound) {
         toggleBtn.dataset.bound = '1';
         toggleBtn.addEventListener('click', () => {
-            const open = fundBody.classList.toggle('fund-collapsed');
-            toggleBtn.querySelector('i').className = open ? 'ph ph-caret-up' : 'ph ph-caret-down';
+            fundBody.classList.toggle('fund-collapsed');
+            const collapsed = fundBody.classList.contains('fund-collapsed');
+            toggleBtn.querySelector('i').className = collapsed ? 'ph ph-caret-down' : 'ph ph-caret-up';
         });
     }
 }
