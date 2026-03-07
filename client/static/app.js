@@ -1076,7 +1076,75 @@ function renderAiInsights(data) {
         </div>`;
     }
 
-    container.innerHTML = `<div class="ai-insights-grid">${probHtml}${atrHtml}${volHtml}</div>`;
+    // ── 4. 사이클 타임 예측 ──
+    const cyc = data.cycle_estimation;
+    let cycHtml = '';
+    if (cyc) {
+        const phaseColor = cyc.current_phase === '상승' ? '#10b981'
+            : cyc.current_phase === '하락' ? '#ef4444' : '#f59e0b';
+        const confLabel = cyc.confidence === 'high' ? '높음'
+            : cyc.confidence === 'medium' ? '보통' : '낮음';
+        const confColor = cyc.confidence === 'high' ? '#10b981'
+            : cyc.confidence === 'medium' ? '#f59e0b' : '#ef4444';
+
+        const dashOffset = Math.round((1 - cyc.progress / 100) * 251);
+
+        // 보정 팩터 태그
+        const adjTags = (cyc.adjustments || []).map(a =>
+            `<span class="cyc-adj-tag">${a.factor} <strong>${a.effect}</strong></span>`
+        ).join('');
+
+        // 피보나치 시간대 마커
+        const fibMarkers = (cyc.fib_time_zones || []).map(f => {
+            const isPast = f.date && f.date <= new Date().toISOString().slice(0, 10);
+            return `<span class="cyc-fib-marker ${isPast ? 'past' : ''}">${f.day}일${f.date ? ' (' + f.date.slice(5) + ')' : ''}</span>`;
+        }).join('');
+
+        // 사이클 이력
+        const histRows = (cyc.cycle_history || []).map(h =>
+            `<div class="cyc-hist-row">
+                <span class="cyc-hist-date">${(h.peak_date || '').slice(5)}</span>
+                <span class="cyc-hist-arrow">→</span>
+                <span class="cyc-hist-date">${(h.next_peak_date || '').slice(5)}</span>
+                <span class="cyc-hist-days">${h.days}일</span>
+            </div>`
+        ).join('');
+
+        cycHtml = `
+        <div class="ai-insight-widget cyc-widget">
+            <div class="ai-widget-title">사이클 타임 예측</div>
+            <div class="cyc-phase-row">
+                <span class="cyc-phase-badge" style="color:${phaseColor}; border-color:${phaseColor};">${cyc.current_phase}</span>
+                <span class="cyc-conf" style="color:${confColor};">신뢰도: ${confLabel}</span>
+                <span class="cyc-cycles">${cyc.cycles_detected}개 사이클 감지</span>
+            </div>
+            <div class="cyc-gauge-row">
+                <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="80" height="80">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="8"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="${phaseColor}" stroke-width="8"
+                        stroke-dasharray="251" stroke-dashoffset="${dashOffset}"
+                        stroke-linecap="round" transform="rotate(-90 50 50)"
+                        style="transition: stroke-dashoffset 1.2s cubic-bezier(.25,.8,.25,1);"/>
+                    <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="700" fill="${phaseColor}">${cyc.progress}%</text>
+                    <text x="50" y="60" text-anchor="middle" font-size="8" fill="var(--text-muted)">진행률</text>
+                </svg>
+                <div class="cyc-est-info">
+                    <div class="cyc-est-main">
+                        <span class="cyc-est-num">${cyc.est_remaining_days}</span>
+                        <span class="cyc-est-unit">거래일 남음</span>
+                    </div>
+                    <div class="cyc-est-sub">예상 도달일: <strong>${cyc.est_next_peak_date || '-'}</strong></div>
+                    <div class="cyc-est-sub">평균 사이클: <strong>${cyc.avg_cycle_days}일</strong> · 경과: <strong>${cyc.days_since_peak}일</strong></div>
+                </div>
+            </div>
+            ${adjTags ? `<div class="cyc-adj-row">${adjTags}</div>` : ''}
+            ${fibMarkers ? `<div class="cyc-fib-row"><span class="cyc-fib-label">피보나치 시간대</span> ${fibMarkers}</div>` : ''}
+            ${histRows ? `<details class="cyc-hist-details"><summary class="cyc-hist-summary">과거 사이클 이력</summary><div class="cyc-hist-body">${histRows}</div></details>` : ''}
+            <div class="ai-widget-desc">과거 고점 간 사이클 평균에 피보나치 시간대, 거래량 유동성, 라운드 피겨, RSI 센티먼트 보정을 적용한 예측입니다.</div>
+        </div>`;
+    }
+
+    container.innerHTML = `<div class="ai-insights-grid">${probHtml}${atrHtml}${volHtml}${cycHtml}</div>`;
 }
 
 

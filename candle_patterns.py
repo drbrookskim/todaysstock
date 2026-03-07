@@ -1395,10 +1395,11 @@ def analyze_candle_patterns(df):
         "recent_candles": recent_candles,
         "recent_week_analysis": analyze_recent_week(df),
         "volume_note": volume_note,
-        # ── 신규: 정밀 목표가/손절가, 확률 점수, 이상 거래량 ──
+        # ── 신규: 정밀 목표가/손절가, 확률 점수, 이상 거래량, 사이클 ──
         "atr_targets":        compute_atr_targets(df),
         "trade_probability":  compute_trade_probability(df, detected),
         "volume_anomaly":     detect_volume_anomaly(df),
+        "cycle_estimation":   compute_cycle_estimation(df),
     }
 
 
@@ -1659,4 +1660,260 @@ def detect_volume_anomaly(df, period=20):
         "avg_volume": round(mu),
         "cur_volume": round(today),
         "direction":  "up" if is_up else "down",
+    }
+
+
+# ─────────────────────────────────────────────
+# [NEW] 4. 고점→고점 사이클 타임 예측
+# ─────────────────────────────────────────────
+
+_FIB_TIME_DAYS = [8, 13, 21, 34, 55, 89]
+
+
+def compute_cycle_estimation(df, extrema_order=5):
+    """
+    고점→고점 사이클 타임을 다중 요소로 예측합니다.
+
+    요소:
+        1. 과거 사이클 평균 (기본값)
+        2. 피보나치 시간대 투영
+        3. 거래량/유동성 보정
+        4. 라운드 피겨(심리적 가격대) 지연 보정
+        5. RSI 센티먼트 보정
+
+    Returns:
+        dict | None
+    """
+    if df is None or len(df) < 40:
+        return None
+
+    # ── 1. 사이클 감지 ──
+    peaks, troughs = _find_local_extrema(df, order=extrema_order)
+
+    if len(peaks) < 2:
+        return None
+
+    # 날짜 인덱스가 있는지 확인
+    dates = df.index if hasattr(df.index, 'date') else None
+
+    # 고점 간 간격 (거래일 기준)
+    peak_intervals = []
+    cycle_history = []
+    for i in range(1, len(peaks)):
+        days_gap = peaks[i][0] - peaks[i - 1][0]
+        if days_gap < 3:  # 너무 짧은 노이즈 제외
+            continue
+        peak_intervals.append(days_gap)
+
+        # 두 고점 사이의 저점 찾기
+        mid_trough = None
+        for t_idx, t_val in troughs:
+            if peaks[i - 1][0] < t_idx < peaks[i][0]:
+                if mid_trough is None or t_val < mid_trough[1]:
+                    mid_trough = (t_idx, t_val)
+
+        entry = {
+            "peak_idx": peaks[i - 1][0],
+            "next_peak_idx": peaks[i][0],
+            "days": days_gap,
+        }
+        if dates is not None:
+            try:
+                entry["peak_date"] = str(df.index[peaks[i - 1][0]])[:10]
+                entry["next_peak_date"] = str(df.index[peaks[i][0]])[:10]
+            except (IndexError, TypeError):
+                pass
+        if mid_trough:
+            entry["trough_idx"] = mid_trough[0]
+            entry["trough_price"] = round(mid_trough[1])
+            if dates is not None:
+                try:
+                    entry["trough_date"] = str(df.index[mid_trough[0]])[:10]
+                except (IndexError, TypeError):
+                    pass
+        cycle_history.append(entry)
+
+    if len(peak_intervals) < 1:
+        return None
+
+    avg_cycle = float(np.mean(peak_intervals))
+    median_cycle = float(np.median(peak_intervals))
+    base_cycle = (avg_cycle + median_cycle) / 2.0
+
+    # 마지막 고점 이후 경과 거래일
+    last_peak_idx = peaks[-1][0]
+    last_peak_price = peaks[-1][1]
+    days_since_peak = len(df) - 1 - last_peak_idx
+
+    # 현재 위상 판별
+    last_close = float(df["Close"].iloc[-1])
+    # 마지막 고점 이후 저점 있는지
+    latest_trough = None
+    for t_idx, t_val in reversed(troughs):
+        if t_idx > last_peak_idx:
+            latest_trough = (t_idx, t_val)
+            break
+
+    if latest_trough and (len(df) - 1 - latest_trough[0]) < days_since_peak * 0.5:
+        current_phase = "상승"  # 저점 지나 반등 중
+    elif last_close < last_peak_price * 0.97:
+        current_phase = "하락"
+    else:
+        current_phase = "횡보"
+
+    # ── 2. 피보나치 시간대 투영 ──
+    fib_nearest = min(_FIB_TIME_DAYS, key=lambda f: abs(f - base_cycle))
+    fib_estimate = 0.6 * base_cycle + 0.4 * fib_nearest
+    est_days = fib_estimate
+
+    adjustments = []
+
+    fib_diff = fib_nearest - base_cycle
+    if abs(fib_diff) > 1:
+        adjustments.append({
+            "factor": "피보나치 시간대",
+            "effect": f"{'+' if fib_diff > 0 else ''}{round(fib_diff * 0.4)}\uc77c",
+        })
+
+    # 피보나치 시간대 후보 날짜 리스트
+    fib_time_zones = []
+    for fib_day in _FIB_TIME_DAYS:
+        target_idx = last_peak_idx + fib_day
+        fib_entry = {"day": fib_day}
+        if dates is not None and target_idx < len(df):
+            try:
+                fib_entry["date"] = str(df.index[target_idx])[:10]
+            except (IndexError, TypeError):
+                pass
+        elif dates is not None:
+            # 미래 날짜 추정 (마지막 날짜 + 잔여 거래일)
+            try:
+                from datetime import timedelta
+                last_date = pd.Timestamp(df.index[-1])
+                extra_days = target_idx - (len(df) - 1)
+                # 거래일 ≈ 달력일 × 5/7
+                cal_days = int(extra_days * 7 / 5)
+                fib_entry["date"] = str((last_date + timedelta(days=cal_days)).date())
+            except Exception:
+                pass
+        fib_time_zones.append(fib_entry)
+
+    # ── 3. 거래량/유동성 조정 ──
+    vol_series = df["Volume"].astype(float)
+    recent_avg_vol = float(vol_series.iloc[-20:].mean()) if len(df) >= 20 else float(vol_series.mean())
+    cycle_avg_vol = float(vol_series.iloc[max(0, last_peak_idx - int(base_cycle)):last_peak_idx].mean()) if last_peak_idx > 5 else recent_avg_vol
+
+    if cycle_avg_vol > 0:
+        vol_ratio = recent_avg_vol / cycle_avg_vol
+    else:
+        vol_ratio = 1.0
+
+    if vol_ratio > 1.3:
+        vol_mult = 0.85
+        est_days *= vol_mult
+        adjustments.append({
+            "factor": "거래량 유동성 ↑",
+            "effect": f"-{round((1 - vol_mult) * fib_estimate)}일",
+        })
+    elif vol_ratio < 0.7:
+        vol_mult = 1.2
+        est_days *= vol_mult
+        adjustments.append({
+            "factor": "거래량 유동성 ↓",
+            "effect": f"+{round((vol_mult - 1) * fib_estimate)}일",
+        })
+
+    # ── 4. 라운드 피겨(심리적 가격대) 분석 ──
+    round_figures = []
+    if last_close > 0:
+        # 만원 단위 라운드 피겨
+        unit = 10000 if last_close >= 10000 else (1000 if last_close >= 1000 else 100)
+        low_bound = min(last_close, last_peak_price)
+        high_bound = max(last_close, last_peak_price)
+        rf = (int(low_bound / unit) + 1) * unit
+        while rf < high_bound:
+            round_figures.append(int(rf))
+            rf += unit
+
+    if round_figures:
+        rf_delay = min(len(round_figures) * 1.5, 5)  # 최대 5일 보정
+        est_days += rf_delay
+        adjustments.append({
+            "factor": f"라운드 피겨 {len(round_figures)}개",
+            "effect": f"+{round(rf_delay)}일",
+        })
+
+    # ── 5. RSI 센티먼트 보정 ──
+    rsi_series = _compute_rsi(df)
+    if rsi_series is not None and len(rsi_series) > 0:
+        rsi_val = float(rsi_series.iloc[-1])
+        if rsi_val > 70:
+            rsi_mult = 0.9
+            est_days *= rsi_mult
+            adjustments.append({
+                "factor": "RSI 과열",
+                "effect": f"-{round((1 - rsi_mult) * est_days / rsi_mult)}일",
+            })
+        elif rsi_val < 30:
+            rsi_mult = 1.15
+            est_days *= rsi_mult
+            adjustments.append({
+                "factor": "RSI 공포",
+                "effect": f"+{round((rsi_mult - 1) * est_days / rsi_mult)}일",
+            })
+
+    # ── 6. 최종 산출 ──
+    est_days = max(1, round(est_days))
+    remaining_days = max(0, est_days - days_since_peak)
+
+    # 예상 날짜 계산
+    est_next_peak_date = None
+    try:
+        from datetime import timedelta
+        last_date = pd.Timestamp(df.index[-1])
+        cal_days_remaining = int(remaining_days * 7 / 5)  # 거래일 → 달력일
+        est_next_peak_date = str((last_date + timedelta(days=cal_days_remaining)).date())
+    except Exception:
+        pass
+
+    # 신뢰도
+    if len(peak_intervals) >= 4:
+        cv = float(np.std(peak_intervals)) / avg_cycle if avg_cycle > 0 else 1
+        confidence = "high" if cv < 0.25 else ("medium" if cv < 0.5 else "low")
+    elif len(peak_intervals) >= 2:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    # 진행률 (0~100)
+    progress = min(100, round(days_since_peak / est_days * 100)) if est_days > 0 else 0
+
+    # 마지막 고점/저점 날짜
+    last_peak_date = None
+    last_trough_date = None
+    try:
+        last_peak_date = str(df.index[last_peak_idx])[:10]
+        if latest_trough:
+            last_trough_date = str(df.index[latest_trough[0]])[:10]
+    except (IndexError, TypeError):
+        pass
+
+    return {
+        "cycles_detected":    len(peak_intervals),
+        "avg_cycle_days":     round(avg_cycle),
+        "median_cycle_days":  round(median_cycle),
+        "last_peak_date":     last_peak_date,
+        "last_peak_price":    round(last_peak_price),
+        "last_trough_date":   last_trough_date,
+        "days_since_peak":    days_since_peak,
+        "current_phase":      current_phase,
+        "est_total_days":     est_days,
+        "est_remaining_days": remaining_days,
+        "est_next_peak_date": est_next_peak_date,
+        "progress":           progress,
+        "confidence":         confidence,
+        "adjustments":        adjustments,
+        "fib_time_zones":     fib_time_zones,
+        "round_figures":      round_figures,
+        "cycle_history":      cycle_history[-5:],  # 최근 5개만
     }

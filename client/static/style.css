@@ -2148,10 +2148,183 @@ html[data-theme="light"] .theme-icon-btn i {
     line-height: 1.5;
 }
 
+/* ── 사이클 타임 위젯 ── */
+.cyc-widget {
+    grid-column: 1 / -1;
+}
+
+.cyc-phase-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.cyc-phase-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border: 1.5px solid;
+    border-radius: 10px;
+}
+
+.cyc-conf {
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.cyc-cycles {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+.cyc-gauge-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.cyc-est-info {
+    flex: 1;
+}
+
+.cyc-est-main {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.cyc-est-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+}
+
+.cyc-est-unit {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.cyc-est-sub {
+    font-size: 0.7rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    line-height: 1.6;
+}
+
+.cyc-adj-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.cyc-adj-tag {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.cyc-adj-tag strong {
+    font-weight: 700;
+    margin-left: 3px;
+}
+
+.cyc-fib-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cyc-fib-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cyc-fib-marker {
+    font-size: 0.62rem;
+    padding: 1px 7px;
+    border-radius: 5px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.cyc-fib-marker.past {
+    opacity: 0.4;
+    text-decoration: line-through;
+}
+
+.cyc-hist-details {
+    margin-bottom: 6px;
+}
+
+.cyc-hist-summary {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    list-style: none;
+    padding: 4px 0;
+}
+
+.cyc-hist-summary::-webkit-details-marker {
+    display: none;
+}
+
+.cyc-hist-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.cyc-hist-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.cyc-hist-date {
+    font-family: 'Space Grotesk', monospace;
+}
+
+.cyc-hist-arrow {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+}
+
+.cyc-hist-days {
+    margin-left: auto;
+    font-weight: 700;
+    color: var(--primary);
+}
+
 /* ── 모바일 ── */
 @media (max-width: 700px) {
     .ai-insights-grid {
         grid-template-columns: 1fr;
+    }
+
+    .cyc-widget {
+        grid-column: 1;
     }
 }
 
