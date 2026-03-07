@@ -1886,19 +1886,19 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ai-widget-desc {
-    font-size: 0.68rem;
-    color: var(--text-muted);
+    font-size: 0.72rem;
+    color: var(--text-color);
     line-height: 1.55;
     margin: 4px 0 8px;
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
 .fund-desc {
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    font-size: 0.74rem;
+    color: var(--text-color);
     line-height: 1.6;
     margin: 6px 0 4px;
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
 /* ── 확률 게이지 ── */
