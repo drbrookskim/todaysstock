@@ -157,39 +157,40 @@
                             <span>(</span><span>T</span><span>o</span><span>d</span><span>a</span><span>y</span><span>'</span><span>s</span><span>&nbsp;</span><span>S</span><span>t</span><span>o</span><span>c</span><span>k</span><span>)</span>
                         </div>
                     </div>
-                    <p class="search-guide">종목명 또는 종목번호(6자리)로 검색할 수 있습니다</p>
-                    <div class="search-wrapper">
-                        <div class="search-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.3-4.3"></path>
-                            </svg>
-                        </div>
-                        <input type="text" id="searchInput" class="search-input"
-                            placeholder="종목명 또는 종목코드를 입력하세요 (예: 삼성전자, 005930)" autocomplete="off" spellcheck="false">
-                        <div class="search-shortcut">
-                            <kbd>검색</kbd>
-                        </div>
-                        <button id="addWatchlistBtn" class="add-watchlist-btn" disabled title="종목을 먼저 검색하세요">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            추가
-                        </button>
+                </div>
+                <p class="search-guide">종목명 또는 종목번호(6자리)로 검색할 수 있습니다</p>
+                <div class="search-wrapper">
+                    <div class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
                     </div>
-                    <!-- Autocomplete Dropdown -->
-                    <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
-                    <!-- Recent Searches -->
-                    <div id="recentSearches" class="recent-searches hidden">
-                        <div class="recent-header">
-                            <span class="recent-label"><i class="ph ph-clock-counter-clockwise"></i> 최근 검색</span>
-                            <button id="clearRecent" class="recent-clear">전체 삭제</button>
-                        </div>
-                        <div id="recentList" class="recent-list"></div>
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="종목명 또는 종목코드를 입력하세요 (예: 삼성전자, 005930)" autocomplete="off" spellcheck="false">
+                    <div class="search-shortcut">
+                        <kbd>검색</kbd>
                     </div>
+                    <button id="addWatchlistBtn" class="add-watchlist-btn" disabled title="종목을 먼저 검색하세요">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        추가
+                    </button>
+                </div>
+                <!-- Autocomplete Dropdown -->
+                <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
+                <!-- Recent Searches -->
+                <div id="recentSearches" class="recent-searches hidden">
+                    <div class="recent-header">
+                        <span class="recent-label"><i class="ph ph-clock-counter-clockwise"></i> 최근 검색</span>
+                        <button id="clearRecent" class="recent-clear">전체 삭제</button>
+                    </div>
+                    <div id="recentList" class="recent-list"></div>
+                </div>
             </section>
 
             <!-- Loading -->
