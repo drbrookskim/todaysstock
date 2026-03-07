@@ -840,7 +840,7 @@ async function renderFundamentalReport(stockCode) {
 
     let d;
     try {
-        const res = await fetch(`/api/fundamental/${encodeURIComponent(stockCode)}`);
+        const res = await fetch(API_BASE_URL + `/api/fundamental/${encodeURIComponent(stockCode)}`);
         d = await res.json();
     } catch (e) {
         document.getElementById('fundSignalReason').textContent = '❌ 데이터 로드 실패';
