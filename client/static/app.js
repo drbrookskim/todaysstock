@@ -1119,23 +1119,22 @@ function renderAiInsights(data) {
                 <span class="cyc-cycles">${cyc.cycles_detected}개 사이클 감지</span>
             </div>
             
-            <div class="cyc-gauge-row">
-                <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="80" height="80">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="8"/>
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="${phaseColor}" stroke-width="8"
-                        stroke-dasharray="251" stroke-dashoffset="${dashOffset}"
-                        stroke-linecap="round" transform="rotate(-90 50 50)"
-                        style="transition: stroke-dashoffset 1.2s cubic-bezier(.25,.8,.25,1);"/>
-                    <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="700" fill="${phaseColor}">${cyc.progress}%</text>
-                    <text x="50" y="60" text-anchor="middle" font-size="8" fill="var(--text-muted)">진행률</text>
-                </svg>
-                <div class="cyc-est-info">
-                    <div class="cyc-est-main">
-                        <span class="cyc-est-num">${cyc.est_remaining_days}</span>
-                        <span class="cyc-est-unit">거래일 남음</span>
-                    </div>
-                    <div class="cyc-est-sub">예상 도달일: <strong>${cyc.est_next_peak_date || '-'}</strong></div>
-                    <div class="cyc-est-sub">평균 사이클: <strong>${cyc.avg_cycle_days}일</strong> · 경과: <strong>${cyc.days_since_peak}일</strong></div>
+            <div class="cyc-stats-grid">
+                <div class="cyc-stat-card">
+                    <div class="cyc-stat-label">진행률</div>
+                    <div class="cyc-stat-value" style="color: ${phaseColor};">${cyc.progress}%</div>
+                </div>
+                <div class="cyc-stat-card">
+                    <div class="cyc-stat-label">잔여 거래일</div>
+                    <div class="cyc-stat-value">${cyc.est_remaining_days}<span class="cyc-stat-unit">일 남음</span></div>
+                </div>
+                <div class="cyc-stat-card">
+                    <div class="cyc-stat-label">예상 도달일</div>
+                    <div class="cyc-stat-value" style="font-size: 1.1rem;">${cyc.est_next_peak_date || '-'}</div>
+                </div>
+                <div class="cyc-stat-card">
+                    <div class="cyc-stat-label">사이클 통계</div>
+                    <div class="cyc-stat-sub">평균 <strong>${cyc.avg_cycle_days}일</strong> · 경과 <strong>${cyc.days_since_peak}일</strong></div>
                 </div>
             </div>
             
@@ -1146,10 +1145,10 @@ function renderAiInsights(data) {
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box">
                 <div class="cyc-desc-item">
-                    <strong>사이클 감지 횟수 및 신뢰도:</strong> 차트 상에서 과거의 유의미한 고점(산)과 고점 사이의 간격을 '하나의 사이클'로 정의하며, 이 패턴이 차트 상에서 몇 번 반복되었는지를 나타내는 횟수입니다. 감지 횟수가 많고 편차가 적을수록 예측 신뢰도는 '높음'으로 평가됩니다.
+                    <strong>사이클 감지 횟수 및 신뢰도:</strong> 차트 상에서 과거의 유의미한 고점(산)과 다음 고점 사이의 간격을 <strong>'데이터 조각(1개 사이클)'</strong>으로 정의합니다. 조각의 기간 단위는 주말/공휴일을 제외한 <strong>실제 주식 시장 개장일(거래일)</strong>입니다. 이 조각(패턴)이 과거에 총 몇 번 획득되었는지가 '감지 횟수'를 의미하며 (예: "3개 감지" = 데이터 조각 세트를 3번 획득함), 이 데이터 조각의 개수가 많고 파동 간의 기간 편차가 적을수록 예측의 신뢰도가 높아집니다.
                 </div>
                 <div class="cyc-desc-item">
-                    <strong>진행률 및 잔여 거래일:</strong> **가장 최근에 확인된 고점(또는 저점) 발생일**을 시작일로 하여, 주기상 다음 변곡점이 예상되는 날짜까지 남은 **주식 시장 개장일**을 나타냅니다. 본 지표는 '언제(Timing)' 추세가 전환될지를 예측하는 시간 지표이므로, **목표 가격은 특정하지 않습니다.** 가격 도달 목표는 상단의 '매수/매도 리포트' 목표가를 함께 장기 조합하여 활용하시기 바랍니다.
+                    <strong>진행률 및 잔여 거래일:</strong> <strong>가장 최근에 확인된 고점(또는 저점) 발생일</strong>을 시작일로 하여, 주기상 다음 변곡점이 예상되는 날짜까지 남은 <strong>주식 시장 개장일</strong>을 의미합니다. 본 지표는 '언제(Timing)' 추세가 전환될지를 예측하는 시간 지표이므로, <strong>목표 가격은 특정하지 않습니다.</strong> 상단의 매수/매도 리포트를 조합하여 활용하시기 바랍니다.
                 </div>
                 <div class="cyc-desc-item">
                     <strong>피보나치 시간대 투영:</strong> 8, 13, 21일 등 피보나치 수열을 활용하여 추세 변곡 확률이 높은 날짜를 예측합니다.
