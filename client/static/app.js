@@ -1146,7 +1146,10 @@ function renderAiInsights(data) {
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box">
                 <div class="cyc-desc-item">
-                    <strong>진행률 및 잔여 거래일:</strong> 과거 고점 간 사이클 평균에 기반하여 도달까지 남은 기간을 시각화합니다.
+                    <strong>신뢰도 및 사이클 감지 횟수:</strong> 분석에 사용된 과거 고점-고점 유효 데이터의 개수(감지 횟수)가 많고, 편차가 적을수록 '높음'으로 평가됩니다. 신뢰도가 낮을 경우 오차가 커질 수 있습니다.
+                </div>
+                <div class="cyc-desc-item">
+                    <strong>진행률 및 잔여 거래일:</strong> 다음 목표 고점(혹은 저점)까지 도달하는데 예상되는 총 평균 거래일 중 현재까지 경과한 시간을 비율(%)로 시각화합니다. 잔여 거래일은 주말/공휴일이 배제된 실제 주식 시장 개장일 기준입니다.
                 </div>
                 <div class="cyc-desc-item">
                     <strong>피보나치 시간대 투영:</strong> 8, 13, 21일 등 피보나치 수열을 활용하여 추세 변곡 확률이 높은 날짜를 예측합니다.
