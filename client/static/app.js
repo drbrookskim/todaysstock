@@ -1076,10 +1076,10 @@ function renderAiInsights(data) {
         </div>`;
     }
 
-    // ── 4. 사이클 타임 예측 ──
+    // ── 4. 사이클 타임 예측 (펀더멘탈 내부 컨테이너로 렌더링) ──
     const cyc = data.cycle_estimation;
-    let cycHtml = '';
-    if (cyc) {
+    const cycContainer = document.getElementById('cycleWidgetContainer');
+    if (cyc && cycContainer) {
         const phaseColor = cyc.current_phase === '상승' ? '#10b981'
             : cyc.current_phase === '하락' ? '#ef4444' : '#f59e0b';
         const confLabel = cyc.confidence === 'high' ? '높음'
@@ -1110,14 +1110,15 @@ function renderAiInsights(data) {
             </div>`
         ).join('');
 
-        cycHtml = `
-        <div class="ai-insight-widget cyc-widget">
-            <div class="ai-widget-title">사이클 타임 예측</div>
+        const cycHtml = `
+        <div class="cyc-widget-inner">
+            <div class="ai-widget-title" style="font-size: 1.1rem; margin-bottom: 16px;">사이클 타임 예측</div>
             <div class="cyc-phase-row">
                 <span class="cyc-phase-badge" style="color:${phaseColor}; border-color:${phaseColor};">${cyc.current_phase}</span>
                 <span class="cyc-conf" style="color:${confColor};">신뢰도: ${confLabel}</span>
                 <span class="cyc-cycles">${cyc.cycles_detected}개 사이클 감지</span>
             </div>
+            
             <div class="cyc-gauge-row">
                 <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="80" height="80">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="8"/>
@@ -1137,14 +1138,36 @@ function renderAiInsights(data) {
                     <div class="cyc-est-sub">평균 사이클: <strong>${cyc.avg_cycle_days}일</strong> · 경과: <strong>${cyc.days_since_peak}일</strong></div>
                 </div>
             </div>
-            ${adjTags ? `<div class="cyc-adj-row">${adjTags}</div>` : ''}
-            ${fibMarkers ? `<div class="cyc-fib-row"><span class="cyc-fib-label">피보나치 시간대</span> ${fibMarkers}</div>` : ''}
-            ${histRows ? `<details class="cyc-hist-details"><summary class="cyc-hist-summary">과거 사이클 이력</summary><div class="cyc-hist-body">${histRows}</div></details>` : ''}
-            <div class="ai-widget-desc">과거 고점 간 사이클 평균에 피보나치 시간대, 거래량 유동성, 라운드 피겨, RSI 센티먼트 보정을 적용한 예측입니다.</div>
+            
+            ${adjTags ? `<div class="cyc-adj-row" style="margin-top: 12px;">${adjTags}</div>` : ''}
+            ${fibMarkers ? `<div class="cyc-fib-row" style="margin-top: 12px;"><span class="cyc-fib-label">피보나치 시간대</span> ${fibMarkers}</div>` : ''}
+            ${histRows ? `<details class="cyc-hist-details" style="margin-top: 16px;"><summary class="cyc-hist-summary">과거 사이클 이력</summary><div class="cyc-hist-body">${histRows}</div></details>` : ''}
+            
+            <!-- 사이클 상세 설명 -->
+            <div class="cyc-desc-box">
+                <div class="cyc-desc-item">
+                    <strong>진행률 및 잔여 거래일:</strong> 과거 고점 간 사이클 평균에 기반하여 도달까지 남은 기간을 시각화합니다.
+                </div>
+                <div class="cyc-desc-item">
+                    <strong>피보나치 시간대 투영:</strong> 8, 13, 21일 등 피보나치 수열을 활용하여 추세 변곡 확률이 높은 날짜를 예측합니다.
+                </div>
+                <div class="cyc-desc-item">
+                    <strong>라운드 피겨 지연:</strong> 만원 단위의 심리적 저항선을 통과할 때 발생하는 매물 소화 지연 일수를 보정합니다.
+                </div>
+                <div class="cyc-desc-item">
+                    <strong>유동성 및 센티먼트:</strong> 거래량 급증이나 RSI 과열(>70) / 침체(<30) 시 도달 기간이 단축되거나 연장되는 효과를 반영합니다.
+                </div>
+            </div>
         </div>`;
+
+        cycContainer.innerHTML = cycHtml;
+        cycContainer.style.display = 'block';
+    } else if (cycContainer) {
+        cycContainer.style.display = 'none';
+        cycContainer.innerHTML = '';
     }
 
-    container.innerHTML = `<div class="ai-insights-grid">${probHtml}${atrHtml}${volHtml}${cycHtml}</div>`;
+    container.innerHTML = `<div class="ai-insights-grid">${probHtml}${atrHtml}${volHtml}</div>`;
 }
 
 

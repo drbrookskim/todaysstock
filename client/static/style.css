@@ -2167,9 +2167,9 @@ html[data-theme="light"] .theme-icon-btn i {
     line-height: 1.5;
 }
 
-/* ── 사이클 타임 위젯 ── */
-.cyc-widget {
-    grid-column: 1 / -1;
+/* ── 사이클 타임 위젯 (심층 분석 내부) ── */
+.cyc-widget-inner {
+    padding-top: 5px;
 }
 
 .cyc-phase-row {
@@ -2336,14 +2336,36 @@ html[data-theme="light"] .theme-icon-btn i {
     color: var(--primary);
 }
 
+/* 사이클 타임 상세 설명 컨테이너 */
+.cyc-desc-box {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cyc-desc-item {
+    font-size: 0.72rem;
+    color: var(--text-color);
+    opacity: 0.75;
+    line-height: 1.5;
+    background: var(--hover-bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.cyc-desc-item strong {
+    color: var(--text-color);
+    font-weight: 600;
+    opacity: 1;
+}
+
 /* ── 모바일 ── */
 @media (max-width: 700px) {
     .ai-insights-grid {
         grid-template-columns: 1fr;
-    }
-
-    .cyc-widget {
-        grid-column: 1;
     }
 }
 

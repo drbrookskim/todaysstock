@@ -407,7 +407,7 @@
                         <div class="fund-header">
                             <div class="fund-header-left">
                                 <span class="fund-brain-icon">🧠</span>
-                                <span class="fund-title">펀더멘탈 분석</span>
+                                <span class="fund-title">심층 분석 (펀더멘탈 & 사이클 타임)</span>
                                 <span id="fundCompanyTypeBadge" class="fund-type-badge"></span>
                             </div>
                             <div class="fund-header-right">
@@ -438,7 +438,14 @@
                                 </div>
                             </div>
                             <div id="fundAxesUsed" class="fund-axes-used"></div>
-                            <div class="fund-desc">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로 분석합니다. Quant, Event-Driven,
+
+                            <!-- 사이클 타임 예측 결과 (JS injected) -->
+                            <div id="cycleWidgetContainer"
+                                style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border-color);">
+                            </div>
+
+                            <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로
+                                분석합니다. Quant, Event-Driven,
                                 Macro, Alt Data 4개 축을 기반으로 기업 유형별 맞춤 신호를 생성합니다.</div>
                         </div>
                     </div>
