@@ -1123,18 +1123,42 @@ function renderAiInsights(data) {
                 <div class="cyc-stat-card">
                     <div class="cyc-stat-label">진행률</div>
                     <div class="cyc-stat-value" style="color: ${phaseColor};">${cyc.progress}%</div>
+                    <div class="cyc-progress-track">
+                        <div class="cyc-progress-fill" style="width: ${cyc.progress}%; background: ${phaseColor};"></div>
+                    </div>
                 </div>
                 <div class="cyc-stat-card">
                     <div class="cyc-stat-label">잔여 거래일</div>
-                    <div class="cyc-stat-value">${cyc.est_remaining_days}<span class="cyc-stat-unit">일 남음</span></div>
+                    <div class="cyc-stat-value-group">
+                        <div class="cyc-stat-value">${cyc.est_remaining_days}<span class="cyc-stat-unit">일 남음</span></div>
+                        <svg class="cyc-mini-donut" viewBox="0 0 36 36">
+                            <path class="cyc-donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="cyc-donut-fill" stroke="${phaseColor}" stroke-dasharray="${Math.min((cyc.days_since_peak / Math.max(cyc.avg_cycle_days, 1)) * 100, 100)}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                    </div>
                 </div>
                 <div class="cyc-stat-card">
                     <div class="cyc-stat-label">예상 도달일</div>
                     <div class="cyc-stat-value" style="font-size: 1.1rem;">${cyc.est_next_peak_date || '-'}</div>
+                    <div class="cyc-timeline-graphic">
+                        <div class="cyc-tl-dot start"></div>
+                        <div class="cyc-tl-line"></div>
+                        <div class="cyc-tl-dot end" style="background: ${phaseColor}; box-shadow: 0 0 4px ${phaseColor};"></div>
+                    </div>
                 </div>
                 <div class="cyc-stat-card">
                     <div class="cyc-stat-label">사이클 통계</div>
                     <div class="cyc-stat-sub">평균 <strong>${cyc.avg_cycle_days}일</strong> · 경과 <strong>${cyc.days_since_peak}일</strong></div>
+                    <div class="cyc-compare-bars">
+                        <div class="cyc-bar-row">
+                            <span class="cyc-bar-lbl">평균</span>
+                            <div class="cyc-bar-track"><div class="cyc-bar-fill avg" style="width: 100%;"></div></div>
+                        </div>
+                        <div class="cyc-bar-row">
+                            <span class="cyc-bar-lbl">경과</span>
+                            <div class="cyc-bar-track"><div class="cyc-bar-fill cur" style="width: ${Math.min((cyc.days_since_peak / Math.max(cyc.avg_cycle_days, 1)) * 100, 100)}%; background: ${phaseColor};"></div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
