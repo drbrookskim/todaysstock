@@ -911,6 +911,7 @@ async function renderFundamentalReport(stockCode) {
     if (m.us10y) macroItems.push(['미 국채 10년물(^TNX)', `${m.us10y}%`, m.us10y_chg != null ? (m.us10y_chg >= 0 ? '+' : '') + m.us10y_chg + 'p' : null]);
     if (m.nasdaq) macroItems.push(['나스닥 지수', `${m.nasdaq.toLocaleString()}`, m.nasdaq_chg != null ? (m.nasdaq_chg >= 0 ? '+' : '') + m.nasdaq_chg + '%' : null]);
     if (m.kospi) macroItems.push(['KOSPI', `${m.kospi.toLocaleString()}`, m.kospi_chg != null ? (m.kospi_chg >= 0 ? '+' : '') + m.kospi_chg + '%' : null]);
+    if (m.kosdaq) macroItems.push(['KOSDAQ', `${m.kosdaq.toLocaleString()}`, m.kosdaq_chg != null ? (m.kosdaq_chg >= 0 ? '+' : '') + m.kosdaq_chg + '%' : null]);
     if (m.vix) macroItems.push(['VIX 공포지수', `${m.vix}`, m.vix_chg != null ? (m.vix_chg >= 0 ? '+' : '') + m.vix_chg + '%' : null]);
     if (m.wti) macroItems.push(['WTI 국제유가', `$${m.wti}`, m.wti_chg != null ? (m.wti_chg >= 0 ? '+' : '') + m.wti_chg + '%' : null]);
     if (m.base_rate) macroItems.push(['한국 기준금리', `${m.base_rate}%`, null]);

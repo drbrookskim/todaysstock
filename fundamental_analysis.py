@@ -340,6 +340,17 @@ def get_macro(ecos_key: str) -> dict:
     except:
         pass
 
+    # KOSDAQ (^KQ11)
+    try:
+        kq = yf.Ticker("^KQ11").history(period="5d")
+        if not kq.empty:
+            m["kosdaq"] = round(float(kq["Close"].iloc[-1]), 2)
+            if len(kq) >= 2:
+                prv = float(kq["Close"].iloc[-2])
+                m["kosdaq_chg"] = round((m["kosdaq"] - prv) / prv * 100, 3)
+    except:
+        pass
+
     # US 10Y Treasury Yield (^TNX)
     try:
         tnx = yf.Ticker("^TNX").history(period="5d")
