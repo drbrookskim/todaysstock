@@ -340,6 +340,28 @@ def get_macro(ecos_key: str) -> dict:
     except:
         pass
 
+    # US 10Y Treasury Yield (^TNX)
+    try:
+        tnx = yf.Ticker("^TNX").history(period="5d")
+        if not tnx.empty:
+            m["us10y"] = round(float(tnx["Close"].iloc[-1]), 3)
+            if len(tnx) >= 2:
+                prv = float(tnx["Close"].iloc[-2])
+                m["us10y_chg"] = round((m["us10y"] - prv), 3) # 단위가 %이므로 포인트 등락
+    except:
+        pass
+
+    # NASDAQ (^IXIC)
+    try:
+        ndq = yf.Ticker("^IXIC").history(period="5d")
+        if not ndq.empty:
+            m["nasdaq"] = round(float(ndq["Close"].iloc[-1]), 2)
+            if len(ndq) >= 2:
+                prv = float(ndq["Close"].iloc[-2])
+                m["nasdaq_chg"] = round((m["nasdaq"] - prv) / prv * 100, 3)
+    except:
+        pass
+
     if ecos_key:
         # 기준금리 (ECOS 722Y001 / 0101000 / MM)
         try:

@@ -880,6 +880,9 @@ async function renderFundamentalReport(stockCode) {
         <div class="fund-score-bar-bg">
             <div class="fund-score-bar" style="width:${Math.min(q.score ?? 0, 100)}%;background:${scoreColor}"></div>
         </div>
+        <div class="fund-score-desc" style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:8px;">
+            ${q.score >= 75 ? '🔥 <b>매우 우수 (상위 15%)</b> - 안정적이고 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상 (상위 45%)</b> - 투자하기 무난한 양호한 재무 상태' : '⚠️ <b>기준 미달 (하위권)</b> - 재무 리스크가 있으므로 주의 필요'}
+        </div>
         <table class="fund-metric-table">
             ${qRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
         </table>
@@ -904,8 +907,10 @@ async function renderFundamentalReport(stockCode) {
     const m = d.macro || {};
     const macroItems = [];
     if (m.usd_krw) macroItems.push(['USD/KRW', `${m.usd_krw.toLocaleString()}`, m.usd_krw_chg != null ? (m.usd_krw_chg >= 0 ? '+' : '') + m.usd_krw_chg + '%' : null]);
+    if (m.us10y) macroItems.push(['미 국채 10년물(^TNX)', `${m.us10y}%`, m.us10y_chg != null ? (m.us10y_chg >= 0 ? '+' : '') + m.us10y_chg + 'p' : null]);
+    if (m.nasdaq) macroItems.push(['나스닥 지수', `${m.nasdaq.toLocaleString()}`, m.nasdaq_chg != null ? (m.nasdaq_chg >= 0 ? '+' : '') + m.nasdaq_chg + '%' : null]);
     if (m.kospi) macroItems.push(['KOSPI', `${m.kospi.toLocaleString()}`, m.kospi_chg != null ? (m.kospi_chg >= 0 ? '+' : '') + m.kospi_chg + '%' : null]);
-    if (m.base_rate) macroItems.push(['기준금리', `${m.base_rate}%`, null]);
+    if (m.base_rate) macroItems.push(['한국 기준금리', `${m.base_rate}%`, null]);
     if (m.semi_export_yoy != null) macroItems.push(['반도체수출YoY', `${m.semi_export_yoy >= 0 ? '+' : ''}${m.semi_export_yoy}%`, null]);
 
     if (macroItems.length === 0) {
@@ -1168,6 +1173,10 @@ function renderAiInsights(data) {
             
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box">
+                <div class="cyc-desc-item" style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border-left: 3px solid #10b981; margin-bottom: 12px;">
+                    <strong style="color: #10b981;">💡 활용 가이드:</strong><br/>
+                    진행률이 <strong>90% 이상 차오르고 예상 일수가 3일 이내</strong>로 줄어들었다면 곧 추세가 꺾이는 <strong>변곡점</strong>이 임시했음을 의미합니다. 이 때 상단의 <strong>매수/매도 리포트 신호</strong>가 강하다면 지체 없이 액션(매수 또는 분할 매도)을 취할 수 있는 최적의 타이밍입니다.
+                </div>
                 <div class="cyc-desc-item">
                     <strong>사이클 감지 횟수:</strong> 차트에서 과거 '고점'부터 다음 '고점'까지 걸리는 시간을 하나의 <strong>'주기(사이클)'</strong>로 봅니다. 이 주기가 과거 차트에서 분절된 패턴의 형태로 몇 번이나 반복되었는지를 나타내는 것이 <strong>'감지 횟수'</strong>입니다. 이 주기가 자주, 그리고 일정한 간격으로 나타났을수록 예측의 <strong>신뢰도</strong>가 높아집니다.
                 </div>

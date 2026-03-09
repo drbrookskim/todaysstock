@@ -1559,11 +1559,11 @@ def compute_trade_probability(df, detected_patterns):
     total = ma_score + rsi_score + macd_score + vol_score + pattern_bonus
     score = max(0, min(100, total))
 
-    if   score >= 75: label = "강한 매수"
-    elif score >= 60: label = "매수 우세"
-    elif score >= 40: label = "중립"
-    elif score >= 25: label = "매도 우세"
-    else:             label = "강한 매도"
+    if   score >= 75: label = "강력 매수 (적극 진입 가능)"
+    elif score >= 60: label = "매수 우세 (분할 진입 고려)"
+    elif score >= 40: label = "중립 (보류 및 관망)"
+    elif score >= 25: label = "매도 우세 (비중 축소 고려)"
+    else:             label = "강력 매도 (즉각 탈출 권고)"
 
     return {
         "score":   score,
