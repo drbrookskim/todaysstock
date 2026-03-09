@@ -308,7 +308,7 @@ def scan_disclosures(corp_code: str, dart_key: str, days: int = 30) -> list:
 # 5.  거시경제 컨텍스트 (ECOS + yfinance)
 # ════════════════════════════════════════════════════════════
 def get_macro(ecos_key: str) -> dict:
-    ck = "macro_ctx"
+    ck = "macro_ctx_v2" # 캐시 키를 갱신하여 새 지표 즉시 반영
     if cached := _fg(ck, TTL_MAC):
         return cached
 
