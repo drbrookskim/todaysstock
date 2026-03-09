@@ -1112,7 +1112,7 @@ function renderAiInsights(data) {
 
         const cycHtml = `
         <div class="cyc-widget-inner">
-            <div class="ai-widget-title" style="font-size: 1.1rem; margin-bottom: 16px;">사이클 타임 예측</div>
+            <div class="ai-widget-title" style="font-size: 1.1rem; margin-bottom: 16px;">사이클 타임 예측 (변곡점 타이밍)</div>
             <div class="cyc-phase-row">
                 <span class="cyc-phase-badge" style="color:${phaseColor}; border-color:${phaseColor};">${cyc.current_phase}</span>
                 <span class="cyc-conf" style="color:${confColor};">신뢰도: ${confLabel}</span>
@@ -1169,19 +1169,19 @@ function renderAiInsights(data) {
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box">
                 <div class="cyc-desc-item">
-                    <strong>사이클 감지 횟수 및 신뢰도:</strong> 차트 상에서 과거의 유의미한 고점(산)과 다음 고점 사이의 간격을 <strong>'데이터 조각(1개 사이클)'</strong>으로 정의합니다. 조각의 기간 단위는 주말/공휴일을 제외한 <strong>실제 주식 시장 개장일(거래일)</strong>입니다. 이 조각(패턴)이 과거에 총 몇 번 획득되었는지가 '감지 횟수'를 의미하며 (예: "3개 감지" = 데이터 조각 세트를 3번 획득함), 이 데이터 조각의 개수가 많고 파동 간의 기간 편차가 적을수록 예측의 신뢰도가 높아집니다.
+                    <strong>사이클 감지 횟수:</strong> 차트에서 과거 '고점'부터 다음 '고점'까지 걸리는 시간을 하나의 <strong>'주기(사이클)'</strong>로 봅니다. 이 주기가 과거 차트에서 분절된 패턴의 형태로 몇 번이나 반복되었는지를 나타내는 것이 <strong>'감지 횟수'</strong>입니다. 이 주기가 자주, 그리고 일정한 간격으로 나타났을수록 예측의 <strong>신뢰도</strong>가 높아집니다.
                 </div>
                 <div class="cyc-desc-item">
-                    <strong>진행률 및 잔여 거래일:</strong> <strong>가장 최근에 확인된 고점(또는 저점) 발생일</strong>을 시작일로 하여, 주기상 다음 변곡점이 예상되는 날짜까지 남은 <strong>주식 시장 개장일</strong>을 의미합니다. 본 지표는 '언제(Timing)' 추세가 전환될지를 예측하는 시간 지표이므로, <strong>목표 가격은 특정하지 않습니다.</strong> 상단의 매수/매도 리포트를 조합하여 활용하시기 바랍니다.
+                    <strong>잔여 거래일:</strong> 가장 최근에 확인된 고점(또는 저점) 발생일부터 지금까지 며칠이 지났는지를 보여주고, 다음 고점(변곡점)이 오기까지 <strong>주식 시장이 열리는 날(거래일) 기준으로 며칠이 남았는지</strong>를 알려줍니다. 이 지표는 '가격'이 아니라 <strong>'언제쯤 방향이 바뀔지(타이밍)'</strong>를 예측하는 도구이므로 목표 가격은 상단의 매수/매도 리포트를 참고해 주세요.
                 </div>
                 <div class="cyc-desc-item">
-                    <strong>피보나치 시간대 투영:</strong> 8, 13, 21일 등 피보나치 수열을 활용하여 추세 변곡 확률이 높은 날짜를 예측합니다.
+                    <strong>피보나치 투영:</strong> 자연계의 황금비율인 피보나치 수열(8, 13, 21일 등)을 활용해, 통계적으로 사람들의 심리가 바뀌면서 추세가 꺾이기 쉬운 특정 날짜를 예측합니다.
                 </div>
                 <div class="cyc-desc-item">
-                    <strong>라운드 피겨 지연:</strong> 만원 단위의 심리적 저항선을 통과할 때 발생하는 매물 소화 지연 일수를 보정합니다.
+                    <strong>라운드 피겨 지연:</strong> 주가가 1만원, 5만원 등 딱 떨어지는 마디 가격(심리적 저항선)을 통과할 때는 매물이 쏟아져 나오기 쉽기 때문에 대기 시간이 걸립니다. 이런 지연 발생 가능성도 남은 일수 계산에 포함시켰습니다.
                 </div>
                 <div class="cyc-desc-item">
-                    <strong>유동성 및 센티먼트:</strong> 거래량 급증이나 RSI 과열(>70) / 침체(<30) 시 도달 기간이 단축되거나 연장되는 효과를 반영합니다.
+                    <strong>유동성과 투자 심리:</strong> 갑자기 거래량이 폭발하거나 사람들이 극도의 흥분/공포 상태(RSI 과열/침체)일 때는 원래 예정했던 변곡점보다 도달 일정이 빨라지거나 늦어지는 가속 현상을 남은 일수 계산에 추가로 반영했습니다.
                 </div>
             </div>
         </div>`;
