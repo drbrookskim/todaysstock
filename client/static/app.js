@@ -907,9 +907,12 @@ async function renderFundamentalReport(stockCode) {
     const m = d.macro || {};
     const macroItems = [];
     if (m.usd_krw) macroItems.push(['USD/KRW', `${m.usd_krw.toLocaleString()}`, m.usd_krw_chg != null ? (m.usd_krw_chg >= 0 ? '+' : '') + m.usd_krw_chg + '%' : null]);
+    if (m.dxy) macroItems.push(['달러 인덱스', `${m.dxy}`, m.dxy_chg != null ? (m.dxy_chg >= 0 ? '+' : '') + m.dxy_chg + '%' : null]);
     if (m.us10y) macroItems.push(['미 국채 10년물(^TNX)', `${m.us10y}%`, m.us10y_chg != null ? (m.us10y_chg >= 0 ? '+' : '') + m.us10y_chg + 'p' : null]);
     if (m.nasdaq) macroItems.push(['나스닥 지수', `${m.nasdaq.toLocaleString()}`, m.nasdaq_chg != null ? (m.nasdaq_chg >= 0 ? '+' : '') + m.nasdaq_chg + '%' : null]);
     if (m.kospi) macroItems.push(['KOSPI', `${m.kospi.toLocaleString()}`, m.kospi_chg != null ? (m.kospi_chg >= 0 ? '+' : '') + m.kospi_chg + '%' : null]);
+    if (m.vix) macroItems.push(['VIX 공포지수', `${m.vix}`, m.vix_chg != null ? (m.vix_chg >= 0 ? '+' : '') + m.vix_chg + '%' : null]);
+    if (m.wti) macroItems.push(['WTI 국제유가', `$${m.wti}`, m.wti_chg != null ? (m.wti_chg >= 0 ? '+' : '') + m.wti_chg + '%' : null]);
     if (m.base_rate) macroItems.push(['한국 기준금리', `${m.base_rate}%`, null]);
     if (m.semi_export_yoy != null) macroItems.push(['반도체수출YoY', `${m.semi_export_yoy >= 0 ? '+' : ''}${m.semi_export_yoy}%`, null]);
 

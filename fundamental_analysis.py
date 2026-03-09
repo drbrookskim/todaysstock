@@ -362,6 +362,39 @@ def get_macro(ecos_key: str) -> dict:
     except:
         pass
 
+    # VIX (^VIX) - 시장 공포지수
+    try:
+        vix = yf.Ticker("^VIX").history(period="5d")
+        if not vix.empty:
+            m["vix"] = round(float(vix["Close"].iloc[-1]), 2)
+            if len(vix) >= 2:
+                prv = float(vix["Close"].iloc[-2])
+                m["vix_chg"] = round((m["vix"] - prv) / prv * 100, 3)
+    except:
+        pass
+
+    # WTI Crude Oil (CL=F) - 국제 유가
+    try:
+        wti = yf.Ticker("CL=F").history(period="5d")
+        if not wti.empty:
+            m["wti"] = round(float(wti["Close"].iloc[-1]), 2)
+            if len(wti) >= 2:
+                prv = float(wti["Close"].iloc[-2])
+                m["wti_chg"] = round((m["wti"] - prv) / prv * 100, 3)
+    except:
+        pass
+
+    # Dollar Index (DX-Y.NYB) - 달러 인덱스
+    try:
+        dxy = yf.Ticker("DX-Y.NYB").history(period="5d")
+        if not dxy.empty:
+            m["dxy"] = round(float(dxy["Close"].iloc[-1]), 2)
+            if len(dxy) >= 2:
+                prv = float(dxy["Close"].iloc[-2])
+                m["dxy_chg"] = round((m["dxy"] - prv) / prv * 100, 3)
+    except:
+        pass
+
     if ecos_key:
         # 기준금리 (ECOS 722Y001 / 0101000 / MM)
         try:
