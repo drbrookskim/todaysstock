@@ -1010,7 +1010,7 @@ function renderAiInsights(data) {
                 </div>
             </div>
             <div class="ai-breakdown">${breakdownBars}</div>
-            <div class="ai-widget-desc">MA 배열 35%, RSI 25%, MACD 25%, 거래량 15% 가중 합산 점수입니다. 캔들 패턴 보너스 ±5%가 추가됩니다.</div>
+            <div class="ai-widget-desc"><strong>💡 점수 해석:</strong> 주가의 방향성(MA), 현재 상승 탄력(RSI), 추세의 강도(MACD), 그리고 돈의 흐름(거래량) 등 4가지 핵심 지표를 종합해 계산한 100점 만점의 매수 매력도입니다. 점수가 높을수록 상승할 확률이 높고, 특정 캔들 패턴(적삼병, 흑삼병 등)이 뜨면 보너스/감점이 반영됩니다.</div>
         </div>`;
     }
 
@@ -1050,7 +1050,7 @@ function renderAiInsights(data) {
                 R:R &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
                 <span class="ai-atr-note">ATR ${atr.atr?.toLocaleString()}원 기준</span>
             </div>
-            <div class="ai-widget-desc">ATR은 일정 기간의 고가-저가 변동폭을 평균한 변동성 지표입니다. 목표가 = 현재가 + ATR×2.0, 손절가 = 현재가 - ATR×1.0으로 산출합니다.</div>
+            <div class="ai-widget-desc"><strong>💡 ATR 활용법:</strong> ATR은 최근 주가가 하루에 위아래로 평균 얼마씩 움직였는지를 보여주는 '변동성' 수치입니다. 이 절대적인 수치를 바탕으로 "적어도 목표가는 변동성의 2배쯤, 손절가는 1배쯤" 안전하게 기계적으로 잡는 방식입니다.</div>
         </div>`;
     }
 
@@ -1081,7 +1081,7 @@ function renderAiInsights(data) {
                 </div>
             </div>
             <div class="ai-vol-msg">${vol.message}</div>
-            <div class="ai-widget-desc">최근 20일 평균 거래량(μ)과 표준편차(σ)를 기반으로 Z-score를 산출합니다. Z ≥ 1.5이면 주의, Z ≥ 2.0이면 급증, Z ≥ 3.0이면 폭발적으로 분류합니다.</div>
+            <div class="ai-widget-desc"><strong>💡 거래량 해석법:</strong> 최근 20일간의 평소 거래량과 비교해 오늘 얼마나 이례적으로 많은 거래가 터졌는지를(Z-score) 보여줍니다. 세력이나 큰 손의 개입을 뜻하며, 빨간 불(🔴)과 함께 거래량이 폭발했다면 매우 강력한 상승 신호일 확률이 높습니다.</div>
         </div>`;
     }
 
