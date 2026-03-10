@@ -880,7 +880,7 @@ async function renderFundamentalReport(stockCode) {
         <div class="fund-score-bar-bg">
             <div class="fund-score-bar" style="width:${Math.min(q.score ?? 0, 100)}%;background:${scoreColor}"></div>
         </div>
-        <div class="fund-score-desc" style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:8px;">
+        <div class="fund-score-desc" style="font-size:0.81rem; color:var(--text-muted); text-align:center; margin-top:8px;">
             ${q.score >= 75 ? '🔥 <b>매우 우수 (상위 15%)</b> - 안정적이고 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상 (상위 45%)</b> - 투자하기 무난한 양호한 재무 상태' : '⚠️ <b>기준 미달 (하위권)</b> - 재무 리스크가 있으므로 주의 필요'}
         </div>
         <table class="fund-metric-table">
