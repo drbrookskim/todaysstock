@@ -1177,8 +1177,8 @@ function renderAiInsights(data) {
             
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box" style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="cyc-desc-item" style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid #10b981; font-size: 1.05rem; line-height: 1.6;">
-                    <strong style="color: #10b981; display: inline-block; margin-bottom: 6px; font-size: 1.1rem;">💡 현재 사이클 요약:</strong><br/>
+                <div class="cyc-desc-item" style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #10b981; line-height: 1.6;">
+                    <strong style="color: #10b981; display: inline-block; margin-bottom: 6px;">💡 현재 사이클 요약:</strong><br/>
                     현재 다음 변곡점(추세가 꺾이는 지점) 도달까지 <strong style="color: #10b981;">${cyc.progress}% 진행</strong>되었으며, 주식 시장이 열리는 날 기준으로 <strong style="color: #10b981;">약 ${cyc.est_remaining_days}일</strong> 정도 남은 것으로 추정됩니다. 과거 주기의 평균이 <strong>${cyc.avg_cycle_days}일</strong>이므로, 이 추세라면 다음 변곡점은 대략 <strong style="color: #10b981;">${cyc.est_next_peak_date ? cyc.est_next_peak_date : '조만간'}</strong>에 나타날 가능성이 높습니다.
                 </div>
                 <div class="cyc-desc-item" style="background: var(--bg-card-hover, rgba(255, 255, 255, 0.04)); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));">
