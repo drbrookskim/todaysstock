@@ -1010,7 +1010,7 @@ function renderAiInsights(data) {
                 </div>
             </div>
             <div class="ai-breakdown">${breakdownBars}</div>
-            <div class="ai-widget-desc"><strong>💡 점수 해석:</strong> 주가의 방향성(MA), 현재 상승 탄력(RSI), 추세의 강도(MACD), 그리고 돈의 흐름(거래량) 등 4가지 핵심 지표를 종합해 계산한 100점 만점의 매수 매력도입니다. 점수가 높을수록 상승할 확률이 높고, 특정 캔들 패턴(적삼병, 흑삼병 등)이 뜨면 보너스/감점이 반영됩니다.</div>
+            <div class="ai-widget-desc"><strong>💡 점수 해석:</strong> 100점 만점의 매수 매력도입니다. 주가의 방향성(MA, <strong>35%</strong>), 상승 탄력(RSI, <strong>25%</strong>), 추세 강도(MACD, <strong>25%</strong>), 돈의 흐름(거래량, <strong>15%</strong>) 비중으로 가중 합산됩니다. 추가로 상승 잉태형, 적삼병 등 긍정적 캔들 패턴 발견 시 보너스 점수가, 흑삼병 등 부정적 패턴 발견 시 감점(±5%)이 반영됩니다.</div>
         </div>`;
     }
 
@@ -1050,7 +1050,7 @@ function renderAiInsights(data) {
                 R:R &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
                 <span class="ai-atr-note">ATR ${atr.atr?.toLocaleString()}원 기준</span>
             </div>
-            <div class="ai-widget-desc"><strong>💡 ATR 활용법:</strong> ATR은 최근 주가가 하루에 위아래로 평균 얼마씩 움직였는지를 보여주는 '변동성' 수치입니다. 이 절대적인 수치를 바탕으로 "적어도 목표가는 변동성의 2배쯤, 손절가는 1배쯤" 안전하게 기계적으로 잡는 방식입니다.</div>
+            <div class="ai-widget-desc"><strong>💡 ATR 활용법:</strong> ATR은 최근 주가가 하루에 위아래로 평균 얼마씩 움직였는지를 보여주는 '변동성' 수치입니다. (이 종목의 현재 하루 평균 변동성은 <strong>${atr.atr?.toLocaleString()}원</strong>입니다). 이 절대적인 변동성을 바탕으로 "적어도 목표가는 변동성의 2배쯤 크게, 손절가는 1배쯤 짧게" 기계적으로 세팅하는 안전한 투자 방식입니다.</div>
         </div>`;
     }
 
