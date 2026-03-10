@@ -1178,19 +1178,18 @@ function renderAiInsights(data) {
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box">
                 <div class="cyc-desc-item" style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border-left: 3px solid #10b981; margin-bottom: 12px;">
-                    <strong style="color: #10b981;">💡 활용 가이드:</strong><br/>
-                    <strong>[진행률]</strong>이 90% 이상 차오르고 <strong>[잔여 거래일]</strong>이 3일 이내로 줄어들어 <strong>[예상 도달일]</strong>에 가까워졌다면 곧 추세가 꺾이는 <strong>변곡점</strong>이 임박했음을 의미합니다. 이 때 상단의 <strong>매수/매도 리포트 신호</strong>가 강하다면 지체 없이 액션(매수 또는 분할 매도)을 취할 수 있는 최적의 타이밍입니다.
+                    <strong style="color: #10b981;">💡 현재 사이클 요약:</strong><br/>
+                    현재 다음 변곡점(추세가 꺾이는 지점) 도달까지 <strong>${cyc.progress}% 진행</strong>되었으며, 주식 시장이 열리는 날 기준으로 <strong>약 ${cyc.est_remaining_days}일</strong> 정도 남은 것으로 추정됩니다. 과거 주기의 평균이 <strong>${cyc.avg_cycle_days}일</strong>이므로, 이 추세라면 다음 변곡점은 대략 <strong>${cyc.est_next_peak_date ? cyc.est_next_peak_date : '조만간'}</strong>에 나타날 가능성이 높습니다.
+                </div>
+                <div class="cyc-desc-item">
+                    <strong>[진행률] 및 [잔여 거래일]:</strong> 과거 평균을 기준으로 다음 곡점(변곡점)이 오기까지 전체 주기 중 현재 몇 % 지점인지(진행률), 그리고 앞으로 주식 시장이 열리는 날 기준으로 며칠이 남았는지(잔여 거래일)를 알려주는 <strong>'타이밍'</strong> 지표입니다.
+                </div>
+                <div class="cyc-desc-item">
+                    <strong>[예상 도달일] 및 [사이클 통계]:</strong> 주말과 공휴일을 제외하고 계산된 실제 다음 변곡점의 캘린더 날짜(예상 도달일)입니다. '사이클 통계'의 평균은 과거 주기의 평균 일수, 경과는 최근 고점부터 지금까지 지난 일수입니다.
                 </div>
                 <div class="cyc-desc-item">
                     <strong>사이클 감지 횟수 및 신뢰도:</strong> 과거 차트에서 '고점'부터 다음 '고점'까지 걸린 기간을 하나의 <strong>'사이클'</strong>로 봅니다. 이 사이클 패턴이 과거에 몇 번 반복되었는지가 <strong>'감지 횟수'</strong>이며, 자주 규칙적으로 발생했을수록 예측의 <strong>'신뢰도'</strong>가 높아집니다.
                 </div>
-                <div class="cyc-desc-item">
-                    <strong>진행률 및 잔여 거래일:</strong> 과거 평균을 기준으로 다음 곡점(변곡점)이 오기까지 전체 주기 중 현재 몇 % 지점인지(진행률), 그리고 앞으로 주식 시장이 열리는 날 기준으로 며칠이 남았는지(잔여 거래일)를 알려주는 <strong>'타이밍'</strong> 지표입니다.
-                </div>
-                <div class="cyc-desc-item">
-                    <strong>예상 도달일 및 사이클 통계:</strong> 주말과 공휴일을 제외하고 계산된 실제 다음 변곡점의 캘린더 날짜(예상 도달일)입니다. '사이클 통계'의 평균은 과거 주기의 평균 일수, 경과는 최근 고점부터 지금까지 지난 일수입니다.
-                </div>
-                <div class="cyc-desc-item">
                     <strong>변수 보정 (피보나치, 저항선, 투자심리):</strong> 단순 잔여 거래일 계산을 넘어, 자연계 비율인 피보나치 타임존 유무, 1만원 단위 마디 가격(라운드 피겨) 돌파 대기 시간, 그리고 거래량 폭주나 RSI 과열에 따른 일정 가속화 현상을 모두 반영해 최종 도달일을 정밀 추정합니다.
                 </div>
             </div>
