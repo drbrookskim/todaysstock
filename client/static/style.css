@@ -2409,6 +2409,15 @@ html[data-theme="light"] .theme-icon-btn i {
     text-decoration: line-through;
 }
 
+/* ── 사이클 타임라인 차트 ── */
+#cycleTimelineChart {
+    background: var(--hover-bg);
+    border-radius: 10px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
 .cyc-hist-details {
     margin-bottom: 6px;
 }

@@ -775,7 +775,7 @@ function renderAnalysisReport(data) {
     // ── Mini Candlestick Chart ──
     const candleChartCard = document.getElementById('candleChartCard');
     candleChartCard.classList.remove('hidden');
-    renderCandleChart(data.recent_candles, data.cycle_estimation);
+    renderCandleChart(data.recent_candles);
 
     // ── Recent Week Analysis ──
     const recentWeekAnalysis = document.getElementById('recentWeekAnalysis');
@@ -1197,10 +1197,16 @@ function renderAiInsights(data) {
                     <strong>변수 보정 (피보나치, 저항선, 투자심리):</strong> 단순 일수 계산을 넘어, 황금비율(피보나치 타임존), 마디 가격(ex: 5만원, 10만원) 돌파 대기 시간, 그리고 거래량 폭주와 인간의 탐욕/공포(RSI)로 인한 속도 가속화 현상을 모두 자동 계산해 도달일을 정밀 예측합니다.
                 </div>
             </div>
-        </div>`;
+        </div>
+
+        <!-- 사이클 타임라인 차트 -->
+        <div id="cycleTimelineChart" style="margin-top: 16px;"></div>`;
 
         cycContainer.innerHTML = cycHtml;
         cycContainer.style.display = 'block';
+
+        // ── 📊 Dedicated Cycle Timeline SVG Chart ──
+        renderCycleTimelineChart(cyc);
     } else if (cycContainer) {
         cycContainer.style.display = 'none';
         cycContainer.innerHTML = '';
@@ -1210,7 +1216,120 @@ function renderAiInsights(data) {
 }
 
 
-function renderCandleChart(candles, cyc) {
+function renderCycleTimelineChart(cyc) {
+    const container = document.getElementById('cycleTimelineChart');
+    if (!container || !cyc) return;
+
+    const history = cyc.cycle_history || [];
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const textFill = isLight ? '#64748b' : '#94a3b8';
+    const lineFill = isLight ? '#cbd5e1' : '#334155';
+    const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
+    const phaseColor = isBearish ? '#ef4444' : '#10b981';
+    const futureColor = isBearish ? '#3b82f6' : '#10b981';
+
+    // Build timeline data points: past peaks + current + projected future
+    const points = [];
+
+    // Past cycle peaks from history
+    history.forEach(h => {
+        if (h.peak_date) points.push({ date: h.peak_date.slice(5), label: h.peak_date.slice(5), days: h.days, type: 'past' });
+    });
+    // Add the last peak from history's next_peak_date
+    if (history.length > 0) {
+        const lastH = history[history.length - 1];
+        if (lastH.next_peak_date) {
+            points.push({ date: lastH.next_peak_date.slice(5), label: lastH.next_peak_date.slice(5), days: null, type: 'last_peak' });
+        }
+    }
+    // Current position (today)
+    const today = new Date().toISOString().slice(5, 10);
+    points.push({ date: today, label: '현재', days: cyc.days_since_peak, type: 'current' });
+
+    // Future projected turning point
+    if (cyc.est_remaining_days > 0 && cyc.est_next_peak_date) {
+        points.push({ date: cyc.est_next_peak_date.slice(5), label: cyc.est_next_peak_date.slice(5), days: cyc.est_remaining_days, type: 'future' });
+    }
+
+    const count = points.length;
+    if (count < 2) { container.innerHTML = ''; return; }
+
+    // SVG Layout
+    const padL = 30, padR = 30, padTop = 30, padBot = 40;
+    const svgW = Math.max(280, container.clientWidth || 280);
+    const svgH = 110;
+    const lineY = padTop + 20;
+    const usableW = svgW - padL - padR;
+    const stepW = usableW / (count - 1);
+
+    let html = `<svg width="100%" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block;">`;
+
+    // Draw horizontal baseline
+    html += `<line x1="${padL}" y1="${lineY}" x2="${svgW - padR}" y2="${lineY}" stroke="${lineFill}" stroke-width="2"/>`;
+
+    // Find the index where future zone starts (between "current" and "future")
+    const currentIdx = points.findIndex(p => p.type === 'current');
+    const futureIdx = points.findIndex(p => p.type === 'future');
+
+    // Draw future shaded zone
+    if (futureIdx >= 0 && currentIdx >= 0) {
+        const curX = padL + currentIdx * stepW;
+        const futX = padL + futureIdx * stepW;
+        html += `<rect x="${curX}" y="${padTop}" width="${futX - curX}" height="40" rx="6" fill="${futureColor}" opacity="0.1"/>`;
+        html += `<line x1="${futX}" y1="${padTop}" x2="${futX}" y2="${padTop + 40}" stroke="${futureColor}" stroke-width="2" stroke-dasharray="4,3" opacity="0.7"/>`;
+    }
+
+    // Draw connecting lines between each consecutive past/last_peak points
+    points.forEach((p, i) => {
+        if (i === 0) return;
+        const x1 = padL + (i - 1) * stepW;
+        const x2 = padL + i * stepW;
+        const segColor = p.type === 'future' ? futureColor : (p.type === 'current' ? phaseColor : lineFill);
+        const dash = p.type === 'future' ? 'stroke-dasharray="5,4"' : '';
+        const opacity = p.type === 'future' ? '0.6' : '0.8';
+        html += `<line x1="${x1}" y1="${lineY}" x2="${x2}" y2="${lineY}" stroke="${segColor}" stroke-width="2.5" ${dash} opacity="${opacity}"/>`;
+    });
+
+    // Draw dots & labels
+    points.forEach((p, i) => {
+        const cx = padL + i * stepW;
+
+        if (p.type === 'current') {
+            // Pulsing current position dot
+            html += `<circle cx="${cx}" cy="${lineY}" r="7" fill="${phaseColor}" opacity="0.25"><animate attributeName="r" values="7;10;7" dur="2s" repeatCount="indefinite"/></circle>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="5" fill="${phaseColor}" stroke="#fff" stroke-width="1.5"/>`;
+            html += `<text x="${cx}" y="${lineY - 14}" text-anchor="middle" fill="${phaseColor}" font-size="10" font-weight="700">현재 (D-${cyc.est_remaining_days})</text>`;
+        } else if (p.type === 'future') {
+            // Target dot
+            html += `<circle cx="${cx}" cy="${lineY}" r="6" fill="none" stroke="${futureColor}" stroke-width="2.5" stroke-dasharray="3,2"/>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="2.5" fill="${futureColor}"/>`;
+            html += `<text x="${cx}" y="${lineY - 14}" text-anchor="middle" fill="${futureColor}" font-size="10" font-weight="700">🎯 변곡점</text>`;
+        } else {
+            // Past peak dot (solid)
+            html += `<circle cx="${cx}" cy="${lineY}" r="4" fill="${lineFill}" stroke="${isLight ? '#94a3b8' : '#475569'}" stroke-width="1.5"/>`;
+        }
+
+        // Date label below
+        html += `<text x="${cx}" y="${lineY + 24}" text-anchor="middle" fill="${textFill}" font-size="9" font-weight="500">${p.label}</text>`;
+
+        // Days between peaks (show above connecting line)
+        if (i > 0 && p.days != null && p.type !== 'current') {
+            const midX = padL + (i - 0.5) * stepW;
+            const textColor = p.type === 'future' ? futureColor : textFill;
+            html += `<text x="${midX}" y="${lineY - 10}" text-anchor="middle" fill="${textColor}" font-size="9" font-weight="600">${p.days}일</text>`;
+        }
+    });
+
+    // Chart title
+    html += `<text x="${padL}" y="14" fill="${textFill}" font-size="11" font-weight="700">📈 사이클 타임라인</text>`;
+    html += `<text x="${svgW - padR}" y="14" fill="${textFill}" font-size="9" text-anchor="end">평균 ${cyc.avg_cycle_days}일 · ${cyc.cycles_detected}개 사이클</text>`;
+
+    html += '</svg>';
+    container.innerHTML = html;
+}
+
+
+function renderCandleChart(candles) {
     const container = document.getElementById('candleChart');
     if (!candles || candles.length === 0) {
         container.innerHTML = '<div class="no-patterns">캔들 데이터 없음</div>';
@@ -1251,10 +1370,8 @@ function renderCandleChart(candles, cyc) {
     const topAreaH = chartH + gap + volH; // 265
     const legendPad = 25; // Space for date labels at the bottom
 
-    const futureBars = (cyc && cyc.est_remaining_days && cyc.est_remaining_days > 0) ? Math.min(cyc.est_remaining_days, 15) : 0;
-    const totalBars = candles.length + futureBars;
-    const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / totalBars));
-    const svgW = totalBars * barW + 20;
+    const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / candles.length));
+    const svgW = candles.length * barW + 20;
 
     const toY = (price) => legendTopPad + chartH - ((price - minP) / range) * (chartH - 20) - 10;
 
@@ -1262,26 +1379,6 @@ function renderCandleChart(candles, cyc) {
     const textFill = isLight ? '#1e293b' : '#f8fafc';
 
     let html = `<svg width="100%" height="${legendTopPad + topAreaH + legendPad}" viewBox="0 0 ${svgW} ${legendTopPad + topAreaH + legendPad}">`;
-
-    // ── Cycle Time Target Zone ──
-    if (futureBars > 0) {
-        const endLastCandleX = candles.length * barW + 10;
-        const currentTargetDays = cyc.est_remaining_days;
-        const drawTargetX = (candles.length - 1 + futureBars) * barW + 10 + barW / 2;
-        const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
-        const zoneColor = isBearish ? '#3b82f6' : '#ef4444'; // blue for bearish, red for bullish
-        const zoneW = drawTargetX - endLastCandleX;
-        
-        // Shaded area
-        if (zoneW > 0) {
-            html += `<rect x="${endLastCandleX}" y="${legendTopPad}" width="${zoneW}" height="${chartH}" fill="${zoneColor}" opacity="0.08" />`;
-        }
-        
-        // Target vertical dashed line & label
-        html += `<line x1="${drawTargetX}" y1="${legendTopPad}" x2="${drawTargetX}" y2="${legendTopPad + chartH}" stroke="${zoneColor}" stroke-width="2" stroke-dasharray="5,5" opacity="0.7"/>`;
-        const textAnchor = (drawTargetX > svgW - 50) ? "end" : "middle";
-        html += `<text x="${drawTargetX}" y="${legendTopPad - 8}" fill="${zoneColor}" font-size="11" font-weight="700" text-anchor="${textAnchor}" opacity="0.9">D-${currentTargetDays} 변곡점</text>`;
-    }
 
     // ── Candle sticks & Volume bars ──
     candles.forEach((c, i) => {
@@ -1491,7 +1588,7 @@ function toggleTheme() {
     updateThemeIcon();
     // Re-render candle chart so MA5 color adapts
     if (_lastAnalysisData && _lastAnalysisData.recent_candles) {
-        renderCandleChart(_lastAnalysisData.recent_candles, _lastAnalysisData.cycle_estimation);
+        renderCandleChart(_lastAnalysisData.recent_candles);
     }
 }
 
