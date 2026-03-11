@@ -775,7 +775,7 @@ function renderAnalysisReport(data) {
     // ── Mini Candlestick Chart ──
     const candleChartCard = document.getElementById('candleChartCard');
     candleChartCard.classList.remove('hidden');
-    renderCandleChart(data.recent_candles, data.cycle_time);
+    renderCandleChart(data.recent_candles, data.cycle_estimation);
 
     // ── Recent Week Analysis ──
     const recentWeekAnalysis = document.getElementById('recentWeekAnalysis');
@@ -1268,7 +1268,7 @@ function renderCandleChart(candles, cyc) {
         const endLastCandleX = candles.length * barW + 10;
         const currentTargetDays = cyc.est_remaining_days;
         const drawTargetX = (candles.length - 1 + futureBars) * barW + 10 + barW / 2;
-        const isBearish = cyc.phase && cyc.phase.includes('하락');
+        const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
         const zoneColor = isBearish ? '#3b82f6' : '#ef4444'; // blue for bearish, red for bullish
         const zoneW = drawTargetX - endLastCandleX;
         
@@ -1491,7 +1491,7 @@ function toggleTheme() {
     updateThemeIcon();
     // Re-render candle chart so MA5 color adapts
     if (_lastAnalysisData && _lastAnalysisData.recent_candles) {
-        renderCandleChart(_lastAnalysisData.recent_candles, _lastAnalysisData.cycle_time);
+        renderCandleChart(_lastAnalysisData.recent_candles, _lastAnalysisData.cycle_estimation);
     }
 }
 
