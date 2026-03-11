@@ -1170,11 +1170,15 @@ function renderAiInsights(data) {
                     </div>
                 </div>
             </div>
-            
+
             ${adjTags ? `<div class="cyc-adj-row" style="margin-top: 12px;">${adjTags}</div>` : ''}
             ${fibMarkers ? `<div class="cyc-fib-row" style="margin-top: 12px;"><span class="cyc-fib-label">피보나치 시간대</span> ${fibMarkers}</div>` : ''}
             ${histRows ? `<details class="cyc-hist-details" style="margin-top: 16px;"><summary class="cyc-hist-summary">과거 사이클 이력</summary><div class="cyc-hist-body">${histRows}</div></details>` : ''}
-            
+        </div>
+
+        <!-- 사이클 타임라인 차트 (현재 사이클 요약 바로 위) -->
+        <div id="cycleTimelineChart" style="margin-top: 16px; margin-bottom: 12px;"></div>
+
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box" style="display: flex; flex-direction: column; gap: 8px;">
                 <div class="cyc-desc-item" style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #10b981; line-height: 1.6;">
@@ -1197,10 +1201,7 @@ function renderAiInsights(data) {
                     <strong>변수 보정 (피보나치, 저항선, 투자심리):</strong> 단순 일수 계산을 넘어, 황금비율(피보나치 타임존), 마디 가격(ex: 5만원, 10만원) 돌파 대기 시간, 그리고 거래량 폭주와 인간의 탐욕/공포(RSI)로 인한 속도 가속화 현상을 모두 자동 계산해 도달일을 정밀 예측합니다.
                 </div>
             </div>
-        </div>
-
-        <!-- 사이클 타임라인 차트 -->
-        <div id="cycleTimelineChart" style="margin-top: 16px;"></div>`;
+        </div>`;
 
         cycContainer.innerHTML = cycHtml;
         cycContainer.style.display = 'block';
@@ -1257,7 +1258,7 @@ function renderCycleTimelineChart(cyc) {
     // SVG Layout
     const padL = 30, padR = 30, padTop = 30, padBot = 40;
     const svgW = Math.max(280, container.clientWidth || 280);
-    const svgH = 110;
+    const svgH = 140;
     const lineY = padTop + 20;
     const usableW = svgW - padL - padR;
     const stepW = usableW / (count - 1);
