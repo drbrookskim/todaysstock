@@ -775,7 +775,7 @@ function renderAnalysisReport(data) {
     // ── Mini Candlestick Chart ──
     const candleChartCard = document.getElementById('candleChartCard');
     candleChartCard.classList.remove('hidden');
-    renderCandleChart(data.recent_candles);
+    renderCandleChart(data.recent_candles, data.cycle_time);
 
     // ── Recent Week Analysis ──
     const recentWeekAnalysis = document.getElementById('recentWeekAnalysis');
@@ -1210,7 +1210,7 @@ function renderAiInsights(data) {
 }
 
 
-function renderCandleChart(candles) {
+function renderCandleChart(candles, cyc) {
     const container = document.getElementById('candleChart');
     if (!candles || candles.length === 0) {
         container.innerHTML = '<div class="no-patterns">캔들 데이터 없음</div>';
@@ -1251,8 +1251,10 @@ function renderCandleChart(candles) {
     const topAreaH = chartH + gap + volH; // 265
     const legendPad = 25; // Space for date labels at the bottom
 
-    const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / candles.length));
-    const svgW = candles.length * barW + 20;
+    const futureBars = (cyc && cyc.est_remaining_days && cyc.est_remaining_days > 0) ? Math.min(cyc.est_remaining_days, 15) : 0;
+    const totalBars = candles.length + futureBars;
+    const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / totalBars));
+    const svgW = totalBars * barW + 20;
 
     const toY = (price) => legendTopPad + chartH - ((price - minP) / range) * (chartH - 20) - 10;
 
@@ -1260,6 +1262,26 @@ function renderCandleChart(candles) {
     const textFill = isLight ? '#1e293b' : '#f8fafc';
 
     let html = `<svg width="100%" height="${legendTopPad + topAreaH + legendPad}" viewBox="0 0 ${svgW} ${legendTopPad + topAreaH + legendPad}">`;
+
+    // ── Cycle Time Target Zone ──
+    if (futureBars > 0) {
+        const endLastCandleX = candles.length * barW + 10;
+        const currentTargetDays = cyc.est_remaining_days;
+        const drawTargetX = (candles.length - 1 + futureBars) * barW + 10 + barW / 2;
+        const isBearish = cyc.phase && cyc.phase.includes('하락');
+        const zoneColor = isBearish ? '#3b82f6' : '#ef4444'; // blue for bearish, red for bullish
+        const zoneW = drawTargetX - endLastCandleX;
+        
+        // Shaded area
+        if (zoneW > 0) {
+            html += `<rect x="${endLastCandleX}" y="${legendTopPad}" width="${zoneW}" height="${chartH}" fill="${zoneColor}" opacity="0.08" />`;
+        }
+        
+        // Target vertical dashed line & label
+        html += `<line x1="${drawTargetX}" y1="${legendTopPad}" x2="${drawTargetX}" y2="${legendTopPad + chartH}" stroke="${zoneColor}" stroke-width="2" stroke-dasharray="5,5" opacity="0.7"/>`;
+        const textAnchor = (drawTargetX > svgW - 50) ? "end" : "middle";
+        html += `<text x="${drawTargetX}" y="${legendTopPad - 8}" fill="${zoneColor}" font-size="11" font-weight="700" text-anchor="${textAnchor}" opacity="0.9">D-${currentTargetDays} 변곡점</text>`;
+    }
 
     // ── Candle sticks & Volume bars ──
     candles.forEach((c, i) => {
@@ -1469,7 +1491,7 @@ function toggleTheme() {
     updateThemeIcon();
     // Re-render candle chart so MA5 color adapts
     if (_lastAnalysisData && _lastAnalysisData.recent_candles) {
-        renderCandleChart(_lastAnalysisData.recent_candles);
+        renderCandleChart(_lastAnalysisData.recent_candles, _lastAnalysisData.cycle_time);
     }
 }
 
