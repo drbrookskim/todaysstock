@@ -2413,9 +2413,11 @@ html[data-theme="light"] .theme-icon-btn i {
 #cycleTimelineChart {
     background: var(--hover-bg);
     border-radius: 10px;
-    padding: 8px;
+    padding: 0;
     border: 1px solid var(--border-color);
     overflow-x: auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .cyc-hist-details {
