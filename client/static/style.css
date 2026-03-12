@@ -600,10 +600,12 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .unified-logo-subtext {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 0px;
     width: 100%;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 500;
+    letter-spacing: 0.22em;
     color: var(--text-color);
     opacity: 0.65;
     margin-top: 2px;
@@ -1889,23 +1891,24 @@ html[data-theme="light"] .theme-icon-btn i {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 14px;
-    padding: 16px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     backdrop-filter: blur(20px);
 }
 
 .ai-widget-title {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-muted);
+    margin-bottom: 4px;
 }
 
 .ai-widget-desc {
-    font-size: 0.78rem;
+    font-size: 0.86rem;
     color: var(--text-color);
     line-height: 1.55;
     margin: 4px 0 8px;
@@ -1933,7 +1936,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ai-gauge-label {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
@@ -1945,7 +1948,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ai-ind {
-    font-size: 0.74rem;
+    font-size: 0.84rem;
     color: var(--text-muted);
     background: var(--hover-bg);
     padding: 2px 7px;
@@ -1965,18 +1968,18 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .ai-breakdown-row {
     display: grid;
-    grid-template-columns: 42px 1fr 36px;
+    grid-template-columns: 50px 1fr 40px;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .ai-breakdown-label {
-    font-size: 0.74rem;
+    font-size: 0.84rem;
     color: var(--text-muted);
 }
 
 .ai-breakdown-track {
-    height: 5px;
+    height: 6px;
     background: var(--hover-bg);
     border-radius: 3px;
     overflow: hidden;
@@ -1989,7 +1992,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ai-breakdown-val {
-    font-size: 0.71rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     text-align: right;
 }
@@ -2027,13 +2030,13 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ai-price-label {
-    font-size: 0.74rem;
+    font-size: 0.84rem;
     color: var(--text-muted);
     display: block;
 }
 
 .ai-price-val {
-    font-size: 0.96rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-color);
 }
@@ -3452,7 +3455,7 @@ html[data-theme="light"] .theme-icon-btn i {
     display: none;
 }
 
-/* 3-column axis grid */
+/* 3-column axis grid (horizontal) */
 .fund-axis-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -3469,12 +3472,12 @@ html[data-theme="light"] .theme-icon-btn i {
     background: var(--hover-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 12px;
-    min-height: 120px;
+    padding: 14px;
+    min-height: auto;
 }
 
 .fund-axis-title {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-muted);
     letter-spacing: 0.04em;
@@ -3482,7 +3485,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .fund-axis-content {
-    font-size: 0.78rem;
+    font-size: 0.88rem;
 }
 
 /* Quant score */
@@ -3494,17 +3497,17 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .fund-score-num {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 800;
 }
 
 .fund-score-grade {
-    font-size: 0.9rem;
+    font-size: 1.0rem;
     font-weight: 700;
 }
 
 .fund-score-label {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
 }
 
@@ -3533,19 +3536,19 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .fund-metric-table td:first-child {
     color: var(--text-muted);
-    font-size: 0.78rem;
+    font-size: 0.86rem;
     width: 60%;
 }
 
 .fund-metric-table td:last-child {
     font-weight: 600;
     text-align: right;
-    font-size: 0.84rem;
+    font-size: 0.94rem;
     color: var(--text-primary);
 }
 
 .fund-period-note {
-    font-size: 0.73rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     margin-top: 6px;
 }
