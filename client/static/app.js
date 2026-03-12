@@ -1256,10 +1256,11 @@ function renderCycleTimelineChart(cyc) {
     if (count < 2) { container.innerHTML = ''; return; }
 
     // SVG Layout
-    const padL = 30, padR = 30, padTop = 30, padBot = 40;
-    const svgW = Math.max(280, container.clientWidth || 280);
-    const svgH = 140;
-    const lineY = padTop + 20;
+    const padL = 50, padR = 50, padTop = 35, padBot = 40;
+    const parentW = document.getElementById('cycleWidgetContainer')?.clientWidth || 0;
+    const svgW = Math.max(parentW - 32, container.clientWidth || 400); 
+    const svgH = 150;
+    const lineY = padTop + 25;
     const usableW = svgW - padL - padR;
     const stepW = usableW / (count - 1);
 
@@ -1276,8 +1277,8 @@ function renderCycleTimelineChart(cyc) {
     if (futureIdx >= 0 && currentIdx >= 0) {
         const curX = padL + currentIdx * stepW;
         const futX = padL + futureIdx * stepW;
-        html += `<rect x="${curX}" y="${padTop}" width="${futX - curX}" height="40" rx="6" fill="${futureColor}" opacity="0.1"/>`;
-        html += `<line x1="${futX}" y1="${padTop}" x2="${futX}" y2="${padTop + 40}" stroke="${futureColor}" stroke-width="2" stroke-dasharray="4,3" opacity="0.7"/>`;
+        html += `<rect x="${curX}" y="${padTop}" width="${futX - curX}" height="50" rx="6" fill="${futureColor}" opacity="0.12"/>`;
+        html += `<line x1="${futX}" y1="${padTop}" x2="${futX}" y2="${padTop + 50}" stroke="${futureColor}" stroke-width="2.5" stroke-dasharray="5,4" opacity="0.8"/>`;
     }
 
     // Draw connecting lines between each consecutive past/last_peak points
@@ -1286,9 +1287,9 @@ function renderCycleTimelineChart(cyc) {
         const x1 = padL + (i - 1) * stepW;
         const x2 = padL + i * stepW;
         const segColor = p.type === 'future' ? futureColor : (p.type === 'current' ? phaseColor : lineFill);
-        const dash = p.type === 'future' ? 'stroke-dasharray="5,4"' : '';
-        const opacity = p.type === 'future' ? '0.6' : '0.8';
-        html += `<line x1="${x1}" y1="${lineY}" x2="${x2}" y2="${lineY}" stroke="${segColor}" stroke-width="2.5" ${dash} opacity="${opacity}"/>`;
+        const dash = p.type === 'future' ? 'stroke-dasharray="6,5"' : '';
+        const opacity = p.type === 'future' ? '0.6' : '0.9';
+        html += `<line x1="${x1}" y1="${lineY}" x2="${x2}" y2="${lineY}" stroke="${segColor}" stroke-width="3.5" ${dash} opacity="${opacity}"/>`;
     });
 
     // Draw dots & labels
@@ -1297,32 +1298,32 @@ function renderCycleTimelineChart(cyc) {
 
         if (p.type === 'current') {
             // Pulsing current position dot
-            html += `<circle cx="${cx}" cy="${lineY}" r="7" fill="${phaseColor}" opacity="0.25"><animate attributeName="r" values="7;10;7" dur="2s" repeatCount="indefinite"/></circle>`;
-            html += `<circle cx="${cx}" cy="${lineY}" r="5" fill="${phaseColor}" stroke="#fff" stroke-width="1.5"/>`;
-            html += `<text x="${cx}" y="${lineY - 14}" text-anchor="middle" fill="${phaseColor}" font-size="10" font-weight="700">현재 (D-${cyc.est_remaining_days})</text>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="9" fill="${phaseColor}" opacity="0.25"><animate attributeName="r" values="9;12;9" dur="2s" repeatCount="indefinite"/></circle>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="6" fill="${phaseColor}" stroke="#fff" stroke-width="2"/>`;
+            html += `<text x="${cx}" y="${lineY - 18}" text-anchor="middle" fill="${phaseColor}" font-size="11" font-weight="800">현재 (D-${cyc.est_remaining_days})</text>`;
         } else if (p.type === 'future') {
             // Target dot
-            html += `<circle cx="${cx}" cy="${lineY}" r="6" fill="none" stroke="${futureColor}" stroke-width="2.5" stroke-dasharray="3,2"/>`;
-            html += `<circle cx="${cx}" cy="${lineY}" r="2.5" fill="${futureColor}"/>`;
-            html += `<text x="${cx}" y="${lineY - 14}" text-anchor="middle" fill="${futureColor}" font-size="10" font-weight="700">🎯 변곡점</text>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="8" fill="none" stroke="${futureColor}" stroke-width="3" stroke-dasharray="4,3"/>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="3" fill="${futureColor}"/>`;
+            html += `<text x="${cx}" y="${lineY - 18}" text-anchor="middle" fill="${futureColor}" font-size="11" font-weight="800">🎯 변곡점</text>`;
         } else {
             // Past peak dot (solid)
-            html += `<circle cx="${cx}" cy="${lineY}" r="4" fill="${lineFill}" stroke="${isLight ? '#94a3b8' : '#475569'}" stroke-width="1.5"/>`;
+            html += `<circle cx="${cx}" cy="${lineY}" r="5" fill="${lineFill}" stroke="${isLight ? '#94a3b8' : '#475569'}" stroke-width="2"/>`;
         }
 
         // Date label below
-        html += `<text x="${cx}" y="${lineY + 24}" text-anchor="middle" fill="${textFill}" font-size="9" font-weight="500">${p.label}</text>`;
+        html += `<text x="${cx}" y="${lineY + 30}" text-anchor="middle" fill="${textFill}" font-size="10" font-weight="600">${p.label}</text>`;
 
         // Days between peaks (show above connecting line)
         if (i > 0 && p.days != null && p.type !== 'current') {
             const midX = padL + (i - 0.5) * stepW;
             const textColor = p.type === 'future' ? futureColor : textFill;
-            html += `<text x="${midX}" y="${lineY - 10}" text-anchor="middle" fill="${textColor}" font-size="9" font-weight="600">${p.days}일</text>`;
+            html += `<text x="${midX}" y="${lineY - 12}" text-anchor="middle" fill="${textColor}" font-size="10" font-weight="700">${p.days}일</text>`;
         }
     });
 
     // Chart title
-    html += `<text x="${padL}" y="14" fill="${textFill}" font-size="11" font-weight="700">📈 사이클 타임라인</text>`;
+    html += `<text x="${padL}" y="18" fill="${textFill}" font-size="12" font-weight="800">📈 사이클 타임라인</text>`;
     html += `<text x="${svgW - padR}" y="14" fill="${textFill}" font-size="9" text-anchor="end">평균 ${cyc.avg_cycle_days}일 · ${cyc.cycles_detected}개 사이클</text>`;
 
     html += '</svg>';
