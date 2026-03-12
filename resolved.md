@@ -1,4 +1,4 @@
-# TODAY's STOCK — 전체 수정 이력 (resolved.md)
+# Waiting for the Peak — 전체 수정 이력 (resolved.md)
 
 > 최종 업데이트: 2026-03-01
 

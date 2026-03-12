@@ -1,6 +1,6 @@
 {
-  "name": "TODAY'S STOCK",
-  "short_name": "TODAY'S STOCK",
+  "name": "Waiting for the Peak",
+  "short_name": "Waiting for the Peak",
   "description": "코스피·코스닥 종목 검색 및 AI 매매 분석",
   "start_url": "/",
   "display": "standalone",

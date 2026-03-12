@@ -1,6 +1,6 @@
 # 매수 및 매도 리포트의 가격 산출 로직 상세
 
-이 문서는 Today's Stock 서비스의 `candle_patterns.py` 알고리즘에 내부적으로 구현된 **매수 리포트(Buy Report)** 및 **매도 리포트(Sell Report)**의 목표가, 매수가, 손절가 산출 방식과 수학적 근거를 설명합니다.
+이 문서는 Waiting for the Peak 서비스의 `candle_patterns.py` 알고리즘에 내부적으로 구현된 **매수 리포트(Buy Report)** 및 **매도 리포트(Sell Report)**의 목표가, 매수가, 손절가 산출 방식과 수학적 근거를 설명합니다.
 
 ---
 

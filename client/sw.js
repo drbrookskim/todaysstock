@@ -1,5 +1,5 @@
 /**
- * TODAY'S STOCK — Service Worker
+ * Waiting for the Peak — Service Worker
  * 전략: Network-First (항상 최신 데이터 우선, API는 캐시 제외)
  */
 
