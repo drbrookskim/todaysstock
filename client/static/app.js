@@ -990,6 +990,7 @@ function renderAiInsights(data) {
         probHtml = `
         <div class="ai-insight-widget">
             <div class="ai-widget-title">매수 확률 점수</div>
+            <div class="ai-widget-body">
             <div class="ai-gauge-wrap">
                 <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="90" height="90">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="10"/>
@@ -1011,6 +1012,7 @@ function renderAiInsights(data) {
             </div>
             <div class="ai-breakdown">${breakdownBars}</div>
             <div class="ai-widget-desc"><strong>💡 점수 해석:</strong> 100점 만점의 매수 매력도입니다. 주가의 방향성(MA, <strong>35%</strong>), 상승 탄력(RSI, <strong>25%</strong>), 추세 강도(MACD, <strong>25%</strong>), 돈의 흐름(거래량, <strong>15%</strong>) 비중으로 가중 합산됩니다. 추가로 상승 잉태형, 적삼병 등 긍정적 캔들 패턴 발견 시 보너스 점수가, 흑삼병 등 부정적 패턴 발견 시 감점(±5%)이 반영됩니다.</div>
+            </div>
         </div>`;
     }
 
@@ -1021,6 +1023,7 @@ function renderAiInsights(data) {
         atrHtml = `
         <div class="ai-insight-widget">
             <div class="ai-widget-title">ATR 목표가 / 손절가</div>
+            <div class="ai-widget-body">
             <div class="ai-price-range">
                 <div class="ai-price-row target">
                     <span class="ai-price-arrow">▲</span>
@@ -1051,6 +1054,7 @@ function renderAiInsights(data) {
                 <span class="ai-atr-note">ATR ${atr.atr?.toLocaleString()}원 기준</span>
             </div>
             <div class="ai-widget-desc"><strong>💡 ATR 활용법:</strong> ATR은 최근 주가가 하루에 위아래로 평균 얼마씩 움직였는지를 보여주는 '변동성' 수치입니다. (이 종목의 현재 하루 평균 변동성은 <strong>${atr.atr?.toLocaleString()}원</strong>입니다). 이 절대적인 변동성을 바탕으로 "적어도 목표가는 변동성의 2배쯤 크게, 손절가는 1배쯤 짧게" 기계적으로 세팅하는 안전한 투자 방식입니다.</div>
+            </div>
         </div>`;
     }
 
@@ -1063,6 +1067,7 @@ function renderAiInsights(data) {
         volHtml = `
         <div class="ai-insight-widget">
             <div class="ai-widget-title">거래량 이상 감지</div>
+            <div class="ai-widget-body">
             <div class="ai-vol-badge ${levelClass}">
                 ${vol.label}
             </div>
@@ -1082,6 +1087,7 @@ function renderAiInsights(data) {
             </div>
             <div class="ai-vol-msg">${vol.message}</div>
             <div class="ai-widget-desc"><strong>💡 거래량 해석법:</strong> 최근 20일간의 평소 거래량과 비교해 오늘 얼마나 이례적으로 많은 거래가 터졌는지를(Z-score) 보여줍니다. 세력이나 큰 손의 개입을 뜻하며, 빨간 불(🔴)과 함께 거래량이 폭발했다면 매우 강력한 상승 신호일 확률이 높습니다.</div>
+            </div>
         </div>`;
     }
 

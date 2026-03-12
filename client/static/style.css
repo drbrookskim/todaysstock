@@ -1891,20 +1891,31 @@ html[data-theme="light"] .theme-icon-btn i {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 14px;
-    padding: 20px;
+    padding: 18px 20px;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
     backdrop-filter: blur(20px);
 }
 
 .ai-widget-title {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: 4px;
+    min-width: 90px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.ai-widget-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .ai-widget-desc {
@@ -3472,8 +3483,11 @@ html[data-theme="light"] .theme-icon-btn i {
     background: var(--hover-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 14px;
-    min-height: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .fund-axis-title {
@@ -3481,11 +3495,15 @@ html[data-theme="light"] .theme-icon-btn i {
     font-weight: 700;
     color: var(--text-muted);
     letter-spacing: 0.04em;
-    margin-bottom: 8px;
+    min-width: 68px;
+    flex-shrink: 0;
+    padding-top: 2px;
 }
 
 .fund-axis-content {
     font-size: 0.88rem;
+    flex: 1;
+    min-width: 0;
 }
 
 /* Quant score */
