@@ -3466,17 +3466,11 @@ html[data-theme="light"] .theme-icon-btn i {
     display: none;
 }
 
-/* 3-column axis grid (horizontal) */
+/* Full-width 1-column axis stack */
 .fund-axis-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 10px;
-}
-
-@media (max-width: 640px) {
-    .fund-axis-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 .fund-axis-card {
@@ -3495,7 +3489,7 @@ html[data-theme="light"] .theme-icon-btn i {
     font-weight: 700;
     color: var(--text-muted);
     letter-spacing: 0.04em;
-    min-width: 68px;
+    min-width: 110px;
     flex-shrink: 0;
     padding-top: 2px;
 }
