@@ -1,3 +1,9 @@
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) { registration.unregister(); }
+    });
+}
+
 const API_BASE_URL = 'https://todaysstock.onrender.com';
 /**
  * Stock Finder — Frontend Logic
