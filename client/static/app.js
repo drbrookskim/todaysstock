@@ -866,27 +866,30 @@ async function renderFundamentalReport(stockCode) {
     const qRows = [
         ['ROE', q.roe != null ? q.roe + '%' : '—'],
         ['영업이익률', q.op_margin != null ? q.op_margin + '%' : '—'],
-        ['매출성장(연)', q.rev_growth != null ? (q.rev_growth >= 0 ? '+' : '') + q.rev_growth + '%' : '—'],
-        ['매출성장(분)', q.qtr_growth != null ? (q.qtr_growth >= 0 ? '+' : '') + q.qtr_growth + '%' : '—'],
         ['부채비율', q.debt_ratio != null ? q.debt_ratio + '%' : '—'],
     ];
     const scoreColor = q.score >= 75 ? '#10b981' : q.score >= 55 ? '#f59e0b' : '#ef4444';
     document.getElementById('fundQuantContent').innerHTML = `
-        <div class="fund-score-wrap">
-            <div class="fund-score-num" style="color:${scoreColor}">${q.score ?? '—'}</div>
-            <div class="fund-score-grade" style="color:${scoreColor}">${q.grade ?? ''}</div>
-            <div class="fund-score-label">/ 100</div>
+        <div class="prob-two-col" style="background:transparent; padding:0; gap:20px;">
+            <div class="prob-left-col" style="flex:0 0 140px; border:none; padding-right:0;">
+                <div class="fund-score-wrap" style="margin-bottom:10px;">
+                    <div class="fund-score-num" style="color:${scoreColor}; font-size:2.2rem;">${q.score ?? '—'}</div>
+                    <div class="fund-score-grade" style="color:${scoreColor}; font-size:1rem;">${q.grade ?? ''}</div>
+                </div>
+                <div class="fund-score-bar-bg" style="height:6px; width:100%;">
+                    <div class="fund-score-bar" style="width:${Math.min(q.score ?? 0, 100)}%;background:${scoreColor}"></div>
+                </div>
+            </div>
+            <div class="prob-right-col">
+                <table class="fund-metric-table">
+                    ${qRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+                </table>
+            </div>
         </div>
-        <div class="fund-score-bar-bg">
-            <div class="fund-score-bar" style="width:${Math.min(q.score ?? 0, 100)}%;background:${scoreColor}"></div>
+        <div class="fund-score-desc" style="font-size:0.85rem; color:var(--text-color); margin-top:14px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+            ${q.score >= 75 ? '🔥 <b>매우 우수</b> - 안정적이고 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상</b> - 투자하기 무난한 양호한 재무 상태' : '⚠️ <b>기준 미달</b> - 재무 리스크가 있으므로 주의 필요'}
         </div>
-        <div class="fund-score-desc" style="font-size:0.81rem; color:var(--text-muted); text-align:center; margin-top:8px;">
-            ${q.score >= 75 ? '🔥 <b>매우 우수 (상위 15%)</b> - 안정적이고 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상 (상위 45%)</b> - 투자하기 무난한 양호한 재무 상태' : '⚠️ <b>기준 미달 (하위권)</b> - 재무 리스크가 있으므로 주의 필요'}
-        </div>
-        <table class="fund-metric-table">
-            ${qRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
-        </table>
-        <div class="fund-period-note">${q.period || ''} ${q.qtr_period ? '/ ' + q.qtr_period : ''}</div>`;
+        <div class="fund-period-note" style="margin-top:8px;">${q.period || ''} ${q.qtr_period ? '/ ' + q.qtr_period : ''}</div>`;
 
     // ── Event-Driven 축 ──
     const evts = d.events || [];
@@ -894,37 +897,49 @@ async function renderFundamentalReport(stockCode) {
         document.getElementById('fundEventContent').innerHTML =
             '<div class="fund-no-data">최근 30일 주요 공시 없음</div>';
     } else {
-        document.getElementById('fundEventContent').innerHTML =
-            evts.map(ev => `
-            <div class="fund-event-item fund-event-${ev.signal}">
-                <span class="fund-event-label">${ev.label}</span>
-                <span class="fund-event-date">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
-                <span class="fund-event-title" title="${ev.title}">${ev.title.length > 28 ? ev.title.slice(0, 28) + '…' : ev.title}</span>
-            </div>`).join('');
+        document.getElementById('fundEventContent').innerHTML = `
+            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
+                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
+                    <div style="font-size:2.5rem; margin-bottom:8px;">📢</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">공시 분석</div>
+                </div>
+                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                    ${evts.map(ev => `
+                    <div class="fund-event-item fund-event-${ev.signal}" style="width:100%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span class="fund-event-label">${ev.label}</span>
+                            <span class="fund-event-date" style="font-size:0.75rem;">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
+                        </div>
+                        <div class="fund-event-title" title="${ev.title}" style="font-size:0.88rem; font-weight:500;">${ev.title.length > 35 ? ev.title.slice(0, 35) + '…' : ev.title}</div>
+                    </div>`).join('')}
+                </div>
+            </div>`;
     }
 
     // ── Macro 축 ──
     const m = d.macro || {};
     const macroItems = [];
     if (m.usd_krw) macroItems.push(['USD/KRW', `${m.usd_krw.toLocaleString()}`, m.usd_krw_chg != null ? (m.usd_krw_chg >= 0 ? '+' : '') + m.usd_krw_chg + '%' : null]);
-    if (m.dxy) macroItems.push(['달러 인덱스', `${m.dxy}`, m.dxy_chg != null ? (m.dxy_chg >= 0 ? '+' : '') + m.dxy_chg + '%' : null]);
-    if (m.us10y) macroItems.push(['미 국채 10년물(^TNX)', `${m.us10y}%`, m.us10y_chg != null ? (m.us10y_chg >= 0 ? '+' : '') + m.us10y_chg + 'p' : null]);
     if (m.nasdaq) macroItems.push(['나스닥 지수', `${m.nasdaq.toLocaleString()}`, m.nasdaq_chg != null ? (m.nasdaq_chg >= 0 ? '+' : '') + m.nasdaq_chg + '%' : null]);
-    if (m.kospi) macroItems.push(['KOSPI', `${m.kospi.toLocaleString()}`, m.kospi_chg != null ? (m.kospi_chg >= 0 ? '+' : '') + m.kospi_chg + '%' : null]);
-    if (m.kosdaq) macroItems.push(['KOSDAQ', `${m.kosdaq.toLocaleString()}`, m.kosdaq_chg != null ? (m.kosdaq_chg >= 0 ? '+' : '') + m.kosdaq_chg + '%' : null]);
+    if (m.us10y) macroItems.push(['미 국채 10년물', `${m.us10y}%`, m.us10y_chg != null ? (m.us10y_chg >= 0 ? '+' : '') + m.us10y_chg + 'p' : null]);
     if (m.vix) macroItems.push(['VIX 공포지수', `${m.vix}`, m.vix_chg != null ? (m.vix_chg >= 0 ? '+' : '') + m.vix_chg + '%' : null]);
-    if (m.wti) macroItems.push(['WTI 국제유가', `$${m.wti}`, m.wti_chg != null ? (m.wti_chg >= 0 ? '+' : '') + m.wti_chg + '%' : null]);
-    if (m.base_rate) macroItems.push(['한국 기준금리', `${m.base_rate}%`, null]);
-    if (m.semi_export_yoy != null) macroItems.push(['반도체수출YoY', `${m.semi_export_yoy >= 0 ? '+' : ''}${m.semi_export_yoy}%`, null]);
 
     if (macroItems.length === 0) {
         document.getElementById('fundMacroContent').innerHTML = '<div class="fund-no-data">데이터 로드 실패</div>';
     } else {
-        document.getElementById('fundMacroContent').innerHTML =
-            macroItems.map(([k, v, chg]) => {
-                const chgHtml = chg ? `<span class="fund-macro-chg ${parseFloat(chg) >= 0 ? 'fund-pos' : 'fund-neg'}">${chg}</span>` : '';
-                return `<div class="fund-macro-row"><span class="fund-macro-key">${k}</span><span class="fund-macro-val">${v}${chgHtml}</span></div>`;
-            }).join('');
+        document.getElementById('fundMacroContent').innerHTML = `
+            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px;">
+                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
+                    <div style="font-size:2.5rem; margin-bottom:8px;">🌐</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">거시 경제</div>
+                </div>
+                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:6px; width:100%;">
+                    ${macroItems.map(([k, v, chg]) => {
+                        const chgHtml = chg ? `<span class="fund-macro-chg ${parseFloat(chg) >= 0 ? 'fund-pos' : 'fund-neg'}" style="font-size:0.75rem; margin-left:6px;">${chg}</span>` : '';
+                        return `<div class="fund-macro-row" style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;"><span class="fund-macro-key" style="font-size:0.85rem;">${k}</span><span class="fund-macro-val" style="font-weight:600; font-size:0.9rem;">${v}${chgHtml}</span></div>`;
+                    }).join('')}
+                </div>
+            </div>`;
     }
 
     // ── 사용 축 태그 ──
@@ -988,31 +1003,33 @@ function renderAiInsights(data) {
 
         const dashOffset = Math.round((1 - score / 100) * 251);
         probHtml = `
-        <div class="ai-insight-widget">
-            <div class="ai-widget-title">매수 확률 점수</div>
-            <div class="ai-widget-body">
-            <div class="ai-gauge-wrap">
-                <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="90" height="90">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="10"/>
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="${scoreColor}" stroke-width="10"
-                        stroke-dasharray="251" stroke-dashoffset="${dashOffset}"
-                        stroke-linecap="round" transform="rotate(-90 50 50)"
-                        style="transition: stroke-dashoffset 1.2s cubic-bezier(.25,.8,.25,1);"/>
-                    <text x="50" y="46" text-anchor="middle" font-size="18" font-weight="700" fill="${scoreColor}">${score}</text>
-                    <text x="50" y="60" text-anchor="middle" font-size="9" fill="var(--text-muted)">/ 100</text>
-                </svg>
-                <div class="ai-gauge-label" style="color:${scoreColor};">${prob.label}</div>
-                <div class="ai-gauge-indicators">
-                    <span class="ai-ind">RSI <strong>${prob.rsi}</strong></span>
-                    <span class="ai-ind" style="color:${(prob.macd_golden ?? false) ? '#10b981' : '#ef4444'};">
-                        MACD ${(prob.macd_golden ?? false) ? '골든↑' : '데드↓'}
-                        <strong>${(prob.macd_hist ?? 0) >= 0 ? '+' : ''}${(prob.macd_hist ?? 0).toFixed(1)}</strong>
-                    </span>
+        <div class="ai-insight-widget prob-widget">
+            <div class="prob-header">매수 확률 점수</div>
+            <div class="prob-two-col">
+                <div class="prob-left-col">
+                    <svg class="ai-gauge-svg" viewBox="0 0 100 100" width="110" height="110">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--hover-bg)" stroke-width="10"/>
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="${scoreColor}" stroke-width="10"
+                            stroke-dasharray="251" stroke-dashoffset="${dashOffset}"
+                            stroke-linecap="round" transform="rotate(-90 50 50)"
+                            style="transition: stroke-dashoffset 1.2s cubic-bezier(.25,.8,.25,1);"/>
+                        <text x="50" y="46" text-anchor="middle" font-size="20" font-weight="700" fill="${scoreColor}">${score}</text>
+                        <text x="50" y="60" text-anchor="middle" font-size="9" fill="var(--text-muted)">/ 100</text>
+                    </svg>
+                    <div class="ai-gauge-label" style="color:${scoreColor}; font-size:1rem; font-weight:700; margin-top:6px;">${prob.label}</div>
+                    <div class="prob-indicators">
+                        <span class="prob-ind-badge">RSI <strong>${prob.rsi}</strong></span>
+                        <span class="prob-ind-badge" style="color:${(prob.macd_golden ?? false) ? '#10b981' : '#ef4444'};">
+                            MACD ${(prob.macd_golden ?? false) ? '골든↑' : '데드↓'}
+                            <strong>${(prob.macd_hist ?? 0) >= 0 ? '+' : ''}${(prob.macd_hist ?? 0).toFixed(1)}</strong>
+                        </span>
+                    </div>
+                </div>
+                <div class="prob-right-col">
+                    <div class="ai-breakdown">${breakdownBars}</div>
                 </div>
             </div>
-            <div class="ai-breakdown">${breakdownBars}</div>
             <div class="ai-widget-desc"><strong>💡 점수 해석:</strong> 100점 만점의 매수 매력도입니다. 주가의 방향성(MA, <strong>35%</strong>), 상승 탄력(RSI, <strong>25%</strong>), 추세 강도(MACD, <strong>25%</strong>), 돈의 흐름(거래량, <strong>15%</strong>) 비중으로 가중 합산됩니다. 추가로 상승 잉태형, 적삼병 등 긍정적 캔들 패턴 발견 시 보너스 점수가, 흑삼병 등 부정적 패턴 발견 시 감점(±5%)이 반영됩니다.</div>
-            </div>
         </div>`;
     }
 
@@ -1021,73 +1038,70 @@ function renderAiInsights(data) {
     if (atr) {
         const rrColor = (atr.rr_ratio ?? 0) >= 1.5 ? '#10b981' : '#f59e0b';
         atrHtml = `
-        <div class="ai-insight-widget">
-            <div class="ai-widget-title">ATR 목표가 / 손절가</div>
-            <div class="ai-widget-body">
-            <div class="ai-price-range">
-                <div class="ai-price-row target">
-                    <span class="ai-price-arrow">▲</span>
-                    <div>
-                        <span class="ai-price-label">목표가</span>
-                        <span class="ai-price-val">${atr.target?.toLocaleString()}원</span>
-                        <span class="ai-price-pct up">+${atr.gain_pct}%</span>
+        <div class="ai-insight-widget prob-widget">
+            <div class="prob-header">ATR 목표가 / 손절가</div>
+            <div class="prob-two-col">
+                <div class="prob-left-col">
+                    <div class="ai-price-range">
+                        <div class="ai-price-row target">
+                            <span class="ai-price-arrow">▲</span>
+                            <div>
+                                <span class="ai-price-label">목표가</span>
+                                <span class="ai-price-val">${atr.target?.toLocaleString()}원</span>
+                                <span class="ai-price-pct up">+${atr.gain_pct}%</span>
+                            </div>
+                        </div>
+                        <div class="ai-price-row stop">
+                            <span class="ai-price-arrow down">▼</span>
+                            <div>
+                                <span class="ai-price-label">손절가</span>
+                                <span class="ai-price-val">${atr.stop_loss?.toLocaleString()}원</span>
+                                <span class="ai-price-pct down">-${atr.loss_pct}%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="ai-price-row current">
-                    <span class="ai-price-arrow neutral">●</span>
-                    <div>
-                        <span class="ai-price-label">현재가</span>
-                        <span class="ai-price-val">${atr.current?.toLocaleString()}원</span>
+                <div class="prob-right-col" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                    <div class="ai-rr-badge" style="color:${rrColor}; font-size:1.4rem; font-weight:800; border-bottom:1px solid var(--border-color); padding-bottom:8px; width:100%; text-align:center;">
+                        R:R &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
                     </div>
-                </div>
-                <div class="ai-price-row stop">
-                    <span class="ai-price-arrow down">▼</span>
-                    <div>
-                        <span class="ai-price-label">손절가</span>
-                        <span class="ai-price-val">${atr.stop_loss?.toLocaleString()}원</span>
-                        <span class="ai-price-pct down">-${atr.loss_pct}%</span>
-                    </div>
+                    <div class="ai-atr-note" style="margin-top:10px; color:var(--text-muted); font-size:0.85rem;">ATR ${atr.atr?.toLocaleString()}원 기준</div>
                 </div>
             </div>
-            <div class="ai-rr-badge" style="color:${rrColor};">
-                R:R &nbsp;<strong>1 : ${atr.rr_ratio}</strong>
-                <span class="ai-atr-note">ATR ${atr.atr?.toLocaleString()}원 기준</span>
-            </div>
-            <div class="ai-widget-desc"><strong>💡 ATR 활용법:</strong> ATR은 최근 주가가 하루에 위아래로 평균 얼마씩 움직였는지를 보여주는 '변동성' 수치입니다. (이 종목의 현재 하루 평균 변동성은 <strong>${atr.atr?.toLocaleString()}원</strong>입니다). 이 절대적인 변동성을 바탕으로 "적어도 목표가는 변동성의 2배쯤 크게, 손절가는 1배쯤 짧게" 기계적으로 세팅하는 안전한 투자 방식입니다.</div>
-            </div>
+            <div class="ai-widget-desc"><strong>💡 ATR 활용법:</strong> ATR은 최근 주가가 하루에 위아래로 평균 얼마씩 움직였는지를 보여주는 '변동성' 수치입니다. 이 절대적인 변동성을 바탕으로 "적어도 목표가는 변동성의 2배쯤 크게, 손절가는 1배쯤 짧게" 기계적으로 세팅하는 안전한 투자 방식입니다. (현재 하루 평균 변동성: <strong>${atr.atr?.toLocaleString()}원</strong>)</div>
         </div>`;
     }
 
     // ── 3. 이상 거래량 배지 ──
     let volHtml = '';
     if (vol) {
-        // CSS 클래스 기반 — 라이트/다크 테마 자동 대응
         const levelClass = vol.level !== 'normal' ? `vol-${vol.level}` : '';
         const dirIcon = vol.direction === 'up' ? '🔴' : '🔵';
         volHtml = `
-        <div class="ai-insight-widget">
-            <div class="ai-widget-title">거래량 이상 감지</div>
-            <div class="ai-widget-body">
-            <div class="ai-vol-badge ${levelClass}">
-                ${vol.label}
-            </div>
-            <div class="ai-vol-stats">
-                <div class="ai-vol-stat">
-                    <span class="ai-vol-stat-label">배율</span>
-                    <span class="ai-vol-stat-val">${vol.ratio}×</span>
+        <div class="ai-insight-widget prob-widget">
+            <div class="prob-header">거래량 이상 감지</div>
+            <div class="prob-two-col">
+                <div class="prob-left-col">
+                    <div class="ai-vol-badge ${levelClass}" style="font-size:1.1rem; padding:12px 20px;">
+                        ${vol.label}
+                    </div>
+                    <div class="ai-vol-msg" style="margin-top:12px; font-weight:600; color:var(--text-color);">${dirIcon} ${vol.direction === 'up' ? '매수세 가담' : '매도세 출현'}</div>
                 </div>
-                <div class="ai-vol-stat">
-                    <span class="ai-vol-stat-label">Z-score</span>
-                    <span class="ai-vol-stat-val">${vol.zscore}</span>
-                </div>
-                <div class="ai-vol-stat">
-                    <span class="ai-vol-stat-label">방향</span>
-                    <span class="ai-vol-stat-val">${dirIcon}</span>
+                <div class="prob-right-col">
+                    <div class="ai-vol-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="ai-vol-stat">
+                            <span class="ai-vol-stat-label">평균 대비 배율</span>
+                            <span class="ai-vol-stat-val" style="font-size:1.2rem;">${vol.ratio}×</span>
+                        </div>
+                        <div class="ai-vol-stat">
+                            <span class="ai-vol-stat-label">신뢰도 (Z-score)</span>
+                            <span class="ai-vol-stat-val" style="font-size:1.2rem;">${vol.zscore}</span>
+                        </div>
+                    </div>
+                    <div class="ai-vol-msg-detail" style="margin-top:12px; font-size:0.88rem; color:var(--text-muted); line-height:1.4;">${vol.message}</div>
                 </div>
             </div>
-            <div class="ai-vol-msg">${vol.message}</div>
-            <div class="ai-widget-desc"><strong>💡 거래량 해석법:</strong> 최근 20일간의 평소 거래량과 비교해 오늘 얼마나 이례적으로 많은 거래가 터졌는지를(Z-score) 보여줍니다. 세력이나 큰 손의 개입을 뜻하며, 빨간 불(🔴)과 함께 거래량이 폭발했다면 매우 강력한 상승 신호일 확률이 높습니다.</div>
-            </div>
+            <div class="ai-widget-desc"><strong>💡 거래량 해석법:</strong> 최근 20일간의 평소 거래량과 비교해 오늘 얼마나 이례적으로 많은 거래가 터졌는지를(Z-score) 보여줍니다. 세력이나 큰 손의 개입을 뜻하며, 빨간 불(🔴)과 함께 거래량이 폭발했다면 강력한 변동성 신호입니다.</div>
         </div>`;
     }
 

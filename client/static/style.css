@@ -1918,6 +1918,77 @@ html[data-theme="light"] .theme-icon-btn i {
     gap: 10px;
 }
 
+/* --- Section UX Reference: 매수 확률 점수 --- */
+.prob-widget {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 20px !important;
+}
+
+.prob-header {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-color);
+    padding-bottom: 12px;
+}
+
+.prob-two-col {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.prob-left-col {
+    flex: 0 0 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-right: 1px solid var(--border-color);
+    padding-right: 20px;
+}
+
+.prob-right-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.prob-indicators {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.prob-ind-badge {
+    background: var(--hover-bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .prob-two-col {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .prob-left-col {
+        flex: 1;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-right: 0;
+        padding-bottom: 20px;
+        width: 100%;
+    }
+}
+
 .ai-widget-desc {
     font-size: 0.86rem;
     color: var(--text-color);
