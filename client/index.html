@@ -638,6 +638,21 @@
 
     <!-- Auth Modal Overlay -->
     <div id="authModalOverlay" class="modal-overlay"></div>
+    
+    <!-- Google OAuth Confirmation Modal -->
+    <div id="oauthConfirmOverlay" class="modal-overlay"></div>
+    <div id="oauthConfirmModal" class="confirm-modal auth-modal">
+        <div class="modal-header">
+            <h3>Google 계정으로 계속하기</h3>
+        </div>
+        <div class="modal-body">
+            <p>Google 계정으로 로그인을 진행합니다. 계속하시겠습니까?</p>
+            <div class="confirm-actions">
+                <button id="oauthCancelBtn" class="cancel-btn">취소</button>
+                <button id="oauthContinueBtn" class="continue-btn google-continue">계속하기</button>
+            </div>
+        </div>
+    </div>
     <!-- Auth Modal -->
     <div id="authModal" class="auth-modal">
         <div class="modal-header">

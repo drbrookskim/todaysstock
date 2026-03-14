@@ -1724,6 +1724,12 @@ async function initAuth() {
     const authModalTitle = document.getElementById('authModalTitle');
     const authErrorMsg = document.getElementById('authErrorMsg');
 
+    // OAuth Confirmation Elements
+    const oauthConfirmOverlay = document.getElementById('oauthConfirmOverlay');
+    const oauthConfirmModal = document.getElementById('oauthConfirmModal');
+    const oauthCancelBtn = document.getElementById('oauthCancelBtn');
+    const oauthContinueBtn = document.getElementById('oauthContinueBtn');
+
     let isLoginMode = true;
 
     // 모달 열기/닫기 로직

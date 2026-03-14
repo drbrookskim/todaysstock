@@ -775,12 +775,12 @@ html[data-theme="light"] .theme-icon-btn i {
     top: calc(100% + 4px);
     left: 0;
     right: 0;
-    background: rgba(17, 24, 39, 0.95);
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-premium);
     max-height: 320px;
     overflow-y: auto;
     z-index: 100;
@@ -2941,6 +2941,38 @@ html[data-theme="light"] .theme-icon-btn i {
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ── Confirm Modal ── */
+.confirm-modal {
+    max-width: 400px;
+    padding: 24px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-premium);
+}
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+.confirm-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+}
+.cancel-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+.google-continue {
+    background: #4285F4;
+    color: white;
+    border: none;
+}
+
 
 .auth-modal.show {
     display: block;
