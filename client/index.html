@@ -124,13 +124,14 @@
                     <button id="authBtn" class="top-auth-btn">로그인</button>
                 </div>
             </header>
-            <!-- Header -->
-            <header class="header">
-                <div class="header-row">
-                    <div class="header-left">
-                        <!-- Navigation or other icons can go here if needed -->
-                </div>
-            </header>
+
+
+            <!-- Status Alerts (Spinner/Error) -->
+            <div id="loadingSpinner" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <p>데이터를 불러오는 중...</p>
+            </div>
+            <div id="errorMessage" class="error-banner hidden"></div>
             
             <section id="dashboardHome" class="dashboard-home">
                 <div class="search-hero">
