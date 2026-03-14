@@ -104,8 +104,7 @@ function initNavigation() {
 
     // Search Button Listener
     const searchBtn = document.getElementById('searchBtn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
+    searchBtn?.addEventListener('click', () => {
             const query = searchInput.value.trim();
             if (query.length > 0) {
                 if (activeIndex >= 0 && suggestItems[activeIndex]) {
@@ -127,7 +126,6 @@ function initNavigation() {
                 }
             }
         });
-    }
 }
 
 function showSection(id) {
@@ -1680,14 +1678,14 @@ function toggleTheme() {
 initTheme();
 window.addEventListener('DOMContentLoaded', () => {
     searchInput.focus();
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
     renderRecentSearches();
-    document.getElementById('clearRecent').addEventListener('click', clearRecentSearches);
+    document.getElementById('clearRecent')?.addEventListener('click', clearRecentSearches);
 
     // Watchlist init
     renderWatchlist();
     updateWatchlistBtn();
-    document.getElementById('addWatchlistBtn').addEventListener('click', () => {
+    document.getElementById('addWatchlistBtn')?.addEventListener('click', () => {
         if (currentStock && !isInWatchlist(currentStock.code)) {
             addToWatchlist(currentStock);
         }
@@ -1695,11 +1693,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Sidebar pin/toggle init
     applySidebarPinState();
-    document.getElementById('sidebarPinBtn').addEventListener('click', () => {
+    document.getElementById('sidebarPinBtn')?.addEventListener('click', () => {
         setSidebarPinned(!isSidebarPinned());
     });
-    document.getElementById('sidebarToggle').addEventListener('click', toggleSidebarOpen);
-    document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+    document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebarOpen);
+    document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
 
     // Core UI Init (Blocking-free)
     initNavigation();
@@ -1748,15 +1746,14 @@ async function initAuth() {
         authErrorMsg.textContent = '';
     };
 
-    authBtn.addEventListener('click', () => {
+    authBtn?.addEventListener('click', () => {
         showModal();
     });
 
-    closeAuthModal.addEventListener('click', hideModal);
-    authModalOverlay.addEventListener('click', hideModal);
+    closeAuthModal?.addEventListener('click', hideModal);
+    authModalOverlay?.addEventListener('click', hideModal);
 
-    if (sidebarLogoutBtn) {
-        sidebarLogoutBtn.addEventListener('click', async () => {
+    sidebarLogoutBtn?.addEventListener('click', async () => {
             await fetch(API_BASE_URL + '/api/logout', { method: 'POST', headers: getAuthHeaders() });
             removeSupaToken();
             authUser = null;
@@ -1767,7 +1764,6 @@ async function initAuth() {
             // Optionally close sidebar after logging out
             if (!isSidebarPinned()) closeSidebar();
         });
-    }
 
     // ── Supabase JS 클라이언트 초기화 (브라우저 직통 인증용) ──
     let sbClient = null;
@@ -1782,64 +1778,59 @@ async function initAuth() {
     }
 
     // ── Google OAuth ──
-    if (googleAuthBtn) {
-        googleAuthBtn.addEventListener('click', async () => {
-            if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
-            if (oauthConfirmOverlay && oauthConfirmModal) {
-                hideModal();
-                oauthConfirmOverlay.classList.add('active');
-                oauthConfirmModal.classList.add('active');
-            }
-        });
-    }
+    googleAuthBtn?.addEventListener('click', async () => {
+        if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
+        if (oauthConfirmOverlay && oauthConfirmModal) {
+            hideModal();
+            oauthConfirmOverlay.classList.add('active');
+            oauthConfirmModal.classList.add('active');
+        }
+    });
 
-    if (oauthCancelBtn) {
-        oauthCancelBtn.addEventListener('click', () => {
-            oauthConfirmOverlay.classList.remove('active');
-            oauthConfirmModal.classList.remove('active');
-            showModal();
-        });
-    }
+    oauthCancelBtn?.addEventListener('click', () => {
+        oauthConfirmOverlay.classList.remove('active');
+        oauthConfirmModal.classList.remove('active');
+        showModal();
+    });
 
-    if (oauthContinueBtn) {
-        oauthContinueBtn.addEventListener('click', async () => {
-            if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
-            try {
+    oauthContinueBtn?.addEventListener('click', async () => {
+        if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
+        try {
+            if (oauthContinueBtn) {
                 oauthContinueBtn.disabled = true;
                 oauthContinueBtn.style.opacity = '0.7';
-                const redirectTo = window.location.origin + '/callback.html';
-                const { error } = await sbClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo }
-                });
-                if (error) throw error;
-                // Supabase redirects the browser — nothing more to do here
-            } catch (err) {
-                alert('Google 로그인 오류: ' + (err.message || '알 수 없는 오류'));
-                oauthConfirmOverlay.classList.remove('active');
-                oauthConfirmModal.classList.remove('active');
-            } finally {
+            }
+            const redirectTo = window.location.origin + '/callback.html';
+            const { error } = await sbClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo }
+            });
+            if (error) throw error;
+            // Supabase redirects the browser — nothing more to do here
+        } catch (err) {
+            alert('Google 로그인 오류: ' + (err.message || '알 수 없는 오류'));
+            oauthConfirmOverlay?.classList.remove('active');
+            oauthConfirmModal?.classList.remove('active');
+        } finally {
+            if (oauthContinueBtn) {
                 oauthContinueBtn.disabled = false;
                 oauthContinueBtn.style.opacity = '1';
             }
-        });
-    }
+        }
+    });
 
     // ── 로그인 ↔ 회원가입 전환 ──
-    if (authSwitchBtn) {
-        authSwitchBtn.addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            authModalTitle.textContent = isLoginMode ? '로그인' : '회원가입';
-            authSubmitBtn.textContent = isLoginMode ? '로그인' : '회원가입';
-            authSwitchText.textContent = isLoginMode ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?';
-            authSwitchBtn.textContent = isLoginMode ? '회원가입' : '로그인';
-            authErrorMsg.textContent = '';
-        });
-    }
+    authSwitchBtn?.addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        if (authModalTitle) authModalTitle.textContent = isLoginMode ? '로그인' : '회원가입';
+        if (authSubmitBtn) authSubmitBtn.textContent = isLoginMode ? '로그인' : '회원가입';
+        if (authSwitchText) authSwitchText.textContent = isLoginMode ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?';
+        if (authSwitchBtn) authSwitchBtn.textContent = isLoginMode ? '회원가입' : '로그인';
+        if (authErrorMsg) authErrorMsg.textContent = '';
+    });
 
     // ── 로그인/회원가입 폼 ──
-    if (authForm) {
-        authForm.addEventListener('submit', async (e) => {
+    authForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const username = document.getElementById('username').value.trim();
@@ -1902,7 +1893,6 @@ async function initAuth() {
                 authSubmitBtn.disabled = false;
             }
         });
-    }
 
     const updateAuthUI = () => {
         const authBtn = document.getElementById('authBtn');
