@@ -58,6 +58,7 @@ function clearRecentSearches() {
 function renderRecentSearches() {
     const container = document.getElementById('recentSearches');
     const list = document.getElementById('recentList');
+    if (!container || !list) return;
     const recents = getRecentSearches();
 
     if (recents.length === 0) {
@@ -143,6 +144,46 @@ function showSection(id) {
     });
     const target = document.getElementById(id);
     if (target) target.classList.remove('hidden');
+}
+
+// ── Sidebar Pin & Toggle ──
+const SIDEBAR_PIN_KEY = 'stockfinder-sidebar-pin';
+
+function isSidebarPinned() {
+    return localStorage.getItem(SIDEBAR_PIN_KEY) === 'true';
+}
+
+function setSidebarPinned(pinned) {
+    localStorage.setItem(SIDEBAR_PIN_KEY, pinned ? 'true' : 'false');
+    applySidebarPinState();
+}
+
+function applySidebarPinState() {
+    const sidebar = document.getElementById('mainSidebar');
+    const pinBtn = document.getElementById('sidebarPinBtn');
+    if (!sidebar) return;
+    
+    if (isSidebarPinned()) {
+        sidebar.classList.add('pinned');
+        if (pinBtn) pinBtn.classList.add('active');
+    } else {
+        sidebar.classList.remove('pinned');
+        if (pinBtn) pinBtn.classList.remove('active');
+    }
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('mainSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('show');
+}
+
+function toggleSidebarOpen() {
+    const sidebar = document.getElementById('mainSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.toggle('mobile-open');
+    if (overlay) overlay.classList.toggle('show');
 }
 
 // ── Sidebar Toggle (Mobile) ──
@@ -247,20 +288,22 @@ function isInWatchlist(code) {
 }
 
 function renderWatchlist() {
-    const container = document.getElementById('watchlistItems');
+    const container = document.getElementById('watchlistContainer'); // Updated ID
     const emptyMsg = document.getElementById('watchlistEmpty');
-    const countEl = document.getElementById('watchlistCount');
+    const countEl = document.getElementById('navWatchlistCount'); // Updated ID
     const list = getWatchlist();
 
-    countEl.textContent = list.length;
+    if (countEl) countEl.textContent = list.length;
+
+    if (!container) return; // Prevent fatal crash!
 
     if (list.length === 0) {
         container.innerHTML = '';
-        emptyMsg.style.display = 'flex';
+        if (emptyMsg) emptyMsg.style.display = 'flex';
         return;
     }
 
-    emptyMsg.style.display = 'none';
+    if (emptyMsg) emptyMsg.style.display = 'none';
     container.innerHTML = list.map(item => {
         const isActive = currentStock && currentStock.code === item.code;
         return `<div class="watchlist-item ${isActive ? 'active' : ''}" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
@@ -302,6 +345,7 @@ function renderWatchlist() {
 
 function updateWatchlistBtn() {
     const btn = document.getElementById('addWatchlistBtn');
+    if (!btn) return;
     if (!currentStock) {
         btn.disabled = true;
         btn.classList.remove('added');
