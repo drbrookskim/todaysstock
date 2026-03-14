@@ -1701,7 +1701,11 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sidebarToggle').addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
 
-    // Auth Init
+    // Core UI Init (Blocking-free)
+    initNavigation();
+    initMobileSidebar();
+
+    // Auth & Session Init (Async/Background)
     initAuth();
 });
 
@@ -1960,10 +1964,6 @@ async function initAuth() {
         }
         updateAuthUI();
     };
-
-    // 초기화 함수 실행
-    initNavigation();
-    initMobileSidebar();
 
     // 로드 시 초기 세션 확인
     await fetchUserSession();
