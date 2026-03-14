@@ -67,131 +67,121 @@
         <div class="bg-overlay"></div>
     </div>
 
-    <div class="app-layout">
-        <!-- Sidebar Hamburger Toggle (visible when unpinned) -->
-        <button id="sidebarToggle" class="sidebar-toggle" aria-label="관심종목 열기" title="관심종목">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
+    <div class="app-shell">
+        <!-- New Primary Sidebar (PandaDoc / Remote Style) -->
+        <aside id="mainSidebar" class="main-sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-circle">S</div>
+                <span class="brand-text">Signnith</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" id="navHome">
+                    <i class="ph ph-house"></i>
+                    <span>홈</span>
+                </a>
+                <a href="#" class="nav-item" id="navWatchlist">
+                    <i class="ph ph-star"></i>
+                    <span>관심종목</span>
+                    <span id="navWatchlistCount" class="nav-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="navAnalysis">
+                    <i class="ph ph-chart-line-up"></i>
+                    <span>심층분석</span>
+                </a>
+                <a href="#" class="nav-item" id="navHistory">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>검색기록</span>
+                </a>
+            </nav>
 
-        <!-- Sidebar Overlay (for mobile/unpinned click-away) -->
-        <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-        <!-- Watchlist Sidebar -->
-        <aside id="watchlistSidebar" class="watchlist-sidebar">
-            <div class="sidebar-header">
-                <h2 class="sidebar-title"><i class="ph ph-list-checks"></i> 관심종목</h2>
-                <div class="sidebar-header-actions">
-                    <span id="watchlistCount" class="sidebar-count">0</span>
-                    <button id="sidebarPinBtn" class="sidebar-pin-btn" title="사이드바 고정" aria-label="사이드바 고정">
-                        <svg class="pin-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 17v5"></path>
-                            <path
-                                d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z">
-                            </path>
-                        </svg>
-                    </button>
+            <div class="sidebar-bottom">
+                <div class="sidebar-user" id="sidebarUserSection">
+                    <div class="user-avatar"><i class="ph ph-user"></i></div>
+                    <div class="user-info">
+                        <span id="sidebarUserName" class="user-name">Guest</span>
+                        <span id="sidebarUserStatus" class="user-status">로그인이 필요합니다</span>
+                    </div>
                 </div>
-            </div>
-            <div id="watchlistItems" class="watchlist-items"></div>
-            <div id="watchlistEmpty" class="watchlist-empty">
-                <span class="empty-icon"><i class="ph ph-push-pin"></i></span>
-                <p>종목을 검색하고<br>"종목추가" 버튼으로<br>관심 목록에 추가하세요</p>
-            </div>
-            <div class="sidebar-footer" id="sidebarFooter" style="display:none">
-                <button id="sidebarLogoutBtn" class="sidebar-logout-btn" aria-label="로그아웃" title="로그아웃">
-                    <span class="logout-icon">로그아웃</span>
-                </button>
             </div>
         </aside>
 
-        <div class="container">
+        <main class="main-content">
+            <!-- Top Bar (Remote Style) -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button id="sidebarToggle" class="mobile-toggle"><i class="ph ph-list"></i></button>
+                    <div class="greeting-area">
+                        <h2 id="pageGreeting" class="greeting-text">Hello, Signnith 🕊️</h2>
+                        <p id="pageSubGreeting" class="sub-greeting-text">오늘은 어떤 종목을 살펴볼까요?</p>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="header-search-mini hidden" id="headerMiniSearch">
+                         <i class="ph ph-magnifying-glass"></i>
+                         <input type="text" placeholder="종목 검색...">
+                    </div>
+                    <button id="authBtn" class="top-auth-btn">로그인</button>
+                </div>
+            </header>
             <!-- Header -->
             <header class="header">
                 <div class="header-row">
                     <div class="header-left">
                         <!-- Navigation or other icons can go here if needed -->
-                    </div>
-                    <div class="logo-placeholder"></div>
-                    <div class="header-actions">
-                        <button id="authBtn" class="auth-btn">로그인</button>
-                    </div>
                 </div>
-                <p class="subtitle">코스피 · 코스닥 종목 검색</p>
             </header>
-
-            <!-- Search Section -->
-            <section class="search-section">
-                <!-- Unified Center Logo -->
-                <div class="unified-logo-container">
-                    <div class="unified-logo-icon">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" class="primary-logo-svg"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <!-- Chart Line Background -->
-                            <path d="M3 17L8 10L12 13L18 3" stroke="#006eb8" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" opacity="0.6" />
-                            <!-- Magnifying Glass -->
-                            <circle cx="14" cy="11" r="7" stroke="url(#logoGradient)" stroke-width="2.5"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M19 16L22.5 19.5" stroke="url(#logoGradient)" stroke-width="2.5"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                            <!-- Crosshair / Inspection Focus Point -->
-                            <circle cx="14" cy="11" r="1.5" fill="#02e079" />
-                            <defs>
-                                <linearGradient id="logoGradient" x1="7" y1="4" x2="21" y2="18"
-                                    gradientUnits="userSpaceOnUse">
-                                    <stop offset="0%" stop-color="#02e079" />
-                                    <stop offset="100%" stop-color="#0096ff" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
+            
+            <section id="dashboardHome" class="dashboard-home">
+                <div class="search-hero">
+                    <div class="search-card">
+                        <div class="search-card-header">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <h3>종목 검색</h3>
+                        </div>
+                        <div class="search-wrapper">
+                            <input type="text" id="searchInput" class="search-input"
+                                placeholder="삼성전자, 005930..." autocomplete="off">
+                            <button id="searchBtn" class="search-action-btn">검색</button>
+                        </div>
+                        <p class="search-hint">종목명 또는 6자리 코드를 입력하세요</p>
+                        
+                        <!-- Autocomplete Dropdown -->
+                        <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
                     </div>
-                    <div class="unified-logo-group">
-                        <h1 class="unified-logo-text">Signnith</h1>
-                                                <div class="unified-logo-subtext">
-                            <span>(</span><span>W</span><span>a</span><span>i</span><span>t</span><span>i</span><span>n</span><span>g</span><span>&nbsp;</span><span>f</span><span>o</span><span>r</span><span>&nbsp;</span><span>t</span><span>h</span><span>e</span><span>&nbsp;</span><span>P</span><span>e</span><span>a</span><span>k</span><span>)</span>
+
+                    <!-- Market Status Chips (Remote/PandaDoc style) -->
+                    <div class="market-status-group">
+                        <div class="status-chip">
+                            <span class="dot live"></span>
+                            <span class="label">KOSPI 2,548.21</span>
+                            <span class="change up">+1.2%</span>
+                        </div>
+                        <div class="status-chip">
+                            <span class="dot live"></span>
+                            <span class="label">KOSDAQ 862.11</span>
+                            <span class="change down">-0.4%</span>
                         </div>
                     </div>
                 </div>
-                <p class="search-guide">종목명 또는 종목번호(6자리)로 검색할 수 있습니다</p>
-                <div class="search-wrapper">
-                    <div class="search-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </svg>
+
+                <!-- Recent & Watchlist Quick View -->
+                <div id="recentSearches" class="recent-searches-box hidden">
+                    <div class="box-header">
+                        <h4>최근 검색어</h4>
+                        <button id="clearRecent">모두 지우기</button>
                     </div>
-                    <input type="text" id="searchInput" class="search-input"
-                        placeholder="종목명 또는 종목코드를 입력하세요 (예: 삼성전자, 005930)" autocomplete="off" spellcheck="false">
-                    <div class="search-shortcut">
-                        <kbd>검색</kbd>
-                    </div>
-                    <button id="addWatchlistBtn" class="add-watchlist-btn" disabled title="종목을 먼저 검색하세요">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        추가
-                    </button>
-                </div>
-                <!-- Autocomplete Dropdown -->
-                <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
-                <!-- Recent Searches -->
-                <div id="recentSearches" class="recent-searches hidden">
-                    <div class="recent-header">
-                        <span class="recent-label"><i class="ph ph-clock-counter-clockwise"></i> 최근 검색</span>
-                        <button id="clearRecent" class="recent-clear">전체 삭제</button>
-                    </div>
-                    <div id="recentList" class="recent-list"></div>
+                    <div id="recentList" class="recent-chips-container"></div>
                 </div>
             </section>
+
+            <!-- Stock Result Area (Merged) -->
+            <section id="resultSection" class="result-section hidden">
+                <div id="addWatchlistBtnContainer" class="action-bar">
+                    <button id="addWatchlistBtn" class="premium-action-btn">
+                        <i class="ph ph-plus"></i> 관심종목 추가
+                    </button>
+                </div>
 
             <!-- Loading -->
             <div id="loadingSpinner" class="loading hidden">
@@ -202,8 +192,6 @@
             <!-- Error Message -->
             <div id="errorMessage" class="error-message hidden"></div>
 
-            <!-- Results -->
-            <section id="resultSection" class="result-section hidden">
                 <!-- Stock Header Card -->
                 <div class="stock-header-card">
                     <div class="stock-title-row">
@@ -620,8 +608,26 @@
                         </table>
                     </details>
                 </div>
+            <!-- Watchlist Section -->
+            <section id="watchlistSection" class="watchlist-section hidden">
+                <div class="section-header">
+                    <h3>관심종목</h3>
+                </div>
+                <div id="watchlistContainer" class="watchlist-grid">
+                    <!-- Watchlist items will be rendered here -->
+                </div>
             </section>
-        </div>
+
+            <!-- History Section -->
+            <section id="historySection" class="history-section hidden">
+                <div class="section-header">
+                    <h3>검색 기록</h3>
+                </div>
+                <div id="historyList" class="history-list">
+                    <!-- History items will be rendered here -->
+                </div>
+            </section>
+        </main>
     </div> <!-- .app-layout -->
 
     <!-- Theme Icon Toggle (Bottom Right) -->
