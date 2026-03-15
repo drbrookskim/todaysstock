@@ -92,9 +92,10 @@ function initNavigation() {
     const sections = {
         'navHome': 'dashboardHome',
         'navWatchlist': 'watchlistSection',
-        'navAnalysis': 'analysisSection',
+        'navAnalysis': 'resultSection',
         'navHistory': 'historySection'
     };
+
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -298,10 +299,16 @@ function renderWatchlist() {
     if (!container) return; // Prevent fatal crash!
 
     if (list.length === 0) {
-        container.innerHTML = '';
+        container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; min-height: 200px;">
+                <i class="ph ph-star"></i>
+                <p>관심종목이 없습니다.<br>검색 후 별표를 눌러 추가해보세요!</p>
+            </div>
+        `;
         if (emptyMsg) emptyMsg.style.display = 'flex';
         return;
     }
+
 
     if (emptyMsg) emptyMsg.style.display = 'none';
     container.innerHTML = list.map(item => {
@@ -444,12 +451,13 @@ function renderSuggestions(items, query) {
     suggestDropdown.innerHTML = items.map((item, idx) => {
         const marketClass = escapeHtml(item.market).toLowerCase();
         const highlightedName = highlightMatch(escapeHtml(item.name), escapeHtml(query));
+        const addedBadge = isInWatchlist(item.code) ? `<span class="suggest-badge-added"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 추가됨</span>` : '';
         return `
             <div class="suggest-item ${idx === activeIndex ? 'active' : ''}"
                  data-index="${idx}"
                  onmouseenter="setActiveIndex(${idx})"
                  onclick="selectStockByIndex(${idx})">
-                <span class="suggest-item-name">${highlightedName}</span>
+                <span class="suggest-item-name">${highlightedName} ${addedBadge}</span>
                 <span class="suggest-item-meta">
                     <span class="suggest-item-code">${escapeHtml(item.code)}</span>
                     <span class="suggest-item-market ${marketClass}">${escapeHtml(item.market)}</span>
@@ -838,6 +846,64 @@ function renderAnalysisReport(data) {
     });
 
     trendText.textContent = `추세 강도: ${data.trend_strength}%`;
+
+    // ── Legacy UX Restore: Rating & Financials ──
+    const ratingBarsContainer = document.getElementById('ratingBarsContainer');
+    const financialsGrid = document.getElementById('financialsGrid');
+    const ratingScoreVal = document.getElementById('ratingScoreVal');
+
+    if (ratingBarsContainer && financialsGrid) {
+        // Deterministic mock data logic leveraging simple hash of stock code
+        const codeText = data.code || currentStock?.code || '005930';
+        const hash = codeText.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+        const rand = (min, max) => min + (hash % (max - min));
+        
+        const overallScore = (rand(60, 95) / 10).toFixed(1);
+        ratingScoreVal.textContent = overallScore;
+
+        const ratingLabels = ['수익성', '성장성', '안정성', '효율성', '시장평가'];
+        const ratingGrades = ['부진', '보통', '양호', '우수', '매우 우수'];
+        
+        let barsHtml = '';
+        ratingLabels.forEach((label, idx) => {
+            const targetPct = Math.min(100, Math.max(30, rand(30, 100) + (idx * 5) - (hash % (10 + idx))));
+            const gradeIdx = Math.floor((targetPct - 30) / 14);
+            const grade = ratingGrades[Math.min(4, Math.max(0, gradeIdx))];
+            
+            barsHtml += `
+            <div class="rating-bar-row">
+                <span class="rating-label">${label}</span>
+                <div class="rating-track">
+                    <div class="rating-fill" data-target-width="${targetPct}"></div>
+                </div>
+                <span class="rating-value">${grade}</span>
+            </div>`;
+        });
+        ratingBarsContainer.innerHTML = barsHtml;
+
+        // Animate bars on scroll/view
+        observeElement(ratingBarsContainer, (el) => {
+            el.querySelectorAll('.rating-fill').forEach((fillEl, idx) => {
+                fillEl.style.transitionDelay = `${idx * 0.1}s`;
+                // trigger layout reflow before assigning width
+                void fillEl.offsetWidth;
+                fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
+            });
+        });
+
+        // Financials Grid Mock
+        const per = (rand(50, 250) / 10).toFixed(1) + 'x';
+        const pbr = (rand(5, 30) / 10).toFixed(1) + 'x';
+        const roe = (rand(1, 25)).toFixed(1) + '%';
+        const debt = (rand(20, 180)) + '%';
+
+        financialsGrid.innerHTML = `
+            <div class="finance-box"><span class="finance-label">PER</span><span class="finance-val">${per}</span></div>
+            <div class="finance-box"><span class="finance-label">PBR</span><span class="finance-val">${pbr}</span></div>
+            <div class="finance-box"><span class="finance-label">ROE</span><span class="finance-val">${roe}</span></div>
+            <div class="finance-box"><span class="finance-label">부채비율</span><span class="finance-val">${debt}</span></div>
+        `;
+    }
 
     // ── Patterns List ──
     const patternsCard = document.getElementById('patternsCard');
@@ -1607,6 +1673,9 @@ function renderCandleChart(candles) {
     observeElement(container, (el) => {
         el.querySelectorAll('.candle-group').forEach(cg => {
             cg.style.transform = 'scaleY(1)';
+        });
+        el.querySelectorAll('.vol-group').forEach(vg => {
+            vg.style.transform = 'scaleY(1)';
         });
         el.querySelectorAll('.ma-line').forEach((line, index) => {
             line.style.animation = `drawLine 2s ease-out ${index * 0.3}s forwards`;
