@@ -4,7 +4,9 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-const API_BASE_URL = 'https://todaysstock.onrender.com';
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? '' 
+    : 'https://todaysstock.onrender.com';
 /**
  * Stock Finder — Frontend Logic
  * 코스피/코스닥 종목 검색, 결과 표시, 캔들 패턴 분석 리포트
@@ -137,14 +139,26 @@ function initNavigation() {
 }
 
 function showSection(id) {
-    // Basic section toggling logic
     const sections = ['dashboardHome', 'resultSection', 'watchlistSection', 'historySection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
-        if (el) el.classList.add('hidden');
+        if (el) {
+            el.classList.add('hidden');
+            el.style.display = ''; // Reset inline style to let CSS handle it
+        }
     });
+
     const target = document.getElementById(id);
-    if (target) target.classList.remove('hidden');
+    if (target) {
+        target.classList.remove('hidden');
+        target.style.display = ''; // Let CSS handle visibility
+        
+        requestAnimationFrame(() => {
+            console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
+            if (id === 'watchlistSection') renderWatchlist();
+            if (id === 'dashboardHome') renderMacroIndicators();
+        });
+    }
 }
 
 // ── Sidebar Pin & Toggle ──
@@ -231,20 +245,28 @@ function getAuthHeaders() {
 }
 
 function getWatchlist() {
-    if (authUser && authUser.logged_in) {
+    // 1. 로그인 유저 인메모리 캐시 우선
+    if (authUser && authUser.logged_in && currentWatchlist && currentWatchlist.length > 0) {
         return currentWatchlist;
     }
+    // 2. 로컬스토리지 (비로그인 유저 또는 로그인 유저 세션 복구용 캐시)
     try {
-        return JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
+        const local = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
+        // 로그인 상태라면 인메모리 캐시도 최신화 (메모리 락 방지)
+        if (authUser && authUser.logged_in && currentWatchlist.length === 0) {
+            currentWatchlist = local;
+        }
+        return local;
     } catch { return []; }
 }
 
 function saveWatchlist(list) {
+    // 인메모리 업데이트
     if (authUser && authUser.logged_in) {
         currentWatchlist = list;
-    } else {
-        localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
     }
+    // 항상 로컬스토리지에 저장 (로그인 유저도 새로고침 시 즉시 데이터를 보기 위함)
+    localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
     renderWatchlist();
 }
 
@@ -289,14 +311,19 @@ function isInWatchlist(code) {
 }
 
 function renderWatchlist() {
-    const container = document.getElementById('watchlistContainer'); // Updated ID
-    const emptyMsg = document.getElementById('watchlistEmpty');
-    const countEl = document.getElementById('navWatchlistCount'); // Updated ID
+    console.log('renderWatchlist() called');
+    const container = document.getElementById('watchlistContainer');
+    const countEl = document.getElementById('navWatchlistCount');
     const list = getWatchlist();
+    
+    console.log('Watchlist items count:', list.length);
 
     if (countEl) countEl.textContent = list.length;
 
-    if (!container) return; // Prevent fatal crash!
+    if (!container) {
+        console.warn('watchlistContainer not found');
+        return;
+    }
 
     if (list.length === 0) {
         container.innerHTML = `
@@ -305,12 +332,8 @@ function renderWatchlist() {
                 <p>관심종목이 없습니다.<br>검색 후 별표를 눌러 추가해보세요!</p>
             </div>
         `;
-        if (emptyMsg) emptyMsg.style.display = 'flex';
         return;
     }
-
-
-    if (emptyMsg) emptyMsg.style.display = 'none';
     container.innerHTML = list.map(item => {
         const isActive = currentStock && currentStock.code === item.code;
         return `<div class="watchlist-item ${isActive ? 'active' : ''}" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
@@ -537,9 +560,9 @@ async function selectStock(item) {
         industry: '반도체와반도체장비',
         company_summary: '삼성전자는 한국을 대표하는 글로벌 IT 기업입니다.',
         ma5: 71200,
-        ma10: 70500,
         ma20: 69800,
         ma60: 68000,
+        ma120: 65500,
         nxt: {
             nxt_available: true,
             nxt_status: 'OPEN',
@@ -694,9 +717,9 @@ function renderVisualBars(data) {
     const container = document.getElementById('maVisualBars');
     const bars = [
         { label: '5일선', value: data.ma5, cssClass: 'ma5' },
-        { label: '10일선', value: data.ma10, cssClass: 'ma10' },
         { label: '20일선', value: data.ma20, cssClass: 'ma20' },
         { label: '60일선', value: data.ma60, cssClass: 'ma60' },
+        { label: '120일선', value: data.ma120, cssClass: 'ma120' },
     ];
 
     const allValues = [data.price, ...bars.map(b => b.value)].filter(v => v != null);
@@ -759,6 +782,77 @@ const observeElement = (el, callback) => {
 
 
 // ═══════════════════════════════════════════════════
+// 글로벌 매크로 지표 렌더링
+// ═══════════════════════════════════════════════════
+
+function renderMacroIndicators() {
+    const indexGrid = document.getElementById('indexGrid');
+    const economyGrid = document.getElementById('economyGrid');
+    const fgFill = document.getElementById('fgFill');
+    const fgNeedle = document.getElementById('fgNeedle');
+    const fgStatus = document.getElementById('fgStatus');
+    const fgValue = document.getElementById('fgValue');
+
+    if (!indexGrid || !economyGrid) return;
+
+    // Mock Data for Macro Indicators
+    const indexData = [
+        { name: 'KOSPI', price: '2,548.21', change: '+1.2%', up: true },
+        { name: 'KOSDAQ', price: '862.11', change: '-0.4%', up: false },
+        { name: 'S&P 500', price: '5,072.10', change: '+0.8%', up: true },
+        { name: 'NASDAQ', price: '16,105.3', change: '+1.5%', up: true }
+    ];
+
+    const economyData = [
+        { name: 'USD/KRW 환율', price: '1,324.50', change: '-2.1', up: false },
+        { name: 'WTI 유가', price: '78.45', change: '+0.5', up: true },
+        { name: '미 국채 10년물', price: '4.21%', change: '+0.02', up: true }
+    ];
+
+    const fearGreedValue = 68; // Greed
+
+    // Render Indices
+    indexGrid.innerHTML = indexData.map(idx => `
+        <div class="indicator-row">
+            <span class="indicator-label">${idx.name}</span>
+            <div class="indicator-values">
+                <span class="indicator-price">${idx.price}</span>
+                <span class="indicator-change ${idx.up ? 'up' : 'down'}">${idx.change}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Render Economy
+    economyGrid.innerHTML = economyData.map(eco => `
+        <div class="indicator-row">
+            <span class="indicator-label">${eco.name}</span>
+            <div class="indicator-values">
+                <span class="indicator-price">${eco.price}</span>
+                <span class="indicator-change ${eco.up ? 'up' : 'down'}">${eco.change}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Render Fear & Greed
+    if (fgFill && fgNeedle) {
+        // Needle rotation: -90deg to +90deg based on 0-100 value
+        const needleRotation = (fearGreedValue / 100) * 180 - 90;
+        fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
+        
+        // Gauge fill: Hide parts of the gradient by rotating a mask
+        // This is a simple approximation
+        fgFill.style.transform = `rotate(${(fearGreedValue / 100) * 180}deg)`;
+        
+        fgValue.textContent = fearGreedValue;
+        if (fearGreedValue < 25) fgStatus.textContent = 'Extreme Fear';
+        else if (fearGreedValue < 45) fgStatus.textContent = 'Fear';
+        else if (fearGreedValue < 55) fgStatus.textContent = 'Neutral';
+        else if (fearGreedValue < 75) fgStatus.textContent = 'Greed';
+        else fgStatus.textContent = 'Extreme Greed';
+    }
+}
+
+// ═══════════════════════════════════════════════════
 // AI 캔들 패턴 분석 리포트
 // ═══════════════════════════════════════════════════
 
@@ -779,7 +873,9 @@ async function fetchAnalysis(item) {
         trend_label: '강력 상승 추세',
         trend_strength: 85,
         patterns: [
-            { name: '적삼병', signal: 'bullish', confidence: 0.9, volume_surge: true }
+            { name: '적삼병', signal: 'bullish', confidence: 0.92, volume_surge: true, description: '3거래일 연속 양봉이 출현하며 강력한 추세 반전 신호를 나타냅니다.' },
+            { name: '망치형', signal: 'bullish', confidence: 0.85, volume_surge: false, description: '하락 추세 끝에서 긴 아랫꼬리를 형성하며 매수세 유입을 암시합니다.' },
+            { name: '상승 장악형', signal: 'bullish', confidence: 0.78, volume_surge: true, description: '이전 음봉을 완전히 감싸는 양봉이 출현하여 매수 우위를 보여줍니다.' }
         ],
         trade_probability: {
             score: 82,
@@ -1719,6 +1815,18 @@ function renderCandleChart(candles) {
         }
     });
 
+    // ── Resistance & Support Lines (Phase 2 - Attachment 4) ──
+    const resistPrice = maxP * 0.98;
+    const supportPrice = minP * 1.02;
+    
+    html += `<line x1="0" y1="${toY(resistPrice)}" x2="${svgW}" y2="${toY(resistPrice)}" 
+                stroke="#ef4444" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.6" />`;
+    html += `<text x="${svgW - 45}" y="${toY(resistPrice) - 5}" fill="#ef4444" font-size="10" font-weight="600">저항선</text>`;
+
+    html += `<line x1="0" y1="${toY(supportPrice)}" x2="${svgW}" y2="${toY(supportPrice)}" 
+                stroke="#3b82f6" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.6" />`;
+    html += `<text x="${svgW - 45}" y="${toY(supportPrice) + 12}" fill="#3b82f6" font-size="10" font-weight="600">지지선</text>`;
+
     // ── MA Legend (Moved to Top) ──
     const legendY = 15;
     const legendStartX = 5;
@@ -2096,36 +2204,60 @@ async function initAuth() {
     const fetchUserSession = async () => {
         try {
             const token = getSupaToken();
+            console.log('Fetching session from:', API_BASE_URL + '/api/session');
             const res = await fetch(API_BASE_URL + '/api/session', {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
+            console.log('Session response status:', res.status);
             const data = await res.json();
+            console.log('Session data:', data);
 
             // authUser 형식 유지 (logged_in, username)
             authUser = { logged_in: data.logged_in, username: data.username };
 
             if (data.logged_in) {
-                // watchlist 가 이미 세션 응답에 포함되어 있음
                 const serverList = data.watchlist || [];
+                // 서버 데이터를 메모리에 저장하되, 로컬 캐시와 병합 시도
                 currentWatchlist = serverList;
+                console.log('Server watchlist loaded:', currentWatchlist.length, 'items');
 
-                // 로그인 전 게스트 상태로 저장된 로컬 관심종목이 있다면 DB로 병합
                 try {
-                    const guestList = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
-                    if (guestList.length > 0) {
-                        for (const item of guestList) {
-                            if (!currentWatchlist.some(w => w.code === item.code)) {
-                                await fetch(API_BASE_URL + '/api/watchlist', {
-                                    method: 'POST',
-                                    headers: getAuthHeaders(),
-                                    body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
-                                });
-                                currentWatchlist.push(item);
+                    const guestListStr = localStorage.getItem(WATCHLIST_KEY);
+                    if (guestListStr) {
+                        const guestList = JSON.parse(guestListStr) || [];
+                        if (guestList.length > 0) {
+                            let mergedAny = false;
+                            for (const item of guestList) {
+                                if (!currentWatchlist.some(w => w.code === item.code)) {
+                                    try {
+                                        const pushRes = await fetch(API_BASE_URL + '/api/watchlist', {
+                                            method: 'POST',
+                                            headers: getAuthHeaders(),
+                                            body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
+                                        });
+                                        if (pushRes.ok) {
+                                            currentWatchlist.push(item);
+                                            mergedAny = true;
+                                        }
+                                    } catch (pushErr) {
+                                        console.error('Failed to sync guest item:', item.code, pushErr);
+                                    }
+                                }
                             }
+                            // 병합된 후 최신 상태를 로컬에도 저장 (게스트 데이터를 유저 데이터로 전환)
+                            saveWatchlist(currentWatchlist);
                         }
-                        localStorage.removeItem(WATCHLIST_KEY);
                     }
-                } catch (e) { console.error('Guest Watchlist merge error', e); }
+                } catch (e) {
+                    console.error('Guest Watchlist merge error', e);
+                }
+                
+                // 최종적으로 서버 리스트로 강제 동기화 (만약 로컬이 꼬였다면 서버가 진실)
+                // 단, renderWatchlist()는 saveWatchlist()에서 이미 호출됨
+                if (currentWatchlist.length === 0 && serverList.length > 0) {
+                    currentWatchlist = serverList;
+                    saveWatchlist(currentWatchlist);
+                }
             }
 
             renderWatchlist();

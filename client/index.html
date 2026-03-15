@@ -168,6 +168,47 @@
                     </div>
                 </div>
 
+                <!-- Global Macro Indicators Section -->
+                <div id="macroIndicatorSection" class="macro-section">
+                    <div class="section-header">
+                        <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
+                        <span class="update-time">실시간 업데이트 중</span>
+                    </div>
+                    
+                    <div class="macro-grid">
+                        <!-- Card 1: Major Indices -->
+                        <div class="macro-card">
+                            <h4 class="card-subtitle">시장 지수</h4>
+                            <div id="indexGrid" class="index-grid">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Economy Indicators -->
+                        <div class="macro-card">
+                            <h4 class="card-subtitle">주요 경제 지표</h4>
+                            <div id="economyGrid" class="economy-grid">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Fear & Greed -->
+                        <div class="macro-card">
+                            <h4 class="card-subtitle">탐욕 & 공포 지수</h4>
+                            <div id="fearGreedContainer" class="fg-container">
+                                <div class="fg-gauge">
+                                    <div class="fg-fill" id="fgFill"></div>
+                                    <div class="fg-needle" id="fgNeedle"></div>
+                                </div>
+                                <div class="fg-labels">
+                                    <span id="fgStatus">Neutral</span>
+                                    <span id="fgValue">50</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Recent & Watchlist Quick View -->
                 <div id="recentSearches" class="recent-searches-box hidden">
                     <div class="box-header">
@@ -667,7 +708,8 @@
                             </tbody>
                         </table>
                     </details>
-                </div>
+            </section> <!-- End resultSection -->
+
             <!-- Watchlist Section -->
             <section id="watchlistSection" class="watchlist-section hidden">
                 <div class="section-header">
@@ -688,7 +730,7 @@
                 </div>
             </section>
         </main>
-    </div> <!-- .app-layout -->
+    </div> <!-- .app-shell -->
 
     <!-- Theme Icon Toggle (Bottom Right) -->
     <button id="themeToggle" class="theme-icon-btn" aria-label="테마 변경" title="테마 전환">
