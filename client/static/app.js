@@ -781,14 +781,14 @@ async function fetchAnalysis(item) {
         patterns: [
             { name: '적삼병', signal: 'bullish', confidence: 0.9, volume_surge: true }
         ],
-        buy_probability: {
+        trade_probability: {
             score: 82,
             label: '매수 강력 추천',
             rsi: 65,
             macd_golden: true,
             macd_hist: 2.5
         },
-        atr_analysis: {
+        atr_targets: {
             target: 75000,
             stop_loss: 68000,
             gain_pct: 10,
@@ -796,7 +796,7 @@ async function fetchAnalysis(item) {
             rr_ratio: 2.0,
             atr: 1200
         },
-        volume_analysis: {
+        volume_anomaly: {
             level: 'high',
             label: '이상 매수 폭증',
             direction: 'up',
