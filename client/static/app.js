@@ -734,10 +734,15 @@ function renderVisualBars(data) {
         `;
     }).join('');
 
-    // Trigger reflow to apply CSS transitions safely
-    // MA Bars will wait for observer
+    observeElement(container, (el) => {
+        el.querySelectorAll('.ma-bar-fill').forEach(fillEl => {
+            fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
+        });
+        el.querySelectorAll('.ma-bar-current-price').forEach(dot => {
+            dot.style.left = dot.getAttribute('data-target-left') + '%';
+        });
+    });
 }
-
 // ── Intersection Observer for Scroll Animations ──
 const observeElement = (el, callback) => {
     const observer = new IntersectionObserver((entries, obs) => {
@@ -813,6 +818,25 @@ async function fetchAnalysis(item) {
             fib_time_zones: [{day: 21, date: '2026-03-10'}, {day: 34, date: '2026-03-23'}]
         }
     };
+
+    let mockCandles = [];
+    let curPrice = 65000;
+    for (let i = 0; i < 65; i++) {
+        curPrice += (Math.random() - 0.45) * 1500;
+        mockCandles.push({
+            date: `2026-0${Math.floor(i/30)+1}-${(i%30)+1}`,
+            open: curPrice,
+            close: curPrice + (Math.random()-0.5)*1000,
+            high: curPrice + 1000,
+            low: curPrice - 1000,
+            volume: Math.floor(Math.random() * 2000000),
+            ma5: curPrice * 0.98,
+            ma20: curPrice * 0.95,
+            ma60: curPrice * 0.90,
+            ma120: curPrice * 0.85
+        });
+    }
+    mockData.recent_candles = mockCandles;
 
     setTimeout(() => {
         analysisLoading.classList.add('hidden');
