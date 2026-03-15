@@ -1521,18 +1521,19 @@ html[data-theme="light"] .theme-icon-btn i {
 .ma-visual-bars {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .ma-bar-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    position: relative;
 }
 
 .ma-bar-label {
     width: 50px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
     font-weight: 500;
     text-align: right;
@@ -1541,63 +1542,48 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .ma-bar-track {
     flex: 1;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 14px;
-    overflow: hidden;
+    height: 32px;
+    background: transparent;
+    border-radius: 9999px;
     position: relative;
+    overflow: visible;
 }
 
 .ma-bar-fill {
     height: 100%;
-    border-radius: 14px;
+    border-radius: 9999px;
     transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     align-items: center;
     justify-content: flex-end;
     padding-right: 12px;
-    font-size: 0.75rem;
-    font-family: 'Space Grotesk', monospace;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    min-width: 60px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-.ma-bar-fill.ma5 {
-    background: linear-gradient(90deg, rgba(245, 158, 11, 0.3), var(--ma5-color));
-}
-
-.ma-bar-fill.ma10 {
-    background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), var(--ma10-color));
-}
-
-.ma-bar-fill.ma20 {
-    background: linear-gradient(90deg, rgba(236, 72, 153, 0.3), var(--ma20-color));
-}
-
-.ma-bar-fill.ma60 {
-    background: linear-gradient(90deg, rgba(20, 184, 166, 0.3), var(--ma60-color));
-}
+/* Base Colors extracted from attachment 2 */
+.ma-bar-fill.ma5 { background-color: #F59E0B; }
+.ma-bar-fill.ma10 { background-color: #8B5CF6; }
+.ma-bar-fill.ma20 { background-color: #EC4899; }
+.ma-bar-fill.ma60 { background-color: #14B8A6; }
 
 .ma-bar-current-price {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: -4px;
+    bottom: -4px;
     width: 2px;
-    background: var(--text-primary);
+    background-color: #111827;
     z-index: 2;
     transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.ma-bar-current-price::after {
-    content: '현재가';
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    white-space: nowrap;
+[data-theme="dark"] .ma-bar-current-price,
+html:not([data-theme="light"]) .ma-bar-current-price {
+    background-color: #F3F4F6;
 }
 
 .ma-visual-legend {
@@ -1606,7 +1592,7 @@ html[data-theme="light"] .theme-icon-btn i {
     justify-content: flex-end;
     gap: 8px;
     margin-top: 16px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
 }
 
@@ -1614,7 +1600,12 @@ html[data-theme="light"] .theme-icon-btn i {
     display: inline-block;
     width: 2px;
     height: 14px;
-    background-color: var(--text-primary);
+    background-color: #111827;
+}
+
+[data-theme="dark"] .ma-visual-legend-line,
+html:not([data-theme="light"]) .ma-visual-legend-line {
+    background-color: #F3F4F6;
 }
 
 .ma-bar-diff {
@@ -4072,3 +4063,206 @@ html[data-theme="light"] .theme-icon-btn i {
     font-weight: 700;
     color: var(--text-main);
 }
+
+/* ── Company Info Card (Phase 2) ── */
+.company-info-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.company-quote {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-muted); /* Grayish quote */
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+[data-theme="dark"] .company-quote,
+html:not([data-theme="light"]) .company-quote {
+    color: var(--text-sub);
+}
+
+.company-section {
+    margin-bottom: 24px;
+}
+.company-section:last-child {
+    margin-bottom: 0;
+}
+
+.company-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.vertical-bar {
+    width: 4px;
+    height: 18px;
+    background-color: var(--secondary); /* Light blue from the screenshot */
+    border-radius: 2px;
+}
+
+.company-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.company-list {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.company-list li {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.company-list li strong {
+    color: var(--text-main);
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.company-list li::before {
+    content: "•";
+    color: var(--secondary);
+    font-weight: bold;
+    display: inline-block; 
+    width: 1em;
+}
+
+.company-body-text {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ── AI Pattern Trend Pill (Phase 2) ── */
+.trend-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.trend-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Base states for Trend Pill */
+.trend-pill.bullish {
+    background-color: rgba(16, 185, 129, 0.1); /* Light green bg */
+    color: #10B981; /* Green text */
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.trend-pill.bearish {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.trend-pill.neutral {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #6B7280;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+[data-theme="dark"] .trend-pill.bullish,
+html:not([data-theme="light"]) .trend-pill.bullish {
+    background-color: rgba(16, 185, 129, 0.15);
+}
+
+/* Strength Layout Wrapper */
+.trend-strength-layout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.trend-strength-bar {
+    flex: 1;
+    height: 10px;
+    background: var(--border-soft);
+    border-radius: 5px;
+    overflow: hidden;
+    max-width: 200px;
+}
+
+.trend-strength-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Dynamic Fill colors based on state are applied via JS, but we define bases here if needed */
+.trend-strength-text {
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', monospace;
+    color: var(--text-main);
+}
+
+/* ── Chart Legend (Phase 2) ── */
+.chart-legend {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.legend-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.legend-group.right {
+    gap: 16px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: -4px;
+}
+
+/* Match the exact colors for MAs from Phase 2 screenshot */
+.legend-dot.ma5 { background-color: #F59E0B; }
+.legend-dot.ma20 { background-color: #EC4899; }
+.legend-dot.ma60 { background-color: #14B8A6; }
+.legend-dot.ma120 { background-color: #8B5CF6; }
+
+.legend-line {
+    width: 20px;
+    height: 2px;
+    display: inline-block;
+    margin-right: -4px;
+}
+
+.legend-line.resist { background-color: rgba(239, 68, 68, 0.8); } /* Red */
+.legend-line.support { background-color: rgba(59, 130, 246, 0.8); } /* Blue */

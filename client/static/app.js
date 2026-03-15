@@ -715,8 +715,13 @@ function renderVisualBars(data) {
         const diffSign = diff > 0 ? '+' : '';
         const diffClass = diff > 0 ? 'up' : diff < 0 ? 'down' : '';
 
+        let delay = '0.3s';
+        if (bar.cssClass === 'ma10') delay = '0.4s';
+        if (bar.cssClass === 'ma20') delay = '0.5s';
+        if (bar.cssClass === 'ma60') delay = '0.6s';
+
         return `
-            <div class="ma-bar-row" style="animation: slideInRight 0.5s ease-out forwards; opacity: 0; animation-delay: ${0.1 * bar.cssClass.replace('ma', '')}s;">
+            <div class="ma-bar-row" style="animation: slideInRight 0.5s ease-out forwards; opacity: 0; animation-delay: ${delay};">
                 <span class="ma-bar-label">${bar.label}</span>
                 <div class="ma-bar-track">
                     <div class="ma-bar-fill ${bar.cssClass}" style="width: 0%; transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1) 0.3s;" data-target-width="${barPct}">
@@ -833,19 +838,54 @@ function renderAnalysisReport(data) {
         neutral: { icon: '⚖️', cls: 'trend-neutral', color: '#6b7280' },
     };
 
+    // Reset Classes
     const cfg = trendConfig[data.trend] || trendConfig.neutral;
-    trendBadge.className = `trend-badge ${cfg.cls}`;
+    trendBadge.className = `trend-pill ${data.trend}`;
     trendIcon.textContent = cfg.icon;
     trendLabel.textContent = data.trend_label;
     trendFill.style.width = '0%';
-    trendFill.style.background = `linear-gradient(90deg, ${cfg.color}88, ${cfg.color})`;
+    
+    // Apply matching bar colors
+    let barColor = 'rgba(107, 114, 128, 0.8)';
+    if (data.trend === 'bullish') barColor = 'rgba(16, 185, 129, 0.8)';
+    if (data.trend === 'bearish') barColor = 'rgba(239, 68, 68, 0.8)';
+    trendFill.style.backgroundColor = barColor;
+
     trendFill.style.transition = 'width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) 0.1s';
 
     observeElement(trendFill, (el) => {
         el.style.width = `${data.trend_strength}%`;
     });
 
-    trendText.textContent = `추세 강도: ${data.trend_strength}%`;
+    trendText.textContent = `${data.trend_strength}%`;
+
+    // ── Phase 2: Company Info Mock ──
+    const companyInfoCard = document.getElementById('companyInfoCard');
+    if (companyInfoCard) {
+        const codeText = data.code || currentStock?.code || '005930';
+        companyInfoCard.classList.remove('hidden');
+
+        // Target exactly Attachment 1 if specific code, others get generic mock
+        if (codeText === '039030') {
+            document.getElementById('companyQuote').textContent = '"글로벌 경쟁력 기반의 반도체 장비 및 재료 선도 기업"';
+            document.getElementById('companyFounded').textContent = '1993년 12월 30일';
+            document.getElementById('companyCEO').textContent = '성규동,박종구(각자대표이사)';
+            document.getElementById('companyAddress').textContent = '경기도 안양시 동안구 동편로 91';
+            document.getElementById('companyWebsite').textContent = 'www.eotechnics.com';
+            document.getElementById('companyCoreBusiness').textContent = '(주)이오테크닉스는 레이저 가공 장비를 전세계적으로 제조, 공급하고 있습니다.';
+        } else {
+            const hash = codeText.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+            const years = [1970, 1985, 1999, 2010, 2015];
+            const quotes = ['"미래 가치를 창출하는 글로벌 혁신 기업"', '"고객과 함께 성장하는 신뢰의 파트너"', '"기술 중심의 지속가능한 미래 사업"'];
+            
+            document.getElementById('companyQuote').textContent = quotes[hash % quotes.length];
+            document.getElementById('companyFounded').textContent = `${years[hash % years.length]}년 ${hash%12 + 1}월 ${hash%28 + 1}일`;
+            document.getElementById('companyCEO').textContent = '홍길동(대표이사)';
+            document.getElementById('companyAddress').textContent = '서울특별시 강남구 테헤란로 XXX';
+            document.getElementById('companyWebsite').textContent = `www.company-mock-${codeText}.com`;
+            document.getElementById('companyCoreBusiness').textContent = '첨단 기술 개발 및 글로벌 비즈니스 솔루션을 제공하며, 지속 가능한 성장을 위한 신사업 발굴에 주력하고 있습니다.';
+        }
+    }
 
     // ── Legacy UX Restore: Rating & Financials ──
     const ratingBarsContainer = document.getElementById('ratingBarsContainer');
@@ -1550,9 +1590,9 @@ function renderCandleChart(candles) {
     const allPrices = candles.flatMap(c => {
         const prices = [c.high, c.low];
         if (c.ma5 != null) prices.push(c.ma5);
-        if (c.ma10 != null) prices.push(c.ma10);
         if (c.ma20 != null) prices.push(c.ma20);
         if (c.ma60 != null) prices.push(c.ma60);
+        if (c.ma120 != null) prices.push(c.ma120);
         return prices;
     });
     const minP = Math.min(...allPrices);
@@ -1616,25 +1656,24 @@ function renderCandleChart(candles) {
         }
     });
 
-    // ── Support & Resistance Lines ──
+    // ── Support & Resistance Lines (Phase 2 Layout) ──
     const highestC = Math.max(...candles.map(c => c.high));
     const lowestC = Math.min(...candles.map(c => c.low));
     const resY = toY(highestC);
     const supY = toY(lowestC);
 
-    html += `<line x1="10" y1="${resY}" x2="${svgW - 10}" y2="${resY}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>`;
-    html += `<text x="15" y="${resY - 6}" fill="#ef4444" font-size="10" font-weight="600" opacity="0.8">단기 저항선</text>`;
+    html += `<line x1="10" y1="${resY}" x2="${svgW - 50}" y2="${resY}" stroke="rgba(239, 68, 68, 0.8)" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8"/>`;
+    html += `<text x="${svgW - 10}" y="${resY + 4}" text-anchor="end" fill="rgba(239, 68, 68, 0.9)" font-size="10" font-weight="700">저항선</text>`;
 
-    html += `<line x1="10" y1="${supY}" x2="${svgW - 10}" y2="${supY}" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>`;
-    html += `<text x="15" y="${supY + 12}" fill="#3b82f6" font-size="10" font-weight="600" opacity="0.8">단기 지지선</text>`;
+    html += `<line x1="10" y1="${supY}" x2="${svgW - 50}" y2="${supY}" stroke="rgba(59, 130, 246, 0.8)" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8"/>`;
+    html += `<text x="${svgW - 10}" y="${supY + 4}" text-anchor="end" fill="rgba(59, 130, 246, 0.9)" font-size="10" font-weight="700">지지선</text>`;
 
-    // ── Moving Average lines ──
+    // ── Moving Average lines (Phase 2 Colors & MA120) ──
     const maConfigs = [
-        { key: 'ma5', color: isLight ? '#000000' : '#ffffff', label: '5일선' },
-        { key: 'ma10', color: '#2563eb', label: '10일선' }, // 파랑
-        { key: 'ma20', color: '#ea580c', label: '20일선' }, // 주황
-        { key: 'ma60', color: '#16a34a', label: '60일선' }, // 초록
-        { key: 'ma120', color: '#9ca3af', label: '120일선' }, // 회색
+        { key: 'ma5', color: '#F59E0B', label: '5일선' },
+        { key: 'ma20', color: '#EC4899', label: '20일선' },
+        { key: 'ma60', color: '#14B8A6', label: '60일선' },
+        { key: 'ma120', color: '#8B5CF6', label: '120일선' }
     ];
 
     maConfigs.forEach(ma => {

@@ -262,6 +262,32 @@
                     </div>
                 </div>
 
+                <!-- Company Info Card (Phase 2 Update) -->
+                <div id="companyInfoCard" class="company-info-card hidden">
+                    <div class="company-quote" id="companyQuote"></div>
+                    
+                    <div class="company-section">
+                        <div class="company-section-header">
+                            <span class="vertical-bar"></span>
+                            <span class="company-section-title">1. 기업 개요</span>
+                        </div>
+                        <ul class="company-list">
+                            <li><strong>설립일:</strong> <span id="companyFounded"></span></li>
+                            <li><strong>대표이사:</strong> <span id="companyCEO"></span></li>
+                            <li><strong>본사:</strong> <span id="companyAddress"></span></li>
+                            <li><strong>웹사이트:</strong> <span id="companyWebsite"></span></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="company-section">
+                        <div class="company-section-header">
+                            <span class="vertical-bar"></span>
+                            <span class="company-section-title">2. 핵심 사업 영역 (주요 활동)</span>
+                        </div>
+                        <p class="company-body-text" id="companyCoreBusiness"></p>
+                    </div>
+                </div>
+
                 <!-- Moving Averages Card -->
                 <div class="ma-card">
                     <h3 class="ma-title">
@@ -310,17 +336,16 @@
                 <!-- MA Visual Bar -->
                 <div class="ma-visual-card">
                     <h3 class="ma-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 3v18h18"></path>
-                            <path d="m19 9-5 5-4-4-3 3"></path>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary); margin-right: 4px;">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                         </svg>
                         이동평균 대비 현재가 위치
                     </h3>
                     <div id="maVisualBars" class="ma-visual-bars"></div>
                     <div class="ma-visual-legend">
                         <span class="ma-visual-legend-line"></span>
-                        세로선은 <strong>현재가</strong>를 의미합니다.
+                        | 세로선은 <strong>현재가</strong>를 의미합니다.
                     </div>
                 </div>
 
@@ -343,14 +368,16 @@
 
                         <!-- Trend Badge -->
                         <div class="trend-container" id="trendContainer">
-                            <div id="trendBadge" class="trend-badge">
+                            <div id="trendBadge" class="trend-pill">
                                 <span id="trendIcon" class="trend-icon"></span>
                                 <span id="trendLabel" class="trend-label"></span>
                             </div>
-                            <div class="trend-strength-bar">
-                                <div id="trendStrengthFill" class="trend-strength-fill"></div>
+                            <div class="trend-strength-layout">
+                                <div class="trend-strength-bar">
+                                    <div id="trendStrengthFill" class="trend-strength-fill"></div>
+                                </div>
+                                <span id="trendStrengthText" class="trend-strength-text"></span>
                             </div>
-                            <span id="trendStrengthText" class="trend-strength-text"></span>
                         </div>
                     </div>
 
@@ -370,6 +397,21 @@
                         <h4 class="card-subtitle" id="chartTitle">
                             <i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 3개월 간 캔들 차트
                         </h4>
+
+                        <!-- Phase 2 Chart Legend -->
+                        <div class="chart-legend">
+                            <div class="legend-group">
+                                <span class="legend-dot ma5"></span>5일
+                                <span class="legend-dot ma20"></span>20일
+                                <span class="legend-dot ma60"></span>60일
+                                <span class="legend-dot ma120"></span>120일
+                            </div>
+                            <div class="legend-group right">
+                                <span class="legend-line resist"></span>저항선
+                                <span class="legend-line support"></span>지지선
+                            </div>
+                        </div>
+
                         <div id="candleChart" class="candle-chart"></div>
 
                         <!-- Recent Week Analysis -->
