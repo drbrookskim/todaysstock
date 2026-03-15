@@ -785,7 +785,7 @@ const observeElement = (el, callback) => {
 // 글로벌 매크로 지표 렌더링
 // ═══════════════════════════════════════════════════
 
-function renderMacroIndicators() {
+async function renderMacroIndicators() {
     const indexGrid = document.getElementById('indexGrid');
     const economyGrid = document.getElementById('economyGrid');
     const fgFill = document.getElementById('fgFill');
@@ -795,59 +795,67 @@ function renderMacroIndicators() {
 
     if (!indexGrid || !economyGrid) return;
 
-    // Mock Data for Macro Indicators
-    const indexData = [
-        { name: 'KOSPI', price: '2,548.21', change: '+1.2%', up: true },
-        { name: 'KOSDAQ', price: '862.11', change: '-0.4%', up: false },
-        { name: 'S&P 500', price: '5,072.10', change: '+0.8%', up: true },
-        { name: 'NASDAQ', price: '16,105.3', change: '+1.5%', up: true }
-    ];
+    try {
+        const resp = await fetch(`${API_BASE_URL}/api/macro`);
+        if (!resp.ok) throw new Error('Macro data fetch failed');
+        const data = await resp.json();
 
-    const economyData = [
-        { name: 'USD/KRW 환율', price: '1,324.50', change: '-2.1', up: false },
-        { name: 'WTI 유가', price: '78.45', change: '+0.5', up: true },
-        { name: '미 국채 10년물', price: '4.21%', change: '+0.02', up: true }
-    ];
+        // Data Mapping
+        const indexData = [
+            { name: 'KOSPI', price: data.kospi?.toLocaleString() || '-', change: `${data.kospi_chg > 0 ? '+' : ''}${data.kospi_chg?.toFixed(2)}%`, up: data.kospi_chg > 0 },
+            { name: 'KOSDAQ', price: data.kosdaq?.toLocaleString() || '-', change: `${data.kosdaq_chg > 0 ? '+' : ''}${data.kosdaq_chg?.toFixed(2)}%`, up: data.kosdaq_chg > 0 },
+            { name: 'S&P 500', price: data.sp500?.toLocaleString() || '-', change: `${data.sp500_chg > 0 ? '+' : ''}${data.sp500_chg?.toFixed(2)}%`, up: data.sp500_chg > 0 },
+            { name: 'NASDAQ', price: data.nasdaq?.toLocaleString() || '-', change: `${data.nasdaq_chg > 0 ? '+' : ''}${data.nasdaq_chg?.toFixed(2)}%`, up: data.nasdaq_chg > 0 }
+        ];
 
-    const fearGreedValue = 68; // Greed
+        const economyData = [
+            { name: 'USD/KRW 환율', price: data.usd_krw?.toLocaleString() || '-', change: `${data.usd_krw_chg > 0 ? '+' : ''}${data.usd_krw_chg?.toFixed(2)}%`, up: data.usd_krw_chg > 0 },
+            { name: 'WTI 유가', price: data.wti?.toLocaleString() || '-', change: `${data.wti_chg > 0 ? '+' : ''}${data.wti_chg?.toFixed(2)}%`, up: data.wti_chg > 0 },
+            { name: '미 국채 10년물', price: `${data.us10y?.toFixed(2)}%`, change: `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg?.toFixed(3)}`, up: data.us10y_chg > 0 }
+        ];
 
-    // Render Indices
-    indexGrid.innerHTML = indexData.map(idx => `
-        <div class="indicator-row">
-            <span class="indicator-label">${idx.name}</span>
-            <div class="indicator-values">
-                <span class="indicator-price">${idx.price}</span>
-                <span class="indicator-change ${idx.up ? 'up' : 'down'}">${idx.change}</span>
+        const fearGreedValue = data.fear_greed || 50;
+
+        // Render Indices
+        indexGrid.innerHTML = indexData.map(idx => `
+            <div class="indicator-row">
+                <span class="indicator-label">${idx.name}</span>
+                <div class="indicator-values">
+                    <span class="indicator-price">${idx.price}</span>
+                    <span class="indicator-change ${idx.up ? 'up' : 'down'}">${idx.change}</span>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Render Economy
-    economyGrid.innerHTML = economyData.map(eco => `
-        <div class="indicator-row">
-            <span class="indicator-label">${eco.name}</span>
-            <div class="indicator-values">
-                <span class="indicator-price">${eco.price}</span>
-                <span class="indicator-change ${eco.up ? 'up' : 'down'}">${eco.change}</span>
+        // Render Economy
+        economyGrid.innerHTML = economyData.map(eco => `
+            <div class="indicator-row">
+                <span class="indicator-label">${eco.name}</span>
+                <div class="indicator-values">
+                    <span class="indicator-price">${eco.price}</span>
+                    <span class="indicator-change ${eco.up ? 'up' : 'down'}">${eco.change}</span>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Render Fear & Greed
-    if (fgFill && fgNeedle) {
-        // Needle rotation: -90deg to +90deg based on 0-100 value
-        const needleRotation = (fearGreedValue / 100) * 180 - 90;
-        fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
-        
-        // Gauge fill: Hide parts of the gradient by rotating a mask
-        // This is a simple approximation
-        fgFill.style.transform = `rotate(${(fearGreedValue / 100) * 180}deg)`;
-        
-        fgValue.textContent = fearGreedValue;
-        if (fearGreedValue < 25) fgStatus.textContent = 'Extreme Fear';
-        else if (fearGreedValue < 45) fgStatus.textContent = 'Fear';
-        else if (fearGreedValue < 55) fgStatus.textContent = 'Neutral';
-        else if (fearGreedValue < 75) fgStatus.textContent = 'Greed';
+        // Render Fear & Greed
+        if (fgFill && fgNeedle) {
+            const needleRotation = (fearGreedValue / 100) * 180 - 90;
+            fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
+            fgFill.style.transform = `rotate(${(fearGreedValue / 100) * 180}deg)`;
+            
+            fgValue.textContent = fearGreedValue;
+            if (fearGreedValue < 25) fgStatus.textContent = 'Extreme Fear';
+            else if (fearGreedValue < 45) fgStatus.textContent = 'Fear';
+            else if (fearGreedValue < 55) fgStatus.textContent = 'Neutral';
+            else if (fearGreedValue < 75) fgStatus.textContent = 'Greed';
+            else fgStatus.textContent = 'Extreme Greed';
+        }
+    } catch (err) {
+        console.error("renderMacroIndicators error:", err);
+        indexGrid.innerHTML = '<div class="error-msg">지표 로드 실패</div>';
+    }
+}
         else fgStatus.textContent = 'Extreme Greed';
     }
 }

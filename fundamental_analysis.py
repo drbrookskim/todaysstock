@@ -329,25 +329,60 @@ def get_macro(ecos_key: str) -> dict:
     except:
         pass
 
-    # KOSPI
-    try:
-        kp = yf.Ticker("^KS11").history(period="5d")
-        if not kp.empty:
-            m["kospi"] = round(float(kp["Close"].iloc[-1]), 2)
-            if len(kp) >= 2:
-                prv = float(kp["Close"].iloc[-2])
-                m["kospi_chg"] = round((m["kospi"] - prv) / prv * 100, 3)
-    except:
-        pass
+    # --- Korean Indices via ECOS (Primary) or yfinance (Fallback) ---
+    if ecos_key:
+        try:
+            # KOSPI (ECOS: 901Y002 / 0001000)
+            url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/5/901Y002/D/20240101/20261231/0001000"
+            r = requests.get(url, timeout=5).json()
+            if "StatisticSearch" in r and r["StatisticSearch"]["list_total_count"] > 0:
+                rows = r["StatisticSearch"]["row"]
+                m["kospi"] = round(float(rows[-1]["DATA_VALUE"]), 2)
+                if len(rows) >= 2:
+                    prv = float(rows[-2]["DATA_VALUE"])
+                    m["kospi_chg"] = round((m["kospi"] - prv) / prv * 100, 3)
+            
+            # KOSDAQ (ECOS: 901Y002 / 0042000)
+            url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/5/901Y002/D/20240101/20261231/0042000"
+            r = requests.get(url, timeout=5).json()
+            if "StatisticSearch" in r and r["StatisticSearch"]["list_total_count"] > 0:
+                rows = r["StatisticSearch"]["row"]
+                m["kosdaq"] = round(float(rows[-1]["DATA_VALUE"]), 2)
+                if len(rows) >= 2:
+                    prv = float(rows[-2]["DATA_VALUE"])
+                    m["kosdaq_chg"] = round((m["kosdaq"] - prv) / prv * 100, 3)
+        except Exception as e:
+            print(f"ECOS Index Fetch Error: {e}")
 
-    # KOSDAQ (^KQ11)
+    # Fallback to yfinance if ECOS failed or not provided
+    if "kospi" not in m:
+        try:
+            ks = yf.Ticker("^KS11").history(period="5d")
+            if not ks.empty:
+                m["kospi"] = round(float(ks["Close"].iloc[-1]), 2)
+                if len(ks) >= 2:
+                    prv = float(ks["Close"].iloc[-2])
+                    m["kospi_chg"] = round((m["kospi"] - prv) / prv * 100, 3)
+        except: pass
+
+    if "kosdaq" not in m:
+        try:
+            kq = yf.Ticker("^KQ11").history(period="5d")
+            if not kq.empty:
+                m["kosdaq"] = round(float(kq["Close"].iloc[-1]), 2)
+                if len(kq) >= 2:
+                    prv = float(kq["Close"].iloc[-2])
+                    m["kosdaq_chg"] = round((m["kosdaq"] - prv) / prv * 100, 3)
+        except: pass
+
+    # S&P 500 (^GSPC)
     try:
-        kq = yf.Ticker("^KQ11").history(period="5d")
-        if not kq.empty:
-            m["kosdaq"] = round(float(kq["Close"].iloc[-1]), 2)
-            if len(kq) >= 2:
-                prv = float(kq["Close"].iloc[-2])
-                m["kosdaq_chg"] = round((m["kosdaq"] - prv) / prv * 100, 3)
+        sp = yf.Ticker("^GSPC").history(period="5d")
+        if not sp.empty:
+            m["sp500"] = round(float(sp["Close"].iloc[-1]), 2)
+            if len(sp) >= 2:
+                prv = float(sp["Close"].iloc[-2])
+                m["sp500_chg"] = round((m["sp500"] - prv) / prv * 100, 3)
     except:
         pass
 
@@ -405,6 +440,17 @@ def get_macro(ecos_key: str) -> dict:
                 m["dxy_chg"] = round((m["dxy"] - prv) / prv * 100, 3)
     except:
         pass
+
+    # Fear & Greed Index (Simple Estimation based on VIX)
+    # VIX 15 이하: Greed (75), 15-20: Neutral (50), 20-30: Fear (25), 30+: Extreme Fear (10)
+    if "vix" in m:
+        v = m["vix"]
+        if v <= 15:   m["fear_greed"] = 75
+        elif v <= 20: m["fear_greed"] = 55
+        elif v <= 30: m["fear_greed"] = 35
+        else:         m["fear_greed"] = 15
+    else:
+        m["fear_greed"] = 50
 
     if ecos_key:
         # 기준금리 (ECOS 722Y001 / 0101000 / MM)

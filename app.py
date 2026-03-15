@@ -729,6 +729,17 @@ def manage_watchlist():
 # 라우트
 # ─────────────────────────────────────────────
 
+@app.route("/api/macro")
+def api_macro():
+    """거시경제 지표 API (KOSPI, KOSDAQ, S&P500, NASDAQ, 환율 등)"""
+    from fundamental_analysis import get_macro
+    try:
+        data = get_macro(ECOS_KEY)
+        return jsonify(data)
+    except Exception as e:
+        print(f"Macro API 오류: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/suggest")
 def suggest():
