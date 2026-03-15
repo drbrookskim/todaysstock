@@ -38,7 +38,7 @@ def _cache_set(key: str, value):
 
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=None)
 CORS(app)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24).hex())
 

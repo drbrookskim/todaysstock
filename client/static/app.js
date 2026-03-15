@@ -838,6 +838,35 @@ async function renderMacroIndicators() {
             </div>
         `).join('');
 
+        // Update Top Status Chips
+        const kospiData = data.kospi ? { name: 'KOSPI', price: data.kospi.toLocaleString(), change: (data.kospi_chg >= 0 ? '+' : '') + data.kospi_chg.toFixed(2) + '%', up: data.kospi_chg >= 0 } : null;
+        const kosdaqData = data.kosdaq ? { name: 'KOSDAQ', price: data.kosdaq.toLocaleString(), change: (data.kosdaq_chg >= 0 ? '+' : '') + data.kosdaq_chg.toFixed(2) + '%', up: data.kosdaq_chg >= 0 } : null;
+
+        if (kospiData) {
+            const chip = document.getElementById('chipKospi');
+            if (chip) {
+                const labelEl = chip.querySelector('.label');
+                if (labelEl) labelEl.textContent = `${kospiData.name} ${kospiData.price}`;
+                const chgEl = chip.querySelector('.change');
+                if (chgEl) {
+                    chgEl.textContent = kospiData.change;
+                    chgEl.className = `change ${kospiData.up ? 'up' : 'down'}`;
+                }
+            }
+        }
+        if (kosdaqData) {
+            const chip = document.getElementById('chipKosdaq');
+            if (chip) {
+                const labelEl = chip.querySelector('.label');
+                if (labelEl) labelEl.textContent = `${kosdaqData.name} ${kosdaqData.price}`;
+                const chgEl = chip.querySelector('.change');
+                if (chgEl) {
+                    chgEl.textContent = kosdaqData.change;
+                    chgEl.className = `change ${kosdaqData.up ? 'up' : 'down'}`;
+                }
+            }
+        }
+
         // Render Fear & Greed
         if (fgFill && fgNeedle) {
             const needleRotation = (fearGreedValue / 100) * 180 - 90;
@@ -854,9 +883,6 @@ async function renderMacroIndicators() {
     } catch (err) {
         console.error("renderMacroIndicators error:", err);
         indexGrid.innerHTML = '<div class="error-msg">지표 로드 실패</div>';
-    }
-}
-        else fgStatus.textContent = 'Extreme Greed';
     }
 }
 
@@ -1980,8 +2006,9 @@ window.addEventListener('DOMContentLoaded', () => {
     renderRecentSearches();
     document.getElementById('clearRecent')?.addEventListener('click', clearRecentSearches);
 
-    // Watchlist init
+    // Watchlist & Macro init
     renderWatchlist();
+    renderMacroIndicators();
     updateWatchlistBtn();
     document.getElementById('addWatchlistBtn')?.addEventListener('click', () => {
         if (currentStock && !isInWatchlist(currentStock.code)) {
