@@ -655,8 +655,8 @@ function renderResult(data) {
     resultSection.classList.remove('hidden');
 
     // Reset analysis section
-    const analysisSection = document.getElementById('analysisSection');
-    analysisSection.classList.add('hidden');
+    const patternReportSection = document.getElementById('patternReportSection');
+    if (patternReportSection) patternReportSection.classList.add('hidden');
 }
 
 function renderNxtCard(nxt) {
@@ -888,10 +888,10 @@ async function renderMacroIndicators() {
 // ═══════════════════════════════════════════════════
 
 async function fetchAnalysis(item) {
-    const analysisSection = document.getElementById('analysisSection');
+    const patternReportSection = document.getElementById('patternReportSection');
     const analysisLoading = document.getElementById('analysisLoading');
 
-    analysisSection.classList.remove('hidden');
+    if (patternReportSection) patternReportSection.classList.remove('hidden');
     analysisLoading.classList.remove('hidden');
     document.getElementById('trendContainer').style.display = 'none';
     document.getElementById('patternsCard').classList.add('hidden');

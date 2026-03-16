@@ -373,7 +373,7 @@
                 </div>
 
                 <!-- AI Candle Pattern Analysis Report -->
-                <div id="analysisSection" class="analysis-section hidden">
+                <div id="patternReportSection" class="analysis-section hidden">
                     <!-- Analysis Header -->
                     <div class="analysis-header-card">
                         <h3 class="analysis-title">
@@ -691,15 +691,6 @@
                 </div>
             </section>
 
-            <!-- Watchlist Section -->
-            <section id="watchlistSection" class="watchlist-section hidden">
-                <div class="section-header">
-                    <h3>관심종목</h3>
-                </div>
-                <div id="watchlistContainer" class="watchlist-grid">
-                    <!-- Watchlist items will be rendered here -->
-                </div>
-            </section>
 
             <!-- History Section -->
             <section id="historySection" class="history-section hidden">
@@ -796,20 +787,6 @@
         </div>
     </div>
 
-    <!-- OAuth Confirm Modal Overlay -->
-    <div id="oauthConfirmOverlay" class="modal-overlay"></div>
-    <!-- OAuth Confirm Modal -->
-    <div id="oauthConfirmModal" class="confirm-modal">
-        <div class="confirm-modal-body">
-            <h3 class="confirm-title">"Waiting for the Peak" Wants to Use "google.com" to Sign In</h3>
-            <p class="confirm-desc">This allows the app and website to share information about you.</p>
-
-            <div class="confirm-actions">
-                <button id="oauthCancelBtn" class="confirm-btn-secondary">Cancel</button>
-                <button id="oauthContinueBtn" class="confirm-btn-primary">Continue</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // ── PWA Service Worker 등록 ──
