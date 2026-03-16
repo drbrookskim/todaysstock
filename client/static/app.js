@@ -95,7 +95,6 @@ function initNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     const sections = {
         'navHome': 'dashboardHome',
-        'navWatchlist': 'watchlistSection',
         'navAnalysis': 'analysisSection',
         'navHistory': 'historySection'
     };
@@ -156,7 +155,7 @@ function initNavigation() {
 }
 
 function showSection(id) {
-    const sections = ['dashboardHome', 'resultSection', 'analysisSection', 'watchlistSection', 'historySection'];
+    const sections = ['dashboardHome', 'resultSection', 'analysisSection', 'historySection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
@@ -172,7 +171,6 @@ function showSection(id) {
         
         requestAnimationFrame(() => {
             console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
-            if (id === 'watchlistSection') renderWatchlist();
             if (id === 'dashboardHome') renderMacroIndicators();
         });
     }

@@ -82,11 +82,6 @@
                     <i class="ph ph-house"></i>
                     <span>홈</span>
                 </a>
-                <a href="#" class="nav-item" id="navWatchlist">
-                    <i class="ph ph-star"></i>
-                    <span>관심종목</span>
-                    <span id="navWatchlistCount" class="nav-badge">0</span>
-                </a>
                 <a href="#" class="nav-item" id="navAnalysis">
                     <i class="ph ph-chart-line-up"></i>
                     <span>심층분석</span>
@@ -151,19 +146,14 @@
                         
                         <!-- Autocomplete Dropdown -->
                         <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
-                    </div>
 
-                    <!-- Market Status Chips (Remote/PandaDoc style) -->
-                    <div class="market-status-group">
-                        <div class="status-chip" id="chipKospi">
-                            <span class="dot live"></span>
-                            <span class="label">KOSPI --</span>
-                            <span class="change">--%</span>
-                        </div>
-                        <div class="status-chip" id="chipKosdaq">
-                            <span class="dot live"></span>
-                            <span class="label">KOSDAQ --</span>
-                            <span class="change">--%</span>
+                        <!-- Recent Searches Box (Relocated) -->
+                        <div id="recentSearches" class="recent-searches-box hidden" style="margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
+                            <div class="box-header" style="margin-bottom: 8px;">
+                                <h4 style="font-size: 0.85rem; color: var(--text-sub);">최근 검색어</h4>
+                                <button id="clearRecent" style="font-size: 0.8rem;">모두 지우기</button>
+                            </div>
+                            <div id="recentList" class="recent-chips-container"></div>
                         </div>
                     </div>
                 </div>
@@ -209,14 +199,6 @@
                     </div>
                 </div>
 
-                <!-- Recent & Watchlist Quick View -->
-                <div id="recentSearches" class="recent-searches-box hidden">
-                    <div class="box-header">
-                        <h4>최근 검색어</h4>
-                        <button id="clearRecent">모두 지우기</button>
-                    </div>
-                    <div id="recentList" class="recent-chips-container"></div>
-                </div>
             </section>
 
             <!-- Stock Result Area (Merged) -->
