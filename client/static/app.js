@@ -7,6 +7,8 @@ if ('serviceWorker' in navigator) {
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
     ? '' 
     : 'https://todaysstock.onrender.com';
+console.log('[DEBUG] API_BASE_URL:', API_BASE_URL);
+console.log('[DEBUG] Hostname:', window.location.hostname);
 /**
  * Stock Finder — Frontend Logic
  * 코스피/코스닥 종목 검색, 결과 표시, 캔들 패턴 분석 리포트
@@ -544,44 +546,23 @@ async function selectStock(item) {
     errorMessage.classList.add('hidden');
     loadingSpinner.classList.remove('hidden');
 
-    // UI Verification Mock Data for Stock Detail
-    const mockDetail = {
-        code: item.code || '005930',
-        market: item.market || 'KOSPI',
-        name: item.name || '삼성전자',
-        price: 72000,
-        change: 1200,
-        change_pct: 1.69,
-        open: 71000,
-        high: 72500,
-        low: 70800,
-        volume: 15420300,
-        date: '2026-03-14',
-        industry: '반도체와반도체장비',
-        company_summary: '삼성전자는 한국을 대표하는 글로벌 IT 기업입니다.',
-        ma5: 71200,
-        ma20: 69800,
-        ma60: 68000,
-        ma120: 65500,
-        nxt: {
-            nxt_available: true,
-            nxt_status: 'OPEN',
-            nxt_price: 72300,
-            nxt_change: 300,
-            nxt_change_pct: 0.42,
-            nxt_high: 72500,
-            nxt_low: 72100,
-            nxt_volume: 50000,
-            nxt_time: new Date().toISOString()
-        }
-    };
-
-    setTimeout(() => {
+    try {
+        const url = `${API_BASE_URL}/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
+        console.log('[DEBUG] Fetching stock data from:', url);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('데이터를 불러오는데 실패했습니다.');
+        
+        const data = await response.json();
+        
         loadingSpinner.classList.add('hidden');
         showSection('resultSection');
-        renderResult(mockDetail);
+        renderResult(data);
         fetchAnalysis(item);
-    }, 500);
+    } catch (err) {
+        console.error('selectStock error:', err);
+        loadingSpinner.classList.add('hidden');
+        showError(err.message);
+    }
 }
 
 function showError(msg) {
@@ -796,9 +777,11 @@ async function renderMacroIndicators() {
     if (!indexGrid || !economyGrid) return;
 
     try {
+        console.log('[DEBUG] Fetching macro data from:', `${API_BASE_URL}/api/macro`);
         const resp = await fetch(`${API_BASE_URL}/api/macro`);
         if (!resp.ok) throw new Error('Macro data fetch failed');
         const data = await resp.json();
+        console.log('[DEBUG] Macro data received:', data);
 
         // Data Mapping
         const indexData = [
@@ -901,77 +884,20 @@ async function fetchAnalysis(item) {
     document.getElementById('candleChartCard').classList.add('hidden');
     document.getElementById('reportGrid').classList.add('hidden');
 
-    // UI Verification Mock Data
-    const mockData = {
-        trend: 'bullish',
-        trend_label: '강력 상승 추세',
-        trend_strength: 85,
-        patterns: [
-            { name: '적삼병', signal: 'bullish', confidence: 0.92, volume_surge: true, description: '3거래일 연속 양봉이 출현하며 강력한 추세 반전 신호를 나타냅니다.' },
-            { name: '망치형', signal: 'bullish', confidence: 0.85, volume_surge: false, description: '하락 추세 끝에서 긴 아랫꼬리를 형성하며 매수세 유입을 암시합니다.' },
-            { name: '상승 장악형', signal: 'bullish', confidence: 0.78, volume_surge: true, description: '이전 음봉을 완전히 감싸는 양봉이 출현하여 매수 우위를 보여줍니다.' }
-        ],
-        trade_probability: {
-            score: 82,
-            label: '매수 강력 추천',
-            rsi: 65,
-            macd_golden: true,
-            macd_hist: 2.5
-        },
-        atr_targets: {
-            target: 75000,
-            stop_loss: 68000,
-            gain_pct: 10,
-            loss_pct: 5,
-            rr_ratio: 2.0,
-            atr: 1200
-        },
-        volume_anomaly: {
-            level: 'high',
-            label: '이상 매수 폭증',
-            direction: 'up',
-            ratio: 3.5,
-            zscore: 4.2,
-            message: '최근 20일 평균 대비 거래량이 3.5배 폭증했습니다.'
-        },
-        cycle_estimation: {
-            current_phase: '상승',
-            confidence: 'high',
-            cycles_detected: 12,
-            progress: 65,
-            est_remaining_days: 5,
-            est_next_peak_date: '2026-03-20',
-            avg_cycle_days: 45,
-            days_since_peak: 30,
-            cycle_history: [],
-            adjustments: [{factor: 'RSI', effect: '+5%'}, {factor: 'Volume', effect: '+10%'}],
-            fib_time_zones: [{day: 21, date: '2026-03-10'}, {day: 34, date: '2026-03-23'}]
-        }
-    };
-
-    let mockCandles = [];
-    let curPrice = 65000;
-    for (let i = 0; i < 65; i++) {
-        curPrice += (Math.random() - 0.45) * 1500;
-        mockCandles.push({
-            date: `2026-0${Math.floor(i/30)+1}-${(i%30)+1}`,
-            open: curPrice,
-            close: curPrice + (Math.random()-0.5)*1000,
-            high: curPrice + 1000,
-            low: curPrice - 1000,
-            volume: Math.floor(Math.random() * 2000000),
-            ma5: curPrice * 0.98,
-            ma20: curPrice * 0.95,
-            ma60: curPrice * 0.90,
-            ma120: curPrice * 0.85
-        });
-    }
-    mockData.recent_candles = mockCandles;
-
-    setTimeout(() => {
+    try {
+        const url = `${API_BASE_URL}/api/analysis?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('분석 데이터를 불러오는데 실패했습니다.');
+        
+        const data = await response.json();
+        
         analysisLoading.classList.add('hidden');
-        renderAnalysisReport(mockData);
-    }, 500);
+        renderAnalysisReport(data);
+    } catch (err) {
+        console.error('fetchAnalysis error:', err);
+        analysisLoading.classList.add('hidden');
+        // 분석 실패 시 사용자에게 알림을 줄 수 있는 UI가 필요하면 여기에 추가
+    }
 }
 
 function renderAnalysisReport(data) {
@@ -1999,9 +1925,17 @@ function toggleTheme() {
 }
 
 // ── Init on page load ──
-initTheme();
-window.addEventListener('DOMContentLoaded', () => {
-    searchInput.focus();
+function startApp() {
+    console.log('[DEBUG] startApp() executing. readyState:', document.readyState);
+    
+    initTheme();
+
+    if (searchInput) {
+        searchInput.focus();
+    } else {
+        console.warn('[DEBUG] searchInput not found during init');
+    }
+
     document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
     renderRecentSearches();
     document.getElementById('clearRecent')?.addEventListener('click', clearRecentSearches);
@@ -2010,6 +1944,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderWatchlist();
     renderMacroIndicators();
     updateWatchlistBtn();
+
     document.getElementById('addWatchlistBtn')?.addEventListener('click', () => {
         if (currentStock && !isInWatchlist(currentStock.code)) {
             addToWatchlist(currentStock);
@@ -2030,7 +1965,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Auth & Session Init (Async/Background)
     initAuth();
-});
+}
+
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', startApp);
+} else {
+    startApp();
+}
 
 // ── Auth & User Session ──
 async function initAuth() {
