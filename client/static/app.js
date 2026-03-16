@@ -2147,23 +2147,48 @@ async function initAuth() {
         const userStatusEl = document.getElementById('sidebarUserStatus');
         const navWatchlist = document.getElementById('navWatchlist');
         const addWatchlistBtnContainer = document.getElementById('addWatchlistBtnContainer');
+        const pageGreeting = document.getElementById('pageGreeting');
 
+        console.log('[DEBUG] updateAuthUI - logged_in:', authUser?.logged_in);
         if (authUser && authUser.logged_in) {
+            console.log('[DEBUG] updateAuthUI - Updating UI for Logged In User');
             if (authBtn) authBtn.textContent = '로그아웃';
-            if (userNameEl) userNameEl.textContent = authUser.username || 'User';
+            if (userNameEl) userNameEl.textContent = authUser.username ? `Hello, ${authUser.username}` : 'Hello, User';
             if (userStatusEl) userStatusEl.textContent = '로그인됨';
+            if (pageGreeting) pageGreeting.textContent = authUser.username ? `Hello, ${authUser.username} 🕊️` : 'Hello, User 🕊️';
             
             // Show watchlist UI
-            if (navWatchlist) navWatchlist.classList.remove('hidden');
-            if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('hidden');
+            if (navWatchlist) {
+                console.log('[DEBUG] updateAuthUI - Showing navWatchlist');
+                navWatchlist.classList.remove('hidden');
+            }
+            if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
         } else {
+            console.log('[DEBUG] updateAuthUI - Updating UI for Guest');
             if (authBtn) authBtn.textContent = '로그인';
             if (userNameEl) userNameEl.textContent = 'Guest';
             if (userStatusEl) userStatusEl.textContent = '로그인이 필요합니다';
+            if (pageGreeting) pageGreeting.textContent = 'Hello, Signnith 🕊️';
             
-            // Hide watchlist UI
-            if (navWatchlist) navWatchlist.classList.add('hidden');
+            // Clear and hide watchlist UI for Guests
+            currentWatchlist = [];
+            renderWatchlist();
+            updateWatchlistCount();
+            
+            if (navWatchlist) {
+                console.log('[DEBUG] updateAuthUI - Hiding navWatchlist');
+                navWatchlist.classList.add('hidden');
+            }
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.add('hidden');
+            
+            const watchlistSection = document.getElementById('watchlistSection');
+            if (watchlistSection) watchlistSection.classList.add('hidden');
+            
+            // Ensure we are not stuck on watchlist section
+            const dashboardHome = document.getElementById('dashboardHome');
+            if (watchlistSection && !watchlistSection.classList.contains('hidden')) {
+                showSection('dashboardHome');
+            }
         }
     };
 

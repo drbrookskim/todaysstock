@@ -44,6 +44,7 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
     --shadow-premium: 0 10px 15px -3px rgb(0 0 0 / 0.03), 0 4px 6px -4px rgb(0 0 0 / 0.03); /* Extremely soft & premium */
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 
     /* Radius */
     --radius-main: 16px; /* Slightly more rounded like Quicken */
@@ -214,7 +215,8 @@ body {
 /* ── Persistent Sidebar (PandaDoc Style) ── */
 .main-sidebar {
     width: 240px;
-    background-color: var(--bg-sidebar);
+    height: 100vh;
+    background-color: var(--bg-card);
     border-right: 1px solid var(--border-soft);
     display: flex;
     flex-direction: column;
@@ -224,13 +226,51 @@ body {
     height: 100vh;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
+    overflow-x: hidden;
 }
+
+/* Sidebar logic moved to end of file for priority */
 
 .sidebar-brand {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 24px 32px;
+    padding: 0 20px 32px;
+    min-width: max-content;
+}
+
+.brand-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    transition: opacity 0.2s;
+}
+
+.pin-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-btn:hover {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.pin-btn.active {
+    color: var(--primary);
+    transform: rotate(-45deg);
+}
+
+.main-sidebar:not(.pinned):not(:hover) .pin-btn {
+    opacity: 0;
 }
 
 .logo-circle {
@@ -444,6 +484,11 @@ html:not([data-theme="light"]) .nav-item.active i {
     background-color: var(--bg-app);
     border-color: var(--primary);
     color: var(--primary);
+}
+
+/* Hide legacy top-right status chips / indices if they exist */
+#chipKospi, #chipKosdaq, .top-status-chips, .header-indices {
+    display: none !important;
 }
 
 /* ── Revised Container ── */
@@ -1628,20 +1673,9 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 }
 
 @media (max-width: 900px) {
-    .main-sidebar {
-        width: 80px;
-        padding: 24px 0;
-    }
-    .brand-text, .user-info, .nav-item span {
-        display: none;
-    }
-    .sidebar-brand, .sidebar-nav {
-        padding: 0;
-        align-items: center;
-    }
-    .nav-item {
-        justify-content: center;
-        padding: 12px;
+    /* Sidebars logic handled by .pinned class and base rules */
+    .container {
+        padding: 24px 20px 60px;
     }
 }
 
@@ -4415,7 +4449,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 /* Watchlist Section & Layout */
 .watchlist-section {
     padding: 32px 40px;
-    display: flex !important; /* Ensure flex layout even if JS overrides */
+    display: flex; /* Removed !important to allow .hidden to work */
     flex-direction: column;
     gap: 24px;
     min-height: 100vh;
@@ -4545,3 +4579,34 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     margin-top: 24px;
 }
 
+
+/* --- FINAL OVERRIDES FOR SIDEBAR PINNING & COLLAPSE --- */
+.main-sidebar:not(.pinned) {
+    width: 72px !important;
+}
+
+.main-sidebar:not(.pinned):hover {
+    width: 240px !important;
+    box-shadow: var(--shadow-xl) !important;
+}
+
+/* Hide text when not hovered/pinned */
+.main-sidebar:not(.pinned):not(:hover) .brand-text,
+.main-sidebar:not(.pinned):not(:hover) .nav-item span,
+.main-sidebar:not(.pinned):not(:hover) .user-name,
+.main-sidebar:not(.pinned):not(:hover) .user-status,
+.main-sidebar:not(.pinned):not(:hover) .logout-btn span,
+.main-sidebar:not(.pinned):not(:hover) .nav-badge {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.main-sidebar.pinned {
+    width: 240px !important;
+}
+
+.main-sidebar:not(.pinned):not(:hover) .pin-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}

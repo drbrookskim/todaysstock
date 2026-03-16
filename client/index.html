@@ -26,7 +26,11 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="/static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="/static/style.css?v=3">
+    <link rel="stylesheet" href="/static/style.css?v=5">
+    <style>
+        .nav-item.hidden { display: none !important; }
+        .watchlist-section.hidden { display: none !important; }
+    </style>
     <!-- Supabase JS SDK v2 — for direct browser auth (bypasses Render round-trip) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -82,6 +86,11 @@
                     <i class="ph ph-house"></i>
                     <span>홈</span>
                 </a>
+                <a href="#" class="nav-item hidden" id="navWatchlist">
+                    <i class="ph ph-star"></i>
+                    <span>관심종목</span>
+                    <span id="navWatchlistCount" class="nav-badge">0</span>
+                </a>
                 <a href="#" class="nav-item" id="navAnalysis">
                     <i class="ph ph-chart-line-up"></i>
                     <span>심층분석</span>
@@ -89,11 +98,6 @@
                 <a href="#" class="nav-item" id="navHistory">
                     <i class="ph ph-clock-counter-clockwise"></i>
                     <span>검색기록</span>
-                </a>
-                <a href="#" class="nav-item hidden" id="navWatchlist">
-                    <i class="ph ph-star"></i>
-                    <span>관심종목</span>
-                    <span id="navWatchlistCount" class="nav-badge">0</span>
                 </a>
             </nav>
 
@@ -881,7 +885,7 @@
             });
         })();
     </script>
-    <script src="/static/app.js?v=3"></script>
+    <script src="/static/app.js?v=5"></script>
 </body>
 
 </html>
