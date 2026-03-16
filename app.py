@@ -196,8 +196,10 @@ def search_stocks(query):
 def download_stock_df(code, market):
     """공공데이터포털(data.go.kr) 주식 시세 API + yfinance 이중 소스로 DataFrame을 생성합니다."""
     import urllib.parse
+    import pandas as pd
 
     api_key = os.getenv("DATA_GO_KR_API_KEY")
+    df = None
 
     # ── 1차: 공공데이터포털 API ──
     if api_key:
@@ -236,29 +238,69 @@ def download_stock_df(code, market):
                     df = pd.DataFrame(records)
                     df.set_index("Date", inplace=True)
                     print(f"✅ 공공데이터 API ({code}): {len(df)}일 데이터")
-                    return df
-
-            print(f"⚠️ 공공데이터 API 결과 없음 ({code}), yfinance 로 대체합니다.")
+            
+            if df is None:
+                print(f"⚠️ 공공데이터 API 결과 없음 ({code}), yfinance 로 대체합니다.")
         except Exception as e:
             print(f"⚠️ 공공데이터 API 오류 ({code}): {e}, yfinance 로 대체합니다.")
 
     # ── 2차 폴백: yfinance ──
-    try:
-        suffix = ".KS" if market == "KOSPI" else ".KQ"
-        ticker = code + suffix
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=450)
-        df = yf.download(ticker, start=start_date, end=end_date, progress=False)
-        if df.empty:
-            print(f"❌ yfinance 결과 없음 ({ticker})")
-            return None
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
-        print(f"✅ yfinance ({ticker}): {len(df)}일 데이터")
-        return df
-    except Exception as e:
-        print(f"❌ yfinance 오류 ({code}): {e}")
-        return None
+    if df is None:
+        try:
+            suffix = ".KS" if market == "KOSPI" else ".KQ"
+            ticker = code + suffix
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=450)
+            df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+            if df.empty:
+                print(f"❌ yfinance 결과 없음 ({ticker})")
+                df = None
+            else:
+                if isinstance(df.columns, pd.MultiIndex):
+                    df.columns = df.columns.get_level_values(0)
+                print(f"✅ yfinance ({ticker}): {len(df)}일 데이터")
+        except Exception as e:
+            print(f"❌ yfinance 오류 ({code}): {e}")
+            df = None
+
+    # ── [LATEST PRICE UPDATE (GLOBAL TARGET)] ──
+    # 데이터 소스에 관계없이 반환 전 fast_info로 오늘자 최신 틱 데이터를 덮어쓰거나 추가하여 실시간 동기화율을 극대화합니다.
+    if df is not None and not df.empty:
+        try:
+            suffix_sync = ".KS" if market == "KOSPI" else ".KQ"
+            ticker_obj = yf.Ticker(code + suffix_sync)
+            fast = ticker_obj.fast_info
+            
+            if hasattr(fast, 'last_price') and fast.last_price is not None:
+                today_dt = pd.to_datetime(datetime.now().date())
+                last_dt = pd.to_datetime(df.index[-1].date())
+                
+                # 당일 행이 이미 존재하면 업데이트, 없으면 신규 행 추가
+                if today_dt == last_dt:
+                    df.at[df.index[-1], "Close"] = float(fast.last_price)
+                    if hasattr(fast, 'open') and fast.open is not None:
+                        df.at[df.index[-1], "Open"] = float(fast.open)
+                    if hasattr(fast, 'day_high') and fast.day_high is not None:
+                        df.at[df.index[-1], "High"] = float(fast.day_high)
+                    if hasattr(fast, 'day_low') and fast.day_low is not None:
+                        df.at[df.index[-1], "Low"] = float(fast.day_low)
+                    if hasattr(fast, 'last_volume') and fast.last_volume is not None:
+                        df.at[df.index[-1], "Volume"] = float(fast.last_volume)
+                else:
+                    new_row = pd.DataFrame({
+                        "Open": [float(fast.open) if hasattr(fast, 'open') and fast.open is not None else float(fast.last_price)],
+                        "High": [float(fast.day_high) if hasattr(fast, 'day_high') and fast.day_high is not None else float(fast.last_price)],
+                        "Low": [float(fast.day_low) if hasattr(fast, 'day_low') and fast.day_low is not None else float(fast.last_price)],
+                        "Close": [float(fast.last_price)],
+                        "Volume": [float(fast.last_volume) if hasattr(fast, 'last_volume') and fast.last_volume is not None else 0.0]
+                    }, index=[today_dt])
+                    df = pd.concat([df, new_row])
+                print(f"📡 DF Real-time Sync ({code}): {fast.last_price}")
+        except Exception as e:
+            print(f"⚠️ DF Real-time Sync Error ({code}): {e}")
+
+    return df
+
 
 
 def get_stock_data(code, market):
