@@ -227,18 +227,9 @@ function initMobileSidebar() {
     }
 }
 
-// ── Watchlist Update ──
-function updateWatchlistCount() {
-    const count = getWatchlist().length;
-    const badge = document.getElementById('navWatchlistCount');
-    if (badge) badge.textContent = count;
-}
-
-// ── Watchlist (관심종목) ──
-const WATCHLIST_KEY = 'stockfinder-watchlist';
+// ── Auth Tokens ──
 const SUPA_TOKEN_KEY = 'supa-access-token';
 let authUser = null; // { logged_in: boolean, username: string }
-let currentWatchlist = []; // 메모리 캐시 (로그인 유저용)
 
 function getSupaToken() {
     return localStorage.getItem(SUPA_TOKEN_KEY);
@@ -257,158 +248,6 @@ function getAuthHeaders() {
     const token = getSupaToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
-}
-
-function getWatchlist() {
-    // 1. 로그인 유저 인메모리 캐시 우선
-    if (authUser && authUser.logged_in && currentWatchlist && currentWatchlist.length > 0) {
-        return currentWatchlist;
-    }
-    // 2. 로컬스토리지 (비로그인 유저 또는 로그인 유저 세션 복구용 캐시)
-    try {
-        const local = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
-        // 로그인 상태라면 인메모리 캐시도 최신화 (메모리 락 방지)
-        if (authUser && authUser.logged_in && currentWatchlist.length === 0) {
-            currentWatchlist = local;
-        }
-        return local;
-    } catch { return []; }
-}
-
-function saveWatchlist(list) {
-    // 인메모리 업데이트
-    if (authUser && authUser.logged_in) {
-        currentWatchlist = list;
-    }
-    // 항상 로컬스토리지에 저장 (로그인 유저도 새로고침 시 즉시 데이터를 보기 위함)
-    localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
-    renderWatchlist();
-}
-
-async function addToWatchlist(item) {
-    const list = getWatchlist();
-    if (list.some(w => w.code === item.code)) return; // duplicate
-
-    // DB 동기화
-    if (authUser && authUser.logged_in) {
-        try {
-            await fetch(API_BASE_URL + '/api/watchlist', {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
-            });
-        } catch (e) { console.error('Watchlist sync error', e); }
-    }
-
-    list.push({ code: item.code, market: item.market, name: item.name });
-    saveWatchlist(list);
-    updateWatchlistBtn();
-}
-
-async function removeFromWatchlist(code) {
-    if (authUser && authUser.logged_in) {
-        try {
-            await fetch(API_BASE_URL + '/api/watchlist', {
-                method: 'DELETE',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({ code: code })
-            });
-        } catch (e) { console.error('Watchlist sync error', e); }
-    }
-
-    const list = getWatchlist().filter(w => w.code !== code);
-    saveWatchlist(list);
-    updateWatchlistBtn();
-}
-
-function isInWatchlist(code) {
-    return getWatchlist().some(w => w.code === code);
-}
-
-function renderWatchlist() {
-    console.log('renderWatchlist() called');
-    const container = document.getElementById('watchlistContainer');
-    const countEl = document.getElementById('navWatchlistCount');
-    const list = getWatchlist();
-    
-    console.log('Watchlist items count:', list.length);
-
-    if (countEl) countEl.textContent = list.length;
-
-    if (!container) {
-        console.warn('watchlistContainer not found');
-        return;
-    }
-
-    if (list.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1; min-height: 200px;">
-                <i class="ph ph-star"></i>
-                <p>관심종목이 없습니다.<br>검색 후 별표를 눌러 추가해보세요!</p>
-            </div>
-        `;
-        return;
-    }
-    container.innerHTML = list.map(item => {
-        const isActive = currentStock && currentStock.code === item.code;
-        return `<div class="watchlist-item ${isActive ? 'active' : ''}" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
-            <div class="watchlist-item-info">
-                <span class="watchlist-item-name">${escapeHtml(item.name)}
-                    <span class="watchlist-item-market ${escapeHtml(item.market).toLowerCase()}">${escapeHtml(item.market)}</span>
-                </span>
-                <span class="watchlist-item-code">${escapeHtml(item.code)}</span>
-            </div>
-            <button class="watchlist-item-remove" data-code="${escapeHtml(item.code)}" title="삭제">✕</button>
-        </div>`;
-    }).join('');
-
-    // Click to search
-    container.querySelectorAll('.watchlist-item').forEach(el => {
-        el.addEventListener('click', (e) => {
-            if (e.target.closest('.watchlist-item-remove')) return;
-            const item = {
-                code: el.dataset.code,
-                market: el.dataset.market,
-                name: el.dataset.name,
-            };
-            searchInput.value = item.name;
-            selectStock(item);
-            // 모바일에서는 항상 닫기, 데스크탑에서는 고정 해제 시에만 닫기
-            const isMobileView = window.innerWidth <= 768;
-            if (isMobileView || !isSidebarPinned()) closeSidebar();
-        });
-    });
-
-    // Remove button
-    container.querySelectorAll('.watchlist-item-remove').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeFromWatchlist(btn.dataset.code);
-        });
-    });
-}
-
-function updateWatchlistBtn() {
-    const btn = document.getElementById('addWatchlistBtn');
-    if (!btn) return;
-    if (!currentStock) {
-        btn.disabled = true;
-        btn.classList.remove('added');
-        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 추가`;
-        btn.title = '종목을 먼저 검색하세요';
-        return;
-    }
-
-    btn.disabled = false;
-    if (isInWatchlist(currentStock.code)) {
-        btn.classList.add('added');
-        btn.innerHTML = `✓ 추가됨`;
-        btn.title = '이미 관심종목에 추가됨';
-    } else {
-        btn.classList.remove('added');
-        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 추가`;
-        btn.title = '관심종목에 추가';
-    }
 }
 
 // ── Utility: 숫자 포맷 ──
@@ -489,7 +328,7 @@ function renderSuggestions(items, query) {
     suggestDropdown.innerHTML = items.map((item, idx) => {
         const marketClass = escapeHtml(item.market).toLowerCase();
         const highlightedName = highlightMatch(escapeHtml(item.name), escapeHtml(query));
-        const addedBadge = isInWatchlist(item.code) ? `<span class="suggest-badge-added"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 추가됨</span>` : '';
+        const addedBadge = '';
         return `
             <div class="suggest-item ${idx === activeIndex ? 'active' : ''}"
                  data-index="${idx}"
@@ -2210,54 +2049,6 @@ async function initAuth() {
             // authUser 형식 유지 (logged_in, username)
             authUser = { logged_in: data.logged_in, username: data.username };
 
-            if (data.logged_in) {
-                const serverList = data.watchlist || [];
-                // 서버 데이터를 메모리에 저장하되, 로컬 캐시와 병합 시도
-                currentWatchlist = serverList;
-                console.log('Server watchlist loaded:', currentWatchlist.length, 'items');
-
-                try {
-                    const guestListStr = localStorage.getItem(WATCHLIST_KEY);
-                    if (guestListStr) {
-                        const guestList = JSON.parse(guestListStr) || [];
-                        if (guestList.length > 0) {
-                            let mergedAny = false;
-                            for (const item of guestList) {
-                                if (!currentWatchlist.some(w => w.code === item.code)) {
-                                    try {
-                                        const pushRes = await fetch(API_BASE_URL + '/api/watchlist', {
-                                            method: 'POST',
-                                            headers: getAuthHeaders(),
-                                            body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
-                                        });
-                                        if (pushRes.ok) {
-                                            currentWatchlist.push(item);
-                                            mergedAny = true;
-                                        }
-                                    } catch (pushErr) {
-                                        console.error('Failed to sync guest item:', item.code, pushErr);
-                                    }
-                                }
-                            }
-                            // 병합된 후 최신 상태를 로컬에도 저장 (게스트 데이터를 유저 데이터로 전환)
-                            saveWatchlist(currentWatchlist);
-                        }
-                    }
-                } catch (e) {
-                    console.error('Guest Watchlist merge error', e);
-                }
-                
-                // 최종적으로 서버 리스트로 강제 동기화 (만약 로컬이 꼬였다면 서버가 진실)
-                // 단, renderWatchlist()는 saveWatchlist()에서 이미 호출됨
-                if (currentWatchlist.length === 0 && serverList.length > 0) {
-                    currentWatchlist = serverList;
-                    saveWatchlist(currentWatchlist);
-                }
-            }
-
-            renderWatchlist();
-            updateWatchlistBtn();
-            updateWatchlistCount();
         } catch (error) {
             console.warn("Session check failed", error);
         }
