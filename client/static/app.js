@@ -96,7 +96,7 @@ function initNavigation() {
     const sections = {
         'navHome': 'dashboardHome',
         'navWatchlist': 'watchlistSection',
-        'navAnalysis': 'resultSection',
+        'navAnalysis': 'analysisSection',
         'navHistory': 'historySection'
     };
 
@@ -109,6 +109,21 @@ function initNavigation() {
             
             const targetId = sections[item.id];
             if (targetId) {
+                if (targetId === 'analysisSection') {
+                    const emptyState = document.getElementById('analysisEmptyState');
+                    const contentWrapper = document.getElementById('analysisContentWrapper');
+                    const currentStockLabel = document.getElementById('analysisCurrentStock');
+                    
+                    if (!currentStock) {
+                        emptyState?.classList.remove('hidden');
+                        contentWrapper?.classList.add('hidden');
+                        if (currentStockLabel) currentStockLabel.textContent = '';
+                    } else {
+                        emptyState?.classList.add('hidden');
+                        contentWrapper?.classList.remove('hidden');
+                        if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code})`;
+                    }
+                }
                 showSection(targetId);
             }
         });
@@ -141,7 +156,7 @@ function initNavigation() {
 }
 
 function showSection(id) {
-    const sections = ['dashboardHome', 'resultSection', 'watchlistSection', 'historySection'];
+    const sections = ['dashboardHome', 'resultSection', 'analysisSection', 'watchlistSection', 'historySection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
@@ -554,6 +569,7 @@ async function selectStock(item) {
         
         const data = await response.json();
         
+        currentStock = item; // Store current stock
         loadingSpinner.classList.add('hidden');
         showSection('resultSection');
         renderResult(data);
@@ -1130,8 +1146,13 @@ async function renderFundamentalReport(stockCode) {
     const card = document.getElementById('fundamentalCard');
     if (!card || !stockCode) return;
 
+    // Reset visibility if in analysisSection
+    const emptyState = document.getElementById('analysisEmptyState');
+    const contentWrapper = document.getElementById('analysisContentWrapper');
+    if (emptyState) emptyState.classList.add('hidden');
+    if (contentWrapper) contentWrapper.classList.remove('hidden');
+
     // 스켈레톤 로딩 표시
-    card.classList.remove('hidden');
     document.getElementById('fundSignalReason').textContent = '데이터 로딩 중…';
     document.getElementById('fundCompanyTypeBadge').textContent = '';
     document.getElementById('fundSignalBadge').textContent = '';

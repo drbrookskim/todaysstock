@@ -550,79 +550,10 @@
                         </div>
                     </div>
 
-                    <!-- 🌟 Rating Check & Financials (Legacy UX Restored) -->
-                    <div class="legacy-analysis-grid">
-                        <!-- Rating Check Card -->
-                        <div class="rating-check-card">
-                            <h3 class="card-subtitle"><i class="ph ph-star-half"></i> 투자 매력도 (Rating Check)</h3>
-                            <div class="rating-overall">
-                                <span class="rating-score" id="ratingScoreVal">0.0</span> <span class="rating-max">/ 10</span>
-                            </div>
-                            <div class="rating-bars-container" id="ratingBarsContainer">
-                                <!-- JS Injected -->
-                            </div>
-                        </div>
-
-                        <!-- Financial Indicators Card -->
-                        <div class="financials-card">
-                            <h3 class="card-subtitle"><i class="ph ph-wallet"></i> 주요 재무 지표</h3>
-                            <div class="financials-grid" id="financialsGrid">
-                                <!-- JS Injected -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🧠 Fundamental Analysis Panel -->
-                    <div id="fundamentalCard" class="fundamental-card hidden">
-                        <div class="fund-header">
-                            <div class="fund-header-left">
-                                <span class="fund-brain-icon">🧠</span>
-                                <span class="fund-title">심층 분석 (펀더멘탈 & 사이클 타임)</span>
-                                <span id="fundCompanyTypeBadge" class="fund-type-badge"></span>
-                            </div>
-                            <div class="fund-header-right">
-                                <span id="fundSignalBadge" class="fund-signal-badge"></span>
-                                <button id="fundToggleBtn" class="fund-toggle-btn" aria-label="펼치기/접기">
-                                    <i class="ph ph-caret-down"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="fundSignalReason" class="fund-signal-reason"></div>
-                        <div id="fundBody" class="fund-body fund-collapsed">
-                            <!-- 3-column axis grid -->
-                            <div class="fund-axis-grid">
-                                <!-- Quant -->
-                                <div class="fund-axis-card" id="fundQuantCard">
-                                    <div class="fund-axis-title">📊 Quant</div>
-                                    <div id="fundQuantContent" class="fund-axis-content"></div>
-                                </div>
-                                <!-- Event-Driven -->
-                                <div class="fund-axis-card" id="fundEventCard">
-                                    <div class="fund-axis-title">📰 Event</div>
-                                    <div id="fundEventContent" class="fund-axis-content"></div>
-                                </div>
-                                <!-- Macro -->
-                                <div class="fund-axis-card" id="fundMacroCard">
-                                    <div class="fund-axis-title">🌐 Macro</div>
-                                    <div id="fundMacroContent" class="fund-axis-content"></div>
-                                </div>
-                            </div>
-                            <div id="fundAxesUsed" class="fund-axes-used"></div>
-
-                            <!-- AI Insights: 확률점수 / ATR 목표가 / 거래량이상 -->
-                            <div id="aiInsightsCard" class="hidden"
-                                style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);">
-                            </div>
-
-                            <!-- 사이클 타임 예측 결과 (JS injected) -->
-                            <div id="cycleWidgetContainer"
-                                style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);">
-                            </div>
-
-                            <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로
-                                분석합니다. Quant, Event-Driven,
-                                Macro, Alt Data 4개 축을 기반으로 기업 유형별 맞춤 신호를 생성합니다.</div>
-                        </div>
+                    <!-- Disclaimer (TECHNICAL ONLY - Moved Fundamental/Rating to analysisSection) -->
+                    <div class="disclaimer">
+                        ⚠️ 본 분석은 캔들 패턴을 활용한 기술적 참고자료로서, 시장 심리(센티먼트)와 투자 환경에 따라 달라질 수 있습니다.<br>
+                        <strong>최종적인 투자 판단과 책임은 온전히 투자자 본인에게 있습니다.</strong>
                     </div>
 
                     <!-- Disclaimer -->
@@ -709,6 +640,74 @@
                         </table>
                     </details>
             </section> <!-- End resultSection -->
+
+            <!-- Deep Analysis Section (Relocated) -->
+            <section id="analysisSection" class="analysis-section hidden">
+                <div class="section-header">
+                    <h3>심층 분석 (펀더멘탈 & 사이클 타임)</h3>
+                    <p class="section-desc" id="analysisCurrentStock"></p>
+                </div>
+
+                <div id="analysisEmptyState" class="empty-state">
+                    <i class="ph ph-chart-line-up"></i>
+                    <p>종목을 먼저 검색해주세요.<br>검색된 종목의 상세 펀더멘탈 분석이 이곳에 표시됩니다.</p>
+                </div>
+
+                <div id="analysisContentWrapper" class="hidden">
+                    <!-- 🌟 Rating Check & Financials -->
+                    <div class="legacy-analysis-grid">
+                        <div class="rating-check-card">
+                            <h3 class="card-subtitle"><i class="ph ph-star-half"></i> 투자 매력도 (Rating Check)</h3>
+                            <div class="rating-overall">
+                                <span class="rating-score" id="ratingScoreVal">0.0</span> <span class="rating-max">/ 10</span>
+                            </div>
+                            <div id="ratingBarsContainer"></div>
+                        </div>
+                        <div class="financials-card">
+                            <h3 class="card-subtitle"><i class="ph ph-wallet"></i> 주요 재무 지표</h3>
+                            <div id="financialsGrid" class="financials-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- 🧠 Fundamental Analysis Panel -->
+                    <div id="fundamentalCard" class="fundamental-card">
+                        <div class="fund-header">
+                            <div class="fund-header-left">
+                                <span class="fund-brain-icon">🧠</span>
+                                <span class="fund-title">AI 인지형 심층 분석</span>
+                                <span id="fundCompanyTypeBadge" class="fund-type-badge"></span>
+                            </div>
+                            <div class="fund-header-right">
+                                <span id="fundSignalBadge" class="fund-signal-badge"></span>
+                                <button id="fundToggleBtn" class="fund-toggle-btn">
+                                    <i class="ph ph-caret-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="fundSignalReason" class="fund-signal-reason"></div>
+                        <div id="fundBody" class="fund-body fund-collapsed">
+                            <div class="fund-axis-grid">
+                                <div class="fund-axis-card">
+                                    <div class="fund-axis-title">📊 Quant</div>
+                                    <div id="fundQuantContent" class="fund-axis-content"></div>
+                                </div>
+                                <div class="fund-axis-card">
+                                    <div class="fund-axis-title">📰 Event</div>
+                                    <div id="fundEventContent" class="fund-axis-content"></div>
+                                </div>
+                                <div class="fund-axis-card">
+                                    <div class="fund-axis-title">🌐 Macro</div>
+                                    <div id="fundMacroContent" class="fund-axis-content"></div>
+                                </div>
+                            </div>
+                            <div id="fundAxesUsed" class="fund-axes-used"></div>
+                            <div id="aiInsightsCard" class="hidden" style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);"></div>
+                            <div id="cycleWidgetContainer" style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);"></div>
+                            <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로 분석합니다.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- Watchlist Section -->
             <section id="watchlistSection" class="watchlist-section hidden">

@@ -4527,9 +4527,21 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     color: var(--text-muted);
 }
 
+
 .empty-state i {
     font-size: 3rem;
     margin-bottom: 16px;
     opacity: 0.3;
+}
+
+.analysis-section .section-desc {
+    font-size: 1rem;
+    color: var(--primary);
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.analysis-section #analysisContentWrapper {
+    margin-top: 24px;
 }
 
