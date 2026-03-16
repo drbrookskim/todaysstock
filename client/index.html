@@ -90,6 +90,11 @@
                     <i class="ph ph-clock-counter-clockwise"></i>
                     <span>검색기록</span>
                 </a>
+                <a href="#" class="nav-item hidden" id="navWatchlist">
+                    <i class="ph ph-star"></i>
+                    <span>관심종목</span>
+                    <span id="navWatchlistCount" class="nav-badge">0</span>
+                </a>
             </nav>
 
             <div class="sidebar-bottom">
@@ -203,6 +208,11 @@
 
             <!-- Stock Result Area (Merged) -->
             <section id="resultSection" class="result-section hidden">
+                <div id="addWatchlistBtnContainer" class="action-bar hidden">
+                    <button id="addWatchlistBtn" class="premium-action-btn">
+                        <i class="ph ph-plus"></i> 관심종목 추가
+                    </button>
+                </div>
 
             <!-- Duplicates Removed to ensure unambiguous ID selection -->
 
@@ -683,6 +693,16 @@
                             <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로 분석합니다.</div>
                         </div>
                     </div>
+                </div>
+            </section>
+            
+            <!-- Watchlist Section -->
+            <section id="watchlistSection" class="watchlist-section hidden">
+                <div class="section-header">
+                    <h3>관심종목</h3>
+                </div>
+                <div id="watchlistContainer" class="watchlist-grid">
+                    <!-- Watchlist items will be rendered here -->
                 </div>
             </section>
 
