@@ -334,20 +334,28 @@ function renderWatchlist() {
         return;
     }
 
-    container.innerHTML = list.map(item => `
-        <div class="watchlist-card" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
-            <div class="watchlist-card-main" onclick="selectStock({code:'${escapeHtml(item.code)}', market:'${escapeHtml(item.market)}', name:'${escapeHtml(item.name)}'})">
-                <div class="watchlist-card-top">
-                    <span class="watchlist-name">${escapeHtml(item.name)}</span>
-                    <span class="watchlist-code">${escapeHtml(item.code)}</span>
-                </div>
-                <div class="watchlist-card-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</div>
+    container.innerHTML = `<div class="watchlist-grid">` + list.map(item => `
+        <div class="watchlist-tile" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}" onclick="selectStock({code:'${escapeHtml(item.code)}', market:'${escapeHtml(item.market)}', name:'${escapeHtml(item.name)}'})">
+            <div class="watchlist-tile-header">
+                <span class="watchlist-tile-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</span>
+                <button class="watchlist-tile-remove" onclick="event.stopPropagation(); removeFromWatchlist('${escapeHtml(item.code)}')">
+                    <i class="ph ph-x"></i>
+                </button>
             </div>
-            <button class="watchlist-remove-btn" onclick="event.stopPropagation(); removeFromWatchlist('${escapeHtml(item.code)}')">
-                <i class="ph ph-trash"></i>
-            </button>
+            <div class="watchlist-tile-body">
+                <span class="watchlist-tile-name">${escapeHtml(item.name)}</span>
+                <span class="watchlist-tile-code">${escapeHtml(item.code)}</span>
+            </div>
+            <div class="watchlist-tile-footer">
+                <div class="watchlist-tile-stats" id="tileStats-${escapeHtml(item.code)}">
+                    <span class="loading-dots">•••</span>
+                </div>
+            </div>
         </div>
-    `).join('');
+    `).join('') + `</div>`;
+    
+    // Proactively fetch mini data for tiles
+    list.forEach(item => updateTileData(item.code));
 }
 
 function updateWatchlistBtn() {
@@ -745,6 +753,7 @@ const observeElement = (el, callback) => {
 async function renderMacroIndicators() {
     const indexGrid = document.getElementById('indexGrid');
     const economyGrid = document.getElementById('economyGrid');
+    const cryptoGrid = document.getElementById('cryptoGrid');
     const fgFill = document.getElementById('fgFill');
     const fgNeedle = document.getElementById('fgNeedle');
     const fgStatus = document.getElementById('fgStatus');
@@ -773,6 +782,12 @@ async function renderMacroIndicators() {
             { name: '미 국채 10년물', price: `${data.us10y?.toFixed(2)}%`, change: `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg?.toFixed(3)}`, up: data.us10y_chg > 0 }
         ];
 
+        const cryptoData = [
+            { name: '비트코인 (BTC)', price: data.btc?.toLocaleString() || '-', change: `${data.btc_chg > 0 ? '+' : ''}${data.btc_chg?.toFixed(2)}%`, up: data.btc_chg > 0 },
+            { name: '이더리움 (ETH)', price: data.eth?.toLocaleString() || '-', change: `${data.eth_chg > 0 ? '+' : ''}${data.eth_chg?.toFixed(2)}%`, up: data.eth_chg > 0 },
+            { name: '테더 (USDT)', price: data.usdt?.toLocaleString() || '-', change: `${data.usdt_chg > 0 ? '+' : ''}${data.usdt_chg?.toFixed(2)}%`, up: data.usdt_chg > 0 }
+        ];
+
         const fearGreedValue = data.fear_greed || 50;
 
         // Render Indices
@@ -796,6 +811,19 @@ async function renderMacroIndicators() {
                 </div>
             </div>
         `).join('');
+
+        // Render Crypto
+        if (cryptoGrid) {
+            cryptoGrid.innerHTML = cryptoData.map(cry => `
+                <div class="indicator-row">
+                    <span class="indicator-label">${cry.name}</span>
+                    <div class="indicator-values">
+                        <span class="indicator-price">$${cry.price}</span>
+                        <span class="indicator-change ${cry.up ? 'up' : 'down'}">${cry.change}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         // Update Top Status Chips
         const kospiData = data.kospi ? { name: 'KOSPI', price: data.kospi.toLocaleString(), change: (data.kospi_chg >= 0 ? '+' : '') + data.kospi_chg.toFixed(2) + '%', up: data.kospi_chg >= 0 } : null;
@@ -851,10 +879,13 @@ async function renderMacroIndicators() {
 
 async function fetchAnalysis(item) {
     const patternReportSection = document.getElementById('patternReportSection');
+    const aiAnalysisReport = document.getElementById('aiAnalysisReport');
     const analysisLoading = document.getElementById('analysisLoading');
 
     if (patternReportSection) patternReportSection.classList.remove('hidden');
-    analysisLoading.classList.remove('hidden');
+    if (aiAnalysisReport) aiAnalysisReport.classList.remove('hidden');
+    
+    if (analysisLoading) analysisLoading.classList.remove('hidden');
     document.getElementById('trendContainer').style.display = 'none';
     document.getElementById('patternsCard').classList.add('hidden');
     document.getElementById('candleChartCard').classList.add('hidden');
@@ -867,12 +898,35 @@ async function fetchAnalysis(item) {
         
         const data = await response.json();
         
-        analysisLoading.classList.add('hidden');
+        if (analysisLoading) analysisLoading.classList.add('hidden');
         renderAnalysisReport(data);
     } catch (err) {
         console.error('fetchAnalysis error:', err);
-        analysisLoading.classList.add('hidden');
-        // 분석 실패 시 사용자에게 알림을 줄 수 있는 UI가 필요하면 여기에 추가
+        if (analysisLoading) analysisLoading.classList.add('hidden');
+    }
+}
+
+async function updateTileData(code) {
+    const statEl = document.getElementById(`tileStats-${code}`);
+    if (!statEl) return;
+
+    try {
+        // We use the search API for a quick quote if possible, or fallback to full info
+        // For simplicity, let's use the basic info API as it's cached/fast
+        const res = await fetch(`${API_BASE_URL}/api/stock/${code}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        const change = data.price_change || 0;
+        const pct = data.price_change_percent || 0;
+        const isUp = change >= 0;
+        
+        statEl.innerHTML = `
+            <div class="tile-price">${data.current_price?.toLocaleString() || '—'}</div>
+            <div class="tile-pct ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${pct}%</div>
+        `;
+    } catch (e) {
+        statEl.innerHTML = '—';
     }
 }
 
@@ -880,7 +934,21 @@ function renderAnalysisReport(data) {
     _lastAnalysisData = data;
     // ── Trend Badge ──
     const trendContainer = document.getElementById('trendContainer');
-    trendContainer.style.display = 'flex';
+    if (trendContainer) trendContainer.style.display = 'flex';
+
+    // Populate AI Report Section (Always Expanded)
+    const aiReportContent = document.getElementById('aiReportContent');
+    if (aiReportContent) {
+        aiReportContent.innerHTML = `
+            <div class="ai-insight-block">
+                <p class="ai-summary">${data.report || '분석 결과를 생성 중입니다...'}</p>
+                <div class="ai-action-suggestion">
+                    <i class="ph ph-info"></i>
+                    <span>위 데이터는 전문 AI 모델이 캔들과 기술적 지표를 종합 분석한 결과입니다.</span>
+                </div>
+            </div>
+        `;
+    }
 
     const trendBadge = document.getElementById('trendBadge');
     const trendIcon = document.getElementById('trendIcon');

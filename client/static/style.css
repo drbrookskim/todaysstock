@@ -4610,3 +4610,186 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     opacity: 0 !important;
     pointer-events: none !important;
 }
+
+/* ═══════════════════════════════════════════════════ */
+/* UI Enhancements Phase 3: Watchlist Tiles & Crypto   */
+/* ═══════════════════════════════════════════════════ */
+
+/* Macro Indicator Grid for Crypto */
+.crypto-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+/* Watchlist Grid & Tiles */
+.watchlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.watchlist-tile {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.watchlist-tile:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+.watchlist-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.watchlist-tile-market {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.watchlist-tile-market.kospi { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.watchlist-tile-market.kosdaq { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+
+.watchlist-tile-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.watchlist-tile-remove:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.watchlist-tile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.watchlist-tile-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.watchlist-tile-code {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.watchlist-tile-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.watchlist-tile-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.tile-price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.tile-pct {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.tile-pct.up { color: #10b981; }
+.tile-pct.down { color: #ef4444; }
+
+/* AI Report Expanded Styling */
+.ai-report-card {
+    border: 1px solid rgba(99, 102, 241, 0.3) !important;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%) !important;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+}
+
+.ai-report-card .card-header i {
+    color: var(--primary-light);
+    filter: drop-shadow(0 0 8px var(--primary-light));
+}
+
+.ai-status-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-radius: 20px;
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; text-shadow: 0 0 8px #10b981; }
+    100% { opacity: 0.6; }
+}
+
+.ai-insight-block {
+    padding: 8px 0;
+}
+
+.ai-summary {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    margin-bottom: 20px;
+}
+
+.ai-action-suggestion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px dashed var(--border-soft);
+}
+
+.ai-action-suggestion i {
+    color: var(--primary-light);
+    font-size: 1.2rem;
+}
+
+.ai-action-suggestion span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}

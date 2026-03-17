@@ -441,6 +441,18 @@ def get_macro(ecos_key: str) -> dict:
     except:
         pass
 
+    # Cryptocurrency (BTC, ETH, USDT)
+    for coin, ticker in [("btc", "BTC-USD"), ("eth", "ETH-USD"), ("usdt", "USDT-USD")]:
+        try:
+            c_hist = yf.Ticker(ticker).history(period="5d")
+            if not c_hist.empty:
+                m[coin] = round(float(c_hist["Close"].iloc[-1]), 2)
+                if len(c_hist) >= 2:
+                    prv = float(c_hist["Close"].iloc[-2])
+                    m[f"{coin}_chg"] = round((m[coin] - prv) / prv * 100, 3)
+        except:
+            pass
+
     # Fear & Greed Index (Simple Estimation based on VIX)
     # VIX 15 이하: Greed (75), 15-20: Neutral (50), 20-30: Fear (25), 30+: Extreme Fear (10)
     if "vix" in m:
