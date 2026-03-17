@@ -669,6 +669,14 @@ html[data-theme="light"] .theme-icon-btn i {
     flex-wrap: wrap;
 }
 
+.content-area {
+    flex: 1;
+    padding: 0;
+    overflow-y: auto;
+    background-color: var(--bg-app);
+    margin-left: 20px; /* Force spacing from fixed sidebar */
+}
+
 .search-card {
     flex: 1;
     min-width: 320px;

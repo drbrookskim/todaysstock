@@ -545,6 +545,11 @@ async function selectStock(item) {
         loadingSpinner.classList.add('hidden');
         showSection('resultSection');
         renderResult(data);
+        
+        // Ensure fundamental report is also called if we were in analysis mode
+        if (currentStock) {
+            renderFundamentalReport(currentStock.code || currentStock.ticker || '');
+        }
         fetchAnalysis(item);
     } catch (err) {
         console.error('selectStock error:', err);
@@ -1328,8 +1333,11 @@ async function renderFundamentalReport(stockCode) {
 
     // 스켈레톤 로딩 표시
     document.getElementById('fundSignalReason').textContent = '데이터 로딩 중…';
-    document.getElementById('fundCompanyTypeBadge').textContent = '';
-    document.getElementById('fundSignalBadge').textContent = '';
+    const fundTypeBadge = document.getElementById('fundCompanyTypeBadge');
+    const fundSignalBadge = document.getElementById('fundSignalBadge');
+    if (fundTypeBadge) fundTypeBadge.textContent = '';
+    if (fundSignalBadge) fundSignalBadge.textContent = '';
+    
     document.getElementById('fundQuantContent').innerHTML = '<div class="fund-loading">분석 중…</div>';
     document.getElementById('fundEventContent').innerHTML = '<div class="fund-loading">공시 스캔 중…</div>';
     document.getElementById('fundMacroContent').innerHTML = '<div class="fund-loading">거시 조회 중…</div>';
