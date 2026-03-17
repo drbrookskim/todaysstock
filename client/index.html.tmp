@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiting for the Peak | Stock Search</title>
+    <meta name="description" content="코스피, 코스닥 종목을 검색하고 주가 및 이동평균선 정보를 확인하세요.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+KR:wght@300..700&display=swap"
+        rel="stylesheet">
+    <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0a0f1e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Apple / iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Waiting for the Peak">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <!-- Microsoft -->
+    <meta name="msapplication-TileImage" content="/static/icons/icon-192.png">
+    <meta name="msapplication-TileColor" content="#0a0f1e">
+    <link rel="stylesheet" href="/static/style.css?v=5">
+    <style>
+        .nav-item.hidden { display: none !important; }
+        .watchlist-section.hidden { display: none !important; }
+    </style>
+    <!-- Supabase JS SDK v2 — for direct browser auth (bypasses Render round-trip) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+
+<body>
+    <!-- ── PWA 설치 배너 (Chrome/Edge: beforeinstallprompt) ── -->
+    <div id="pwaInstallBanner" class="pwa-banner" style="display:none;" role="dialog" aria-label="앱 설치 안내">
+        <div class="pwa-banner-icon">
+            <img src="/static/icons/icon-192.png" alt="Waiting for the Peak" width="40" height="40">
+        </div>
+        <div class="pwa-banner-text">
+            <strong>Waiting for the Peak 앱 설치</strong>
+            <span>홈 화면에 추가해 빠르게 실행하세요</span>
+        </div>
+        <div class="pwa-banner-actions">
+            <button id="pwaInstallBtn" class="pwa-btn-install">설치하기</button>
+            <button id="pwaDismissBtn" class="pwa-btn-dismiss">나중에</button>
+        </div>
+    </div>
+
+    <!-- ── iOS Safari 수동 설치 가이드 배너 ── -->
+    <div id="pwaIosBanner" class="pwa-banner pwa-ios" style="display:none;" role="dialog" aria-label="iOS 설치 안내">
+        <div class="pwa-banner-text">
+            <strong>📲 홈 화면에 추가하기</strong>
+            <span>Safari 하단 공유 버튼(<strong>□↑</strong>) → <strong>"홈 화면에 추가"</strong> 선택</span>
+        </div>
+        <button id="pwaIosDismissBtn" class="pwa-btn-dismiss">✕</button>
+    </div>
+    <!-- Cinematic CSS Background -->
+    <div class="bg-cinematic">
+        <div class="bg-grid"></div>
+        <div class="bg-flare flare-1"></div>
+        <div class="bg-flare flare-2"></div>
+        <div class="bg-flare flare-3"></div>
+        <div class="bg-data-stream stream-1"></div>
+        <div class="bg-data-stream stream-2"></div>
+        <div class="bg-data-stream stream-3"></div>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <div class="app-shell">
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        <!-- New Primary Sidebar (PandaDoc / Remote Style) -->
+        <aside id="mainSidebar" class="main-sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-circle">S</div>
+                <span class="brand-text">Signnith</span>
+                <button id="sidebarPinBtn" class="pin-btn" title="사이드바 고정"><i class="ph ph-push-pin"></i></button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" id="navHome">
+                    <i class="ph ph-house"></i>
+                    <span>홈</span>
+                </a>
+                <a href="#" class="nav-item hidden" id="navWatchlist">
+                    <i class="ph ph-star"></i>
+                    <span>관심종목</span>
+                    <span id="navWatchlistCount" class="nav-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="navAnalysis">
+                    <i class="ph ph-chart-line-up"></i>
+                    <span>심층분석</span>
+                </a>
+                <a href="#" class="nav-item" id="navHistory">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>검색기록</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="sidebar-user" id="sidebarUserSection">
+                    <div class="user-avatar"><i class="ph ph-user"></i></div>
+                    <div class="user-info">
+                        <span id="sidebarUserName" class="user-name">Guest</span>
+                        <span id="sidebarUserStatus" class="user-status">로그인이 필요합니다</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Top Bar (Remote Style) -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button id="sidebarToggle" class="mobile-toggle"><i class="ph ph-list"></i></button>
+                    <div class="greeting-area">
+                        <h2 id="pageGreeting" class="greeting-text">Hello, Signnith 🕊️</h2>
+                        <p id="pageSubGreeting" class="sub-greeting-text">오늘은 어떤 종목을 살펴볼까요?</p>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="header-search-mini hidden" id="headerMiniSearch">
+                         <i class="ph ph-magnifying-glass"></i>
+                         <input type="text" placeholder="종목 검색...">
+                    </div>
+                    <button id="authBtn" class="top-auth-btn">로그인</button>
+                </div>
+            </header>
+
+
+            <!-- Status Alerts (Spinner/Error) -->
+            <div id="loadingSpinner" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <p>데이터를 불러오는 중...</p>
+            </div>
+            <div id="errorMessage" class="error-banner hidden"></div>
+            
+            <section id="dashboardHome" class="dashboard-home">
+                <div class="search-hero">
+                    <div class="search-card">
+                        <div class="search-card-header">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <h3>종목 검색</h3>
+                        </div>
+                        <div class="search-wrapper">
+                            <input type="text" id="searchInput" class="search-input"
+                                placeholder="삼성전자, 005930..." autocomplete="off">
+                            <button id="searchBtn" class="search-action-btn">검색</button>
+                        </div>
+                        <p class="search-hint">종목명 또는 6자리 코드를 입력하세요</p>
+                        
+                        <!-- Autocomplete Dropdown -->
+                        <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
+
+                        <!-- Recent Searches Box (Relocated) -->
+                        <div id="recentSearches" class="recent-searches-box hidden" style="margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
+                            <div class="box-header" style="margin-bottom: 8px;">
+                                <h4 style="font-size: 0.85rem; color: var(--text-sub);">최근 검색어</h4>
+                                <button id="clearRecent" style="font-size: 0.8rem;">모두 지우기</button>
+                            </div>
+                            <div id="recentList" class="recent-chips-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Macro Indicators Section -->
+                <div id="macroIndicatorSection" class="macro-section">
+                    <div class="section-header">
+                        <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
+                        <span class="update-time">실시간 업데이트 중</span>
+                    </div>
+                    

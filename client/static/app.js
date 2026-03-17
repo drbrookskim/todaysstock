@@ -30,8 +30,8 @@ function escapeHtml(unsafe) {
 let suggestItems = [];
 let activeIndex = -1;
 let debounceTimer = null;
-let currentStock = null;   // { code, market, name }
 let currentWatchlist = [];
+let currentIndexChart = null; // Lightweight Chart instance
 
 // ── Watchlist Constants ──
 const WATCHLIST_KEY = 'stockfinder-watchlist';
@@ -751,7 +751,7 @@ const observeElement = (el, callback) => {
 // ═══════════════════════════════════════════════════
 
 async function renderMacroIndicators() {
-    const indexGrid = document.getElementById('indexGrid');
+    const indexList = document.getElementById('indexList');
     const economyGrid = document.getElementById('economyGrid');
     const cryptoGrid = document.getElementById('cryptoGrid');
     const fgFill = document.getElementById('fgFill');
@@ -759,7 +759,7 @@ async function renderMacroIndicators() {
     const fgStatus = document.getElementById('fgStatus');
     const fgValue = document.getElementById('fgValue');
 
-    if (!indexGrid || !economyGrid) return;
+    if (!economyGrid) return;
 
     try {
         console.log('[DEBUG] Fetching macro data from:', `${API_BASE_URL}/api/macro`);
@@ -768,18 +768,22 @@ async function renderMacroIndicators() {
         const data = await resp.json();
         console.log('[DEBUG] Macro data received:', data);
 
-        // Data Mapping
+        // Data Mapping (시장 지수 대시보드용)
         const indexData = [
-            { name: 'KOSPI', price: data.kospi?.toLocaleString() || '-', change: `${data.kospi_chg > 0 ? '+' : ''}${data.kospi_chg?.toFixed(2)}%`, up: data.kospi_chg > 0 },
-            { name: 'KOSDAQ', price: data.kosdaq?.toLocaleString() || '-', change: `${data.kosdaq_chg > 0 ? '+' : ''}${data.kosdaq_chg?.toFixed(2)}%`, up: data.kosdaq_chg > 0 },
-            { name: 'S&P 500', price: data.sp500?.toLocaleString() || '-', change: `${data.sp500_chg > 0 ? '+' : ''}${data.sp500_chg?.toFixed(2)}%`, up: data.sp500_chg > 0 },
-            { name: 'NASDAQ', price: data.nasdaq?.toLocaleString() || '-', change: `${data.nasdaq_chg > 0 ? '+' : ''}${data.nasdaq_chg?.toFixed(2)}%`, up: data.nasdaq_chg > 0 }
+            { id: 'KOSPI', name: 'KOSPI', price: data.kospi?.toLocaleString() || '-', change: `${data.kospi_chg > 0 ? '+' : ''}${data.kospi_chg?.toFixed(2)}%`, up: data.kospi_chg > 0 },
+            { id: 'KOSDAQ', name: 'KOSDAQ', price: data.kosdaq?.toLocaleString() || '-', change: `${data.kosdaq_chg > 0 ? '+' : ''}${data.kosdaq_chg?.toFixed(2)}%`, up: data.kosdaq_chg > 0 },
+            { id: 'S&P 500', name: 'S&P 500', price: data.sp500?.toLocaleString() || '-', change: `${data.sp500_chg > 0 ? '+' : ''}${data.sp500_chg?.toFixed(2)}%`, up: data.sp500_chg > 0 },
+            { id: 'NASDAQ', name: 'NASDAQ', price: data.nasdaq?.toLocaleString() || '-', change: `${data.nasdaq_chg > 0 ? '+' : ''}${data.nasdaq_chg?.toFixed(2)}%`, up: data.nasdaq_chg > 0 },
+            { id: 'PHLX SEMI', name: '필라델피아 반도체', price: data.sox?.toLocaleString() || '-', change: `${data.sox_chg > 0 ? '+' : ''}${data.sox_chg?.toFixed(2)}%`, up: data.sox_chg > 0 },
+            { id: 'DXY', name: '달러 인덱스', price: data.dxy?.toLocaleString() || '-', change: `${data.dxy_chg > 0 ? '+' : ''}${data.dxy_chg?.toFixed(2)}%`, up: data.dxy_chg > 0 },
+            { id: 'WTI', name: 'WTI 유가', price: data.wti?.toLocaleString() || '-', change: `${data.wti_chg > 0 ? '+' : ''}${data.wti_chg?.toFixed(2)}%`, up: data.wti_chg > 0 }
         ];
 
+        // 주요 경제 지표 (환율, 국채 등)
         const economyData = [
             { name: 'USD/KRW 환율', price: data.usd_krw?.toLocaleString() || '-', change: `${data.usd_krw_chg > 0 ? '+' : ''}${data.usd_krw_chg?.toFixed(2)}%`, up: data.usd_krw_chg > 0 },
-            { name: 'WTI 유가', price: data.wti?.toLocaleString() || '-', change: `${data.wti_chg > 0 ? '+' : ''}${data.wti_chg?.toFixed(2)}%`, up: data.wti_chg > 0 },
-            { name: '미 국채 10년물', price: `${data.us10y?.toFixed(2)}%`, change: `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg?.toFixed(3)}`, up: data.us10y_chg > 0 }
+            { name: '미 국채 10년물', price: `${data.us10y?.toFixed(2)}%`, change: `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg?.toFixed(3)}`, up: data.us10y_chg > 0 },
+            { name: '공포지수 (VIX)', price: data.vix?.toLocaleString() || '-', change: `${data.vix_chg > 0 ? '+' : ''}${data.vix_chg?.toFixed(2)}%`, up: data.vix_chg > 0 }
         ];
 
         const cryptoData = [
@@ -790,16 +794,36 @@ async function renderMacroIndicators() {
 
         const fearGreedValue = data.fear_greed || 50;
 
-        // Render Indices
-        indexGrid.innerHTML = indexData.map(idx => `
-            <div class="indicator-row">
-                <span class="indicator-label">${idx.name}</span>
-                <div class="indicator-values">
-                    <span class="indicator-price">${idx.price}</span>
-                    <span class="indicator-change ${idx.up ? 'up' : 'down'}">${idx.change}</span>
-                </div>
-            </div>
-        `).join('');
+        // Render Indices List
+        if (indexList) {
+            indexList.innerHTML = indexData.map(idx => {
+                const price = idx.price || '-';
+                const change = idx.change || '-';
+                const trendClass = idx.up ? 'up' : 'down';
+                return `
+                    <div class="index-item" 
+                         data-id="${idx.id}" 
+                         data-name="${idx.name}" 
+                         onclick="renderIndexChart('${idx.id}', '${idx.name}'); document.querySelectorAll('.index-item').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                        <span class="indicator-label">${idx.name}</span>
+                        <div class="indicator-values">
+                            <span class="indicator-price">${price}</span>
+                            <span class="indicator-change ${trendClass}">${change}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Auto-select KOSPI if not already selecting something
+            const activeItem = indexList.querySelector('.index-item.active');
+            if (!activeItem) {
+                const kospi = indexList.querySelector('.index-item[data-id="KOSPI"]');
+                if (kospi) {
+                    kospi.classList.add('active');
+                    renderIndexChart('KOSPI', 'KOSPI');
+                }
+            }
+        }
 
         // Render Economy
         economyGrid.innerHTML = economyData.map(eco => `
@@ -825,51 +849,169 @@ async function renderMacroIndicators() {
             `).join('');
         }
 
-        // Update Top Status Chips
-        const kospiData = data.kospi ? { name: 'KOSPI', price: data.kospi.toLocaleString(), change: (data.kospi_chg >= 0 ? '+' : '') + data.kospi_chg.toFixed(2) + '%', up: data.kospi_chg >= 0 } : null;
-        const kosdaqData = data.kosdaq ? { name: 'KOSDAQ', price: data.kosdaq.toLocaleString(), change: (data.kosdaq_chg >= 0 ? '+' : '') + data.kosdaq_chg.toFixed(2) + '%', up: data.kosdaq_chg >= 0 } : null;
-
-        if (kospiData) {
-            const chip = document.getElementById('chipKospi');
-            if (chip) {
-                const labelEl = chip.querySelector('.label');
-                if (labelEl) labelEl.textContent = `${kospiData.name} ${kospiData.price}`;
-                const chgEl = chip.querySelector('.change');
-                if (chgEl) {
-                    chgEl.textContent = kospiData.change;
-                    chgEl.className = `change ${kospiData.up ? 'up' : 'down'}`;
-                }
-            }
-        }
-        if (kosdaqData) {
-            const chip = document.getElementById('chipKosdaq');
-            if (chip) {
-                const labelEl = chip.querySelector('.label');
-                if (labelEl) labelEl.textContent = `${kosdaqData.name} ${kosdaqData.price}`;
-                const chgEl = chip.querySelector('.change');
-                if (chgEl) {
-                    chgEl.textContent = kosdaqData.change;
-                    chgEl.className = `change ${kosdaqData.up ? 'up' : 'down'}`;
-                }
-            }
-        }
+        // Update Top Status Chips (기존 기능 유지)
+        updateStatusChips(data);
 
         // Render Fear & Greed
-        if (fgFill && fgNeedle) {
-            const needleRotation = (fearGreedValue / 100) * 180 - 90;
-            fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
-            fgFill.style.transform = `rotate(${(fearGreedValue / 100) * 180}deg)`;
-            
-            fgValue.textContent = fearGreedValue;
-            if (fearGreedValue < 25) fgStatus.textContent = 'Extreme Fear';
-            else if (fearGreedValue < 45) fgStatus.textContent = 'Fear';
-            else if (fearGreedValue < 55) fgStatus.textContent = 'Neutral';
-            else if (fearGreedValue < 75) fgStatus.textContent = 'Greed';
-            else fgStatus.textContent = 'Extreme Greed';
-        }
+        updateFearGreed(fearGreedValue);
+
     } catch (err) {
         console.error("renderMacroIndicators error:", err);
-        indexGrid.innerHTML = '<div class="error-msg">지표 로드 실패</div>';
+        if (indexList) indexList.innerHTML = '<div class="error-msg">지표 로드 실패</div>';
+    }
+}
+
+// ── 상세 지수 차트 렌더링 (Lightweight Charts) ──
+async function renderIndexChart(symbol, name) {
+    const titleName = document.getElementById('selectedIndexName');
+    const container = document.getElementById('indexChart');
+    if (titleName) titleName.textContent = `${name} 1개월 차트`;
+    if (!container) return;
+
+    // Clear existing
+    container.innerHTML = '<div class="loading-chart">데이터를 불러오는 중...</div>';
+    if (currentIndexChart) {
+        currentIndexChart.remove();
+        currentIndexChart = null;
+    }
+
+    try {
+        const resp = await fetch(`${API_BASE_URL}/api/market-index/history?symbol=${encodeURIComponent(symbol)}`);
+        if (!resp.ok) throw new Error('History Fetch Failed');
+        const data = await resp.json();
+
+        container.innerHTML = '';
+        
+        // Ensure container has dimensions
+        if (container.clientWidth === 0 || container.clientHeight === 0) {
+            console.warn('[DEBUG] Container has 0 dimensions, waiting for next frame...');
+            await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+
+        const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+        const textColor = isDark ? '#94a3b8' : '#64748b';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+        const chartOptions = {
+            width: container.clientWidth || 400,
+            height: container.clientHeight || 300,
+            layout: { 
+                background: { type: 'solid', color: 'transparent' },
+                textColor: textColor,
+                fontSize: 11,
+                fontFamily: 'Space Grotesk, sans-serif'
+            },
+            grid: {
+                vertLines: { color: gridColor },
+                horzLines: { color: gridColor },
+            },
+            crosshair: {
+                mode: 1, // Normal
+            },
+            rightPriceScale: {
+                borderColor: gridColor,
+            },
+            timeScale: {
+                borderColor: gridColor,
+            },
+            handleScroll: true,
+            handleScale: true,
+        };
+
+        const chart = LightweightCharts.createChart(container, chartOptions);
+
+        let areaSeries;
+        if (typeof chart.addAreaSeries === 'function') {
+            areaSeries = chart.addAreaSeries({
+                topColor: 'rgba(59, 130, 246, 0.4)',
+                bottomColor: 'rgba(59, 130, 246, 0.0)',
+                lineColor: '#3b82f6',
+                lineWidth: 2,
+            });
+        } else if (typeof chart.addLineSeries === 'function') {
+            areaSeries = chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+            });
+        } else {
+            throw new Error('Chart object lacks series addition methods');
+        }
+
+        if (data.history && data.history.length > 0) {
+            areaSeries.setData(data.history);
+        }
+
+        chart.timeScale().fitContent();
+        currentIndexChart = chart;
+
+        // Sync with resize
+        const resizeObserver = new ResizeObserver(entries => {
+            if (entries.length === 0 || !currentIndexChart) return;
+            const { width, height } = entries[0].contentRect;
+            if (width > 0 && height > 0) {
+                currentIndexChart.applyOptions({ width, height });
+                currentIndexChart.timeScale().fitContent();
+            }
+        });
+        resizeObserver.observe(container);
+
+    } catch (err) {
+        console.error("renderIndexChart error:", err);
+        container.innerHTML = `<div class="error-msg">차트 로드 실패: ${err.message}</div>`;
+    }
+}
+
+// ── Top Status Chips 업데이트 분리 ──
+function updateStatusChips(data) {
+    const kospiData = data.kospi ? { name: 'KOSPI', price: data.kospi.toLocaleString(), change: (data.kospi_chg >= 0 ? '+' : '') + data.kospi_chg.toFixed(2) + '%', up: data.kospi_chg >= 0 } : null;
+    const kosdaqData = data.kosdaq ? { name: 'KOSDAQ', price: data.kosdaq.toLocaleString(), change: (data.kosdaq_chg >= 0 ? '+' : '') + data.kosdaq_chg.toFixed(2) + '%', up: data.kosdaq_chg >= 0 } : null;
+
+    if (kospiData) {
+        const chip = document.getElementById('chipKospi');
+        if (chip) {
+            const labelEl = chip.querySelector('.label');
+            if (labelEl) labelEl.textContent = `${kospiData.name} ${kospiData.price}`;
+            const chgEl = chip.querySelector('.change');
+            if (chgEl) {
+                chgEl.textContent = kospiData.change;
+                chgEl.className = `change ${kospiData.up ? 'up' : 'down'}`;
+            }
+        }
+    }
+    if (kosdaqData) {
+        const chip = document.getElementById('chipKosdaq');
+        if (chip) {
+            const labelEl = chip.querySelector('.label');
+            if (labelEl) labelEl.textContent = `${kosdaqData.name} ${kosdaqData.price}`;
+            const chgEl = chip.querySelector('.change');
+            if (chgEl) {
+                chgEl.textContent = kosdaqData.change;
+                chgEl.className = `change ${kosdaqData.up ? 'up' : 'down'}`;
+            }
+        }
+    }
+}
+
+// ── Fear & Greed 업데이트 분리 ──
+function updateFearGreed(value) {
+    const fgFill = document.getElementById('fgFill');
+    const fgNeedle = document.getElementById('fgNeedle');
+    const fgStatus = document.getElementById('fgStatus');
+    const fgValue = document.getElementById('fgValue');
+
+    if (fgFill && fgNeedle) {
+        const needleRotation = (value / 100) * 180 - 90;
+        fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
+        fgFill.style.transform = `rotate(${(value / 100) * 180}deg)`;
+        
+        if (fgValue) fgValue.textContent = value;
+        if (fgStatus) {
+            if (value < 25) fgStatus.textContent = 'Extreme Fear';
+            else if (value < 45) fgStatus.textContent = 'Fear';
+            else if (value < 55) fgStatus.textContent = 'Neutral';
+            else if (value < 75) fgStatus.textContent = 'Greed';
+            else fgStatus.textContent = 'Extreme Greed';
+        }
     }
 }
 

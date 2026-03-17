@@ -4318,6 +4318,91 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     margin-top: 16px;
 }
 
+/* ── Macro Dashboard (Split View) ── */
+.macro-dashboard {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    overflow: hidden;
+    height: 500px;
+    box-shadow: var(--shadow-sm);
+}
+
+.index-list-panel {
+    padding: 24px;
+    border-right: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgba(var(--bg-app-rgb), 0.3);
+}
+
+.index-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+.index-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.index-item:hover {
+    background: var(--bg-app);
+    border-color: var(--border-soft);
+}
+
+.index-item.active {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+}
+
+.index-item.active .indicator-label {
+    color: var(--primary);
+}
+
+.index-chart-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.index-chart-container {
+    flex: 1;
+    width: 100%;
+    min-height: 300px;
+    position: relative;
+}
+
+@media (max-width: 1024px) {
+    .macro-dashboard {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .index-list-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border-soft);
+        max-height: 300px;
+    }
+    
+    .index-chart-container {
+        height: 350px;
+    }
+}
+
 .macro-card {
     background: var(--bg-card);
     border: 1px solid var(--border-soft);

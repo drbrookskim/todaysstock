@@ -1,0 +1,33 @@
+{
+  "change": 5200,
+  "change_pct": 2.83,
+  "code": "005930",
+  "company_summary": "<div class=\"summary-formatted\"><div class=\"summary-subtitle\"><strong>\"\uae00\ub85c\ubc8c \uacbd\uc7c1\ub825 \uae30\ubc18\uc758 \ubc18\ub3c4\uccb4\uc640\ubc18\ub3c4\uccb4\uc7a5\ube44 \uc120\ub3c4 \uae30\uc5c5\"</strong></div><div class=\"summary-section\"><h4 class=\"summary-heading\">1. \uae30\uc5c5 \uac1c\uc694</h4><ul class=\"summary-list\"><li><strong>\uc124\ub9bd\uc77c:</strong><span class=\"summary-value\">1969\ub144 01\uc6d4 13\uc77c</span></li><li><strong>\ub300\ud45c\uc774\uc0ac:</strong><span class=\"summary-value\">\uc804\uc601\ud604, \ub178\ud0dc\ubb38</span></li><li><strong>\ubcf8\uc0ac:</strong><span class=\"summary-value\">\uacbd\uae30\ub3c4 \uc218\uc6d0\uc2dc \uc601\ud1b5\uad6c  \uc0bc\uc131\ub85c 129 (\ub9e4\ud0c4\ub3d9)</span></li><li><strong>\uc6f9\uc0ac\uc774\ud2b8:</strong><span class=\"summary-value\"><a href=\"http://www.samsung.com/sec\" target=\"_blank\">www.samsung.com/sec</a></span></li></ul></div><div class=\"summary-section\"><h4 class=\"summary-heading\">2. \ud575\uc2ec \uc0ac\uc5c5 \uc601\uc5ed (\uc8fc\uc694 \ud65c\ub3d9)</h4><p class=\"summary-desc\">\ub3d9\uc0ac\ub294 1969\ub144 \uc124\ub9bd\ub418\uc5b4 1975\ub144 \uc720\uac00\uc99d\uad8c\uc2dc\uc7a5\uc5d0 \uc0c1\uc7a5\ud558\uc600\uc73c\uba70, 2017\ub144 Harman \uc778\uc218\ub85c \uc804\uc7a5\ubd80\ud488 \uc0ac\uc5c5\uc744 \ud655\uc7a5\ud568.</p></div></div>",
+  "date": "2026-03-16",
+  "high": 189000,
+  "industry": "\ubc18\ub3c4\uccb4\uc640\ubc18\ub3c4\uccb4\uc7a5\ube44",
+  "low": 183600,
+  "ma10": 185860,
+  "ma20": 189865,
+  "ma5": 187600,
+  "ma60": 155660,
+  "market": "KOSPI",
+  "name": "\uc0bc\uc131\uc804\uc790",
+  "nxt": {
+    "market_status": "CLOSE",
+    "naver_price": 188700,
+    "nxt_available": true,
+    "nxt_change": 7500,
+    "nxt_change_pct": 4.09,
+    "nxt_direction": "RISING",
+    "nxt_high": 191100,
+    "nxt_low": 182500,
+    "nxt_price": 191000,
+    "nxt_status": "CLOSE",
+    "nxt_time": "2026-03-16T20:00:00.000000+09:00",
+    "nxt_volume": 16109911
+  },
+  "open": 184600,
+  "price": 188700,
+  "volume": 19747901
+}

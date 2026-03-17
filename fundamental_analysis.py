@@ -430,14 +430,25 @@ def get_macro(ecos_key: str) -> dict:
     except:
         pass
 
-    # Dollar Index (DX-Y.NYB) - 달러 인덱스
+    # Dollar Index (DX=F) - 달러 인덱스
     try:
-        dxy = yf.Ticker("DX-Y.NYB").history(period="5d")
+        dxy = yf.Ticker("DX=F").history(period="5d")
         if not dxy.empty:
             m["dxy"] = round(float(dxy["Close"].iloc[-1]), 2)
             if len(dxy) >= 2:
                 prv = float(dxy["Close"].iloc[-2])
                 m["dxy_chg"] = round((m["dxy"] - prv) / prv * 100, 3)
+    except:
+        pass
+
+    # Philadelphia Semiconductor Index (^SOX) - 필라델피아 반도체 지수
+    try:
+        sox = yf.Ticker("^SOX").history(period="5d")
+        if not sox.empty:
+            m["sox"] = round(float(sox["Close"].iloc[-1]), 2)
+            if len(sox) >= 2:
+                prv = float(sox["Close"].iloc[-2])
+                m["sox_chg"] = round((m["sox"] - prv) / prv * 100, 3)
     except:
         pass
 

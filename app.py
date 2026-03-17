@@ -771,6 +771,56 @@ def manage_watchlist():
 # 라우트
 # ─────────────────────────────────────────────
 
+@app.route("/api/market-index/history")
+def market_index_history():
+    """시장 지수 최근 1개월 히스토리 API"""
+    symbol_name = request.args.get("symbol", "KOSPI").upper()
+    
+    # 심볼 매핑
+    mapping = {
+        "KOSPI": "^KS11",
+        "KOSDAQ": "^KQ11",
+        "S&P 500": "^GSPC",
+        "NASDAQ": "^IXIC",
+        "PHLX SEMI": "^SOX",
+        "DXY": "DX=F",
+        "WTI": "CL=F"
+    }
+    
+    ticker_symbol = mapping.get(symbol_name)
+    if not ticker_symbol:
+        return jsonify({"error": f"지원하지 않는 심볼입니다: {symbol_name}"}), 400
+
+    try:
+        # 최근 1개월 데이터 (yfinance)
+        ticker = yf.Ticker(ticker_symbol)
+        df = ticker.history(period="1mo")
+        
+        if df.empty:
+            return jsonify({"error": "데이터를 불러올 수 없습니다."}), 404
+            
+        history = []
+        for i in range(len(df)):
+            row = df.iloc[i]
+            history.append({
+                "time": df.index[i].strftime("%Y-%m-%d"),
+                "value": round(float(row["Close"]), 2),
+                "open": round(float(row["Open"]), 2),
+                "high": round(float(row["High"]), 2),
+                "low": round(float(row["Low"]), 2),
+                "close": round(float(row["Close"]), 2)
+            })
+            
+        return jsonify({
+            "symbol": symbol_name,
+            "ticker": ticker_symbol,
+            "history": history
+        })
+    except Exception as e:
+        print(f"Index History Error ({symbol_name}): {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/macro")
 def api_macro():
     """거시경제 지표 API (KOSPI, KOSDAQ, S&P500, NASDAQ, 환율 등)"""
