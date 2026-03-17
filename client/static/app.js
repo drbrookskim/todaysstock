@@ -114,6 +114,10 @@ function initNavigation() {
             const targetId = sections[item.id];
             if (targetId) {
                 if (targetId === 'analysisSection') {
+                    // If switching to analysisSection and we have a current stock, ensure it's loaded
+                    if (currentStock) {
+                        renderFundamentalReport(currentStock.code || currentStock.ticker);
+                    }
                     const emptyState = document.getElementById('analysisEmptyState');
                     const contentWrapper = document.getElementById('analysisContentWrapper');
                     const currentStockLabel = document.getElementById('analysisCurrentStock');
@@ -1359,6 +1363,8 @@ async function renderFundamentalReport(stockCode) {
         ['ROE', q.roe != null ? q.roe + '%' : '—'],
         ['영업이익률', q.op_margin != null ? q.op_margin + '%' : '—'],
         ['부채비율', q.debt_ratio != null ? q.debt_ratio + '%' : '—'],
+        ['연간 매출 성장', q.rev_growth != null ? (q.rev_growth > 0 ? '+' : '') + q.rev_growth + '%' : '—'],
+        ['분기 매출 성장', q.qtr_growth != null ? (q.qtr_growth > 0 ? '+' : '') + q.qtr_growth + '%' : '—'],
     ];
     const scoreColor = q.score >= 75 ? '#10b981' : q.score >= 55 ? '#f59e0b' : '#ef4444';
     document.getElementById('fundQuantContent').innerHTML = `
