@@ -574,7 +574,7 @@ function renderResult(data) {
     document.getElementById('stockCode').textContent = data.code;
 
     document.getElementById('stockIndustry').textContent = data.industry || '분류되지 않음';
-    document.getElementById('stockSummary').innerHTML = data.company_summary || '기업 개요 정보가 제공되지 않았습니다.';
+
 
     document.getElementById('stockDate').textContent = `기준일: ${data.date}`;
 
