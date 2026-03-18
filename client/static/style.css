@@ -214,7 +214,7 @@ body {
 
 /* ── Persistent Sidebar (PandaDoc Style) ── */
 .main-sidebar {
-    width: 240px;
+    width: 72px;
     height: 100vh;
     background-color: var(--bg-card);
     border-right: 1px solid var(--border-soft);
@@ -223,10 +223,10 @@ body {
     padding: 24px 0;
     position: sticky;
     top: 0;
-    height: 100vh;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
     overflow-x: hidden;
+    flex-shrink: 0;
 }
 
 /* Sidebar logic moved to end of file for priority */
@@ -4674,67 +4674,66 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 
 
 
-/* --- FINAL OVERRIDES FOR SIDEBAR PINNING & COLLAPSE --- */
+/* --- SIDEBAR PINNING & COLLAPSE --- */
 
-/* Default: Sidebar collapsed to icon-only width */
-.main-sidebar:not(.pinned) {
-    width: 72px !important;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+/* Collapsed: icon-only (default) */
+.main-sidebar {
+    width: 72px;
 }
 
-/* Hover-expand when NOT pinned */
-.main-sidebar:not(.pinned):hover {
-    width: 240px !important;
-    box-shadow: var(--shadow-xl) !important;
+/* Hover: expand temporarily */
+.main-sidebar:hover {
+    width: 240px;
+    box-shadow: 8px 0 24px rgba(0,0,0,0.1);
 }
 
-/* Hide text labels when collapsed and not hovered */
+/* Pinned: always expanded */
+.main-sidebar.pinned {
+    width: 240px;
+}
+
+/* Hide text when collapsed and not hovered */
 .main-sidebar:not(.pinned):not(:hover) .brand-text,
 .main-sidebar:not(.pinned):not(:hover) .nav-item span,
 .main-sidebar:not(.pinned):not(:hover) .user-name,
 .main-sidebar:not(.pinned):not(:hover) .user-status,
 .main-sidebar:not(.pinned):not(:hover) .logout-btn span,
 .main-sidebar:not(.pinned):not(:hover) .nav-badge {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    transition: opacity 0.2s ease !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
 }
 
-/* Pinned: full width always */
-.main-sidebar.pinned {
-    width: 240px !important;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* Show text labels when pinned */
+/* Show text when pinned */
 .main-sidebar.pinned .brand-text,
 .main-sidebar.pinned .nav-item span,
 .main-sidebar.pinned .user-name,
 .main-sidebar.pinned .user-status,
 .main-sidebar.pinned .nav-badge {
-    opacity: 1 !important;
-    visibility: visible !important;
+    opacity: 1;
+    visibility: visible;
 }
 
-/* Pin button hidden when sidebar is collapsed and not hovered */
+/* Pin button: hidden when collapsed and not hovered */
 .main-sidebar:not(.pinned):not(:hover) .pin-btn {
-    opacity: 0 !important;
-    pointer-events: none !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
-/* Pin button visible when sidebar is pinned or hovered */
+/* Pin button: visible when pinned or hovered */
 .main-sidebar.pinned .pin-btn,
 .main-sidebar:hover .pin-btn {
-    opacity: 1 !important;
-    pointer-events: all !important;
+    opacity: 1;
+    pointer-events: all;
 }
 
-/* main-content transitions smoothly when sidebar is pinned */
-body[data-sidebar-pinned="true"] .main-content {
-    margin-left: 0 !important;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+/* Active pin button: rotated icon */
+.pin-btn.active i {
+    transform: rotate(-45deg);
+    color: var(--primary);
 }
+
 
 
 /* ═══════════════════════════════════════════════════ */
