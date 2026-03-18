@@ -2151,8 +2151,8 @@ async function initAuth() {
     const authModal = document.getElementById('authModal');
     const closeAuthModal = document.getElementById('closeAuthModal');
 
-    // Sidebar Logout Btn
-    const sidebarFooter = document.getElementById('sidebarFooter');
+    // Sidebar Auth Elements
+    const sidebarUserSection = document.getElementById('sidebarUserSection');
     const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
 
     const googleAuthBtn = document.getElementById('googleAuthBtn');
@@ -2183,8 +2183,9 @@ async function initAuth() {
         authErrorMsg.textContent = '';
     };
 
-    authBtn?.addEventListener('click', () => {
-        showModal();
+    authBtn?.addEventListener('click', showModal);
+    sidebarUserSection?.addEventListener('click', () => {
+        if (!authUser || !authUser.logged_in) showModal();
     });
 
     closeAuthModal?.addEventListener('click', hideModal);
@@ -2347,6 +2348,9 @@ async function initAuth() {
             if (userStatusEl) userStatusEl.textContent = '로그인됨';
             if (pageGreeting) pageGreeting.textContent = authUser.username ? `Hello, ${authUser.username} 🕊️` : 'Hello, User 🕊️';
             
+            if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
+            if (sidebarUserSection) sidebarUserSection.style.cursor = 'default';
+
             // Show watchlist UI
             if (navWatchlist) {
                 console.log('[DEBUG] updateAuthUI - Showing navWatchlist');
@@ -2360,6 +2364,9 @@ async function initAuth() {
             if (userStatusEl) userStatusEl.textContent = '로그인이 필요합니다';
             if (pageGreeting) pageGreeting.textContent = 'Hello, Signnith 🕊️';
             
+            if (sidebarLogoutBtn) sidebarLogoutBtn.classList.add('hidden');
+            if (sidebarUserSection) sidebarUserSection.style.cursor = 'pointer';
+
             // Clear and hide watchlist UI for Guests
             currentWatchlist = [];
             renderWatchlist();

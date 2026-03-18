@@ -412,6 +412,33 @@ html:not([data-theme="light"]) .nav-item.active i {
     color: var(--text-muted);
 }
 
+.logout-btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-soft);
+    background: transparent;
+    color: var(--text-sub);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: rgba(239, 68, 68, 0.05);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.logout-btn i {
+    font-size: 1.1rem;
+}
+
 /* ── Main Content Area ── */
 .main-content {
     flex: 1;
