@@ -189,7 +189,7 @@ function showSection(id) {
 const SIDEBAR_PIN_KEY = 'stockfinder-sidebar-pin';
 
 function isSidebarPinned() {
-    return localStorage.getItem(SIDEBAR_PIN_KEY) === 'true';
+    return localStorage.getItem(SIDEBAR_PIN_KEY) !== 'false';
 }
 
 function setSidebarPinned(pinned) {

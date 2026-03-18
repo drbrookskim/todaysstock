@@ -42,7 +42,7 @@
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 
-<body>
+<body data-sidebar-pinned="true">
     <!-- ── PWA 설치 배너 (Chrome/Edge: beforeinstallprompt) ── -->
     <div id="pwaInstallBanner" class="pwa-banner" style="display:none;" role="dialog" aria-label="앱 설치 안내">
         <div class="pwa-banner-icon">
@@ -81,7 +81,7 @@
     <div class="app-shell">
         <div id="sidebarOverlay" class="sidebar-overlay"></div>
         <!-- New Primary Sidebar (PandaDoc / Remote Style) -->
-        <aside id="mainSidebar" class="main-sidebar">
+        <aside id="mainSidebar" class="main-sidebar pinned">
             <div class="sidebar-brand">
                 <div class="logo-circle">S</div>
                 <span class="brand-text">Signnith</span>
