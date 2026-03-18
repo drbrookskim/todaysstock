@@ -1127,33 +1127,6 @@ function renderAnalysisReport(data) {
 
     trendText.textContent = `${data.trend_strength}%`;
 
-    // ── Phase 2: Company Info Mock ──
-    const companyInfoCard = document.getElementById('companyInfoCard');
-    if (companyInfoCard) {
-        const codeText = data.code || currentStock?.code || '005930';
-        companyInfoCard.classList.remove('hidden');
-
-        // Target exactly Attachment 1 if specific code, others get generic mock
-        if (codeText === '039030') {
-            document.getElementById('companyQuote').textContent = '"글로벌 경쟁력 기반의 반도체 장비 및 재료 선도 기업"';
-            document.getElementById('companyFounded').textContent = '1993년 12월 30일';
-            document.getElementById('companyCEO').textContent = '성규동,박종구(각자대표이사)';
-            document.getElementById('companyAddress').textContent = '경기도 안양시 동안구 동편로 91';
-            document.getElementById('companyWebsite').textContent = 'www.eotechnics.com';
-            document.getElementById('companyCoreBusiness').textContent = '(주)이오테크닉스는 레이저 가공 장비를 전세계적으로 제조, 공급하고 있습니다.';
-        } else {
-            const hash = codeText.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
-            const years = [1970, 1985, 1999, 2010, 2015];
-            const quotes = ['"미래 가치를 창출하는 글로벌 혁신 기업"', '"고객과 함께 성장하는 신뢰의 파트너"', '"기술 중심의 지속가능한 미래 사업"'];
-            
-            document.getElementById('companyQuote').textContent = quotes[hash % quotes.length];
-            document.getElementById('companyFounded').textContent = `${years[hash % years.length]}년 ${hash%12 + 1}월 ${hash%28 + 1}일`;
-            document.getElementById('companyCEO').textContent = '홍길동(대표이사)';
-            document.getElementById('companyAddress').textContent = '서울특별시 강남구 테헤란로 XXX';
-            document.getElementById('companyWebsite').textContent = `www.company-mock-${codeText}.com`;
-            document.getElementById('companyCoreBusiness').textContent = '첨단 기술 개발 및 글로벌 비즈니스 솔루션을 제공하며, 지속 가능한 성장을 위한 신사업 발굴에 주력하고 있습니다.';
-        }
-    }
 
     // ── Legacy UX Restore: Rating & Financials ──
     const ratingBarsContainer = document.getElementById('ratingBarsContainer');
