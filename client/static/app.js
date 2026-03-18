@@ -1030,11 +1030,9 @@ function updateFearGreed(value) {
 
 async function fetchAnalysis(item) {
     const patternReportSection = document.getElementById('patternReportSection');
-    const aiAnalysisReport = document.getElementById('aiAnalysisReport');
     const analysisLoading = document.getElementById('analysisLoading');
 
     if (patternReportSection) patternReportSection.classList.remove('hidden');
-    if (aiAnalysisReport) aiAnalysisReport.classList.remove('hidden');
     
     if (analysisLoading) analysisLoading.classList.remove('hidden');
     document.getElementById('trendContainer').style.display = 'none';
@@ -1087,19 +1085,6 @@ function renderAnalysisReport(data) {
     const trendContainer = document.getElementById('trendContainer');
     if (trendContainer) trendContainer.style.display = 'flex';
 
-    // Populate AI Report Section (Always Expanded)
-    const aiReportContent = document.getElementById('aiReportContent');
-    if (aiReportContent) {
-        aiReportContent.innerHTML = `
-            <div class="ai-insight-block">
-                <p class="ai-summary">${data.report || '분석 결과를 생성 중입니다...'}</p>
-                <div class="ai-action-suggestion">
-                    <i class="ph ph-info"></i>
-                    <span>위 데이터는 전문 AI 모델이 캔들과 기술적 지표를 종합 분석한 결과입니다.</span>
-                </div>
-            </div>
-        `;
-    }
 
     const trendBadge = document.getElementById('trendBadge');
     const trendIcon = document.getElementById('trendIcon');

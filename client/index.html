@@ -28,8 +28,13 @@
     <meta name="msapplication-TileColor" content="#0a0f1e">
     <link rel="stylesheet" href="/static/style.css?v=5">
     <style>
-        .nav-item.hidden { display: none !important; }
-        .watchlist-section.hidden { display: none !important; }
+        .nav-item.hidden {
+            display: none !important;
+        }
+
+        .watchlist-section.hidden {
+            display: none !important;
+        }
     </style>
     <!-- Supabase JS SDK v2 — for direct browser auth (bypasses Render round-trip) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -82,7 +87,7 @@
                 <span class="brand-text">Signnith</span>
                 <button id="sidebarPinBtn" class="pin-btn" title="사이드바 고정"><i class="ph ph-push-pin"></i></button>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" id="navHome">
                     <i class="ph ph-house"></i>
@@ -126,8 +131,8 @@
                 </div>
                 <div class="top-bar-right">
                     <div class="header-search-mini hidden" id="headerMiniSearch">
-                         <i class="ph ph-magnifying-glass"></i>
-                         <input type="text" placeholder="종목 검색...">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" placeholder="종목 검색...">
                     </div>
                     <button id="authBtn" class="top-auth-btn">로그인</button>
                 </div>
@@ -140,7 +145,7 @@
                 <p>데이터를 불러오는 중...</p>
             </div>
             <div id="errorMessage" class="error-banner hidden"></div>
-            
+
             <section id="dashboardHome" class="dashboard-home">
                 <div class="search-hero">
                     <div class="search-card">
@@ -149,17 +154,18 @@
                             <h3>종목 검색</h3>
                         </div>
                         <div class="search-wrapper">
-                            <input type="text" id="searchInput" class="search-input"
-                                placeholder="삼성전자, 005930..." autocomplete="off">
+                            <input type="text" id="searchInput" class="search-input" placeholder="삼성전자, 005930..."
+                                autocomplete="off">
                             <button id="searchBtn" class="search-action-btn">검색</button>
                         </div>
                         <p class="search-hint">종목명 또는 6자리 코드를 입력하세요</p>
-                        
+
                         <!-- Autocomplete Dropdown -->
                         <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
 
                         <!-- Recent Searches Box (Relocated) -->
-                        <div id="recentSearches" class="recent-searches-box hidden" style="margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
+                        <div id="recentSearches" class="recent-searches-box hidden"
+                            style="margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
                             <div class="box-header" style="margin-bottom: 8px;">
                                 <h4 style="font-size: 0.85rem; color: var(--text-sub);">최근 검색어</h4>
                                 <button id="clearRecent" style="font-size: 0.8rem;">모두 지우기</button>
@@ -175,7 +181,7 @@
                         <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
                         <span class="update-time">실시간 업데이트 중</span>
                     </div>
-                    
+
                     <div class="macro-dashboard">
                         <!-- Left Panel: Index List -->
                         <div class="index-list-panel">
@@ -239,21 +245,8 @@
                     </button>
                 </div>
 
-                <!-- AI Analysis Report Section (Always Expanded) -->
-                <div id="aiAnalysisReport" class="analysis-card ai-report-card hidden">
-                    <div class="card-header">
-                        <div class="header-left">
-                            <i class="ph ph-sparkle"></i>
-                            <h3>AI 인지형 심층분석</h3>
-                        </div>
-                        <div class="ai-status-badge">REAI-TIME ANALYZING</div>
-                    </div>
-                    <div id="aiReportContent" class="ai-report-content">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
 
-            <!-- Duplicates Removed to ensure unambiguous ID selection -->
+                <!-- Duplicates Removed to ensure unambiguous ID selection -->
 
                 <!-- Stock Header Card -->
                 <div class="stock-header-card">
@@ -332,7 +325,7 @@
                 <!-- Company Info Card (Phase 2 Update) -->
                 <div id="companyInfoCard" class="company-info-card hidden">
                     <div class="company-quote" id="companyQuote"></div>
-                    
+
                     <div class="company-section">
                         <div class="company-section-header">
                             <span class="vertical-bar"></span>
@@ -345,7 +338,7 @@
                             <li><strong>웹사이트:</strong> <span id="companyWebsite"></span></li>
                         </ul>
                     </div>
-                    
+
                     <div class="company-section">
                         <div class="company-section-header">
                             <span class="vertical-bar"></span>
@@ -404,7 +397,8 @@
                 <div class="ma-visual-card">
                     <h3 class="ma-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary); margin-right: 4px;">
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            style="color: var(--secondary); margin-right: 4px;">
                             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                         </svg>
                         이동평균 대비 현재가 위치
@@ -582,12 +576,6 @@
                         <strong>최종적인 투자 판단과 책임은 온전히 투자자 본인에게 있습니다.</strong>
                     </div>
 
-                    <!-- Disclaimer -->
-                    <div class="disclaimer">
-                        ⚠️ 본 분석은 캔들 패턴을 활용한 기술적 참고자료로서, 시장 심리(센티먼트)와 투자 환경에 따라 달라질 수 있습니다.<br>
-                        <strong>최종적인 투자 판단과 책임은 온전히 투자자 본인에게 있습니다.</strong>
-                    </div>
-
                     <!-- 📚 주식용어정리 Glossary -->
                     <details class="glossary-section" id="glossarySection">
                         <summary class="glossary-title">
@@ -655,7 +643,7 @@
                                 <tr>
                                     <td>IDM</td>
                                     <td>Integrated Device Manufacturer</td>
-                                    <td>설계·생산 일체형 종합 반도체 기업 (예: 삼성전자)</td>
+                                    <td>설계·산 일체형 종합 반도체 기업 (예: 삼성전자)</td>
                                 </tr>
                                 <tr>
                                     <td>YoY</td>
@@ -685,7 +673,8 @@
                         <div class="rating-check-card">
                             <h3 class="card-subtitle"><i class="ph ph-star-half"></i> 투자 매력도 (Rating Check)</h3>
                             <div class="rating-overall">
-                                <span class="rating-score" id="ratingScoreVal">0.0</span> <span class="rating-max">/ 10</span>
+                                <span class="rating-score" id="ratingScoreVal">0.0</span> <span class="rating-max">/
+                                    10</span>
                             </div>
                             <div id="ratingBarsContainer"></div>
                         </div>
@@ -727,14 +716,19 @@
                                 </div>
                             </div>
                             <div id="fundAxesUsed" class="fund-axes-used"></div>
-                            <div id="aiInsightsCard" class="hidden" style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);"></div>
-                            <div id="cycleWidgetContainer" style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);"></div>
-                            <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로 분석합니다.</div>
+                            <div id="aiInsightsCard" class="hidden"
+                                style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);">
+                            </div>
+                            <div id="cycleWidgetContainer"
+                                style="margin-top:20px; padding-top:20px; border-top:1px dashed var(--border-color);">
+                            </div>
+                            <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로
+                                분석합니다.</div>
                         </div>
                     </div>
                 </div>
             </section>
-            
+
             <!-- Watchlist Section -->
             <section id="watchlistSection" class="watchlist-section hidden">
                 <div class="section-header">
@@ -765,7 +759,7 @@
 
     <!-- Auth Modal Overlay -->
     <div id="authModalOverlay" class="modal-overlay"></div>
-    
+
     <!-- Google OAuth Confirmation Modal -->
     <div id="oauthConfirmOverlay" class="modal-overlay"></div>
     <div id="oauthConfirmModal" class="confirm-modal auth-modal">
