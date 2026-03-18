@@ -4673,17 +4673,22 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 
+
 /* --- FINAL OVERRIDES FOR SIDEBAR PINNING & COLLAPSE --- */
+
+/* Default: Sidebar collapsed to icon-only width */
 .main-sidebar:not(.pinned) {
     width: 72px !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
+/* Hover-expand when NOT pinned */
 .main-sidebar:not(.pinned):hover {
     width: 240px !important;
     box-shadow: var(--shadow-xl) !important;
 }
 
-/* Hide text when not hovered/pinned */
+/* Hide text labels when collapsed and not hovered */
 .main-sidebar:not(.pinned):not(:hover) .brand-text,
 .main-sidebar:not(.pinned):not(:hover) .nav-item span,
 .main-sidebar:not(.pinned):not(:hover) .user-name,
@@ -4693,16 +4698,44 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
+    transition: opacity 0.2s ease !important;
 }
 
+/* Pinned: full width always */
 .main-sidebar.pinned {
     width: 240px !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
+/* Show text labels when pinned */
+.main-sidebar.pinned .brand-text,
+.main-sidebar.pinned .nav-item span,
+.main-sidebar.pinned .user-name,
+.main-sidebar.pinned .user-status,
+.main-sidebar.pinned .nav-badge {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Pin button hidden when sidebar is collapsed and not hovered */
 .main-sidebar:not(.pinned):not(:hover) .pin-btn {
     opacity: 0 !important;
     pointer-events: none !important;
 }
+
+/* Pin button visible when sidebar is pinned or hovered */
+.main-sidebar.pinned .pin-btn,
+.main-sidebar:hover .pin-btn {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
+/* main-content transitions smoothly when sidebar is pinned */
+body[data-sidebar-pinned="true"] .main-content {
+    margin-left: 0 !important;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 
 /* ═══════════════════════════════════════════════════ */
 /* UI Enhancements Phase 3: Watchlist Tiles & Crypto   */

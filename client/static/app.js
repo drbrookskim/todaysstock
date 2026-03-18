@@ -204,10 +204,18 @@ function applySidebarPinState() {
     
     if (isSidebarPinned()) {
         sidebar.classList.add('pinned');
-        if (pinBtn) pinBtn.classList.add('active');
+        document.body.setAttribute('data-sidebar-pinned', 'true');
+        if (pinBtn) {
+            pinBtn.classList.add('active');
+            pinBtn.title = '사이드바 고정 해제';
+        }
     } else {
         sidebar.classList.remove('pinned');
-        if (pinBtn) pinBtn.classList.remove('active');
+        document.body.removeAttribute('data-sidebar-pinned');
+        if (pinBtn) {
+            pinBtn.classList.remove('active');
+            pinBtn.title = '사이드바 고정';
+        }
     }
 }
 
