@@ -151,98 +151,100 @@
             <div id="errorMessage" class="error-banner hidden"></div>
 
             <section id="dashboardHome" class="dashboard-home">
-                <div class="search-hero">
-                    <div class="search-card">
-                        <div class="search-card-header">
-                            <i class="ph ph-magnifying-glass"></i>
-                            <h3>종목 검색</h3>
-                        </div>
-                        <div class="search-wrapper">
-                            <input type="text" id="searchInput" class="search-input" placeholder="삼성전자, 005930..."
-                                autocomplete="off">
-                            <button id="searchBtn" class="search-action-btn">검색</button>
-                        </div>
-                        <p class="search-hint">종목명 또는 6자리 코드를 입력하세요</p>
-
-                        <!-- Autocomplete Dropdown -->
-                        <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
-
-                        <!-- Recent Searches Box (Relocated) -->
-                        <div id="recentSearches" class="recent-searches-box hidden"
-                            style="margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
-                            <div class="box-header" style="margin-bottom: 8px;">
-                                <h4 style="font-size: 0.85rem; color: var(--text-sub);">최근 검색어</h4>
-                                <button id="clearRecent" style="font-size: 0.8rem;">모두 지우기</button>
+                <div class="container animate-in">
+                    <div class="search-hero">
+                        <div class="search-card">
+                            <div class="search-card-header">
+                                <i class="ph ph-magnifying-glass"></i>
+                                <h3>종목 검색</h3>
                             </div>
-                            <div id="recentList" class="recent-chips-container"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Global Macro Indicators Section -->
-                <div id="macroIndicatorSection" class="macro-section">
-                    <div class="section-header">
-                        <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
-                    </div>
-
-                    <div class="macro-dashboard">
-                        <!-- Left Panel: Index List -->
-                        <div class="index-list-panel">
-                            <h4 class="card-subtitle">시장 지수</h4>
-                            <div id="indexList" class="index-list">
-                                <!-- Populated by JS -->
+                            <div class="search-wrapper">
+                                <input type="text" id="searchInput" class="search-input" placeholder="삼성전자, 005930..."
+                                    autocomplete="off">
+                                <button id="searchBtn" class="search-action-btn">검색</button>
                             </div>
-                        </div>
-
-                        <!-- Right Panel: Index Chart -->
-                        <div class="index-chart-panel">
-                            <h4 class="card-subtitle" id="selectedIndexName">KOSPI 1개월 차트</h4>
-                            <div id="indexChart" class="index-chart-container">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="macro-grid" style="margin-top: 24px;">
-
-                        <!-- Card 2: Economy Indicators -->
-                        <div class="macro-card">
-                            <h4 class="card-subtitle">주요 경제 지표</h4>
-                            <div id="economyGrid" class="economy-grid">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-
-                        <!-- Card 4: Digital Assets -->
-                        <div class="macro-card">
-                            <h4 class="card-subtitle">디지털 자산 시세</h4>
-                            <div id="cryptoGrid" class="crypto-grid">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-
-                        <!-- Card 3: Fear & Greed -->
-                        <div class="macro-card">
-                            <h4 class="card-subtitle">탐욕 & 공포 지수</h4>
-                            <div id="fearGreedContainer" class="fg-container">
-                                <div class="fg-gauge">
-                                    <div class="fg-fill" id="fgFill"></div>
-                                    <div class="fg-needle" id="fgNeedle"></div>
+                            <p class="search-hint">종목명 또는 6자리 코드를 입력하세요</p>
+    
+                            <!-- Autocomplete Dropdown -->
+                            <div id="suggestDropdown" class="suggest-dropdown hidden"></div>
+    
+                            <!-- Recent Searches Box (Relocated) -->
+                            <div id="recentSearches" class="recent-searches-box hidden"
+                                style="margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
+                                <div class="box-header" style="margin-bottom: 8px;">
+                                    <h4 style="font-size: 0.85rem; color: var(--text-sub);">최근 검색어</h4>
+                                    <button id="clearRecent" style="font-size: 0.8rem;">모두 지우기</button>
                                 </div>
-                                <div class="fg-labels">
-                                    <span id="fgStatus">Neutral</span>
-                                    <span id="fgValue">50</span>
+                                <div id="recentList" class="recent-chips-container"></div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Global Macro Indicators Section -->
+                    <div id="macroIndicatorSection" class="macro-section">
+                        <div class="section-header">
+                            <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
+                        </div>
+    
+                        <div class="macro-dashboard">
+                            <!-- Left Panel: Index List -->
+                            <div class="index-list-panel">
+                                <h4 class="card-subtitle">시장 지수</h4>
+                                <div id="indexList" class="index-list">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+    
+                            <!-- Right Panel: Index Chart -->
+                            <div class="index-chart-panel">
+                                <h4 class="card-subtitle" id="selectedIndexName">KOSPI 1개월 차트</h4>
+                                <div id="indexChart" class="index-chart-container">
+                                    <!-- Populated by JS -->
                                 </div>
                             </div>
                         </div>
+    
+                        <div class="macro-grid" style="margin-top: 24px;">
+    
+                            <!-- Card 2: Economy Indicators -->
+                            <div class="macro-card">
+                                <h4 class="card-subtitle">주요 경제 지표</h4>
+                                <div id="economyGrid" class="economy-grid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+    
+                            <!-- Card 4: Digital Assets -->
+                            <div class="macro-card">
+                                <h4 class="card-subtitle">디지털 자산 시세</h4>
+                                <div id="cryptoGrid" class="crypto-grid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+    
+                            <!-- Card 3: Fear & Greed -->
+                            <div class="macro-card">
+                                <h4 class="card-subtitle">탐욕 & 공포 지수</h4>
+                                <div id="fearGreedContainer" class="fg-container">
+                                    <div class="fg-gauge">
+                                        <div class="fg-fill" id="fgFill"></div>
+                                        <div class="fg-needle" id="fgNeedle"></div>
+                                    </div>
+                                    <div class="fg-labels">
+                                        <span id="fgStatus">Neutral</span>
+                                        <span id="fgValue">50</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-
+                </div> <!-- End .container -->
             </section>
 
             <!-- Stock Result Area (Merged) -->
             <section id="resultSection" class="result-section hidden">
-                <div id="addWatchlistBtnContainer" class="action-bar hidden">
+                <div class="container animate-in">
+                    <div id="addWatchlistBtnContainer" class="action-bar hidden">
                     <button id="addWatchlistBtn" class="premium-action-btn">
                         <i class="ph ph-plus"></i> 관심종목 추가
                     </button>
@@ -633,6 +635,7 @@
                             </tbody>
                         </table>
                     </details>
+                </div> <!-- End .container -->
             </section> <!-- End resultSection -->
 
             <!-- Deep Analysis Section (Relocated) -->

@@ -4650,7 +4650,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 #fgValue { color: var(--text-main); }
 /* Watchlist Section & Layout */
 .watchlist-section {
-    padding: 32px 40px;
+    padding: 0;
     display: flex; /* Removed !important to allow .hidden to work */
     flex-direction: column;
     gap: 24px;
