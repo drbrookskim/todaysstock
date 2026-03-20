@@ -362,7 +362,7 @@ function renderWatchlist() {
 
 function updateWatchlistBtn() {
     const btn = document.getElementById('addWatchlistBtn');
-    const favBtn = document.getElementById('favoriteBtn');
+    const favBtns = document.querySelectorAll('.favorite-btn');
     if (!currentStock) return;
 
     const exists = isInWatchlist(currentStock.code);
@@ -379,15 +379,15 @@ function updateWatchlistBtn() {
         }
     }
 
-    if (favBtn) {
+    favBtns.forEach(favBtn => {
         if (exists) {
             favBtn.classList.add('active');
-            favBtn.innerHTML = '<i class="ph ph-star-fill"></i>'; // Use filled star if available in Phosphor
+            favBtn.innerHTML = '<i class="ph ph-star-fill"></i>';
         } else {
             favBtn.classList.remove('active');
             favBtn.innerHTML = '<i class="ph ph-star"></i>';
         }
-    }
+    });
 }
 
 function updateWatchlistCount() {
@@ -2137,13 +2137,17 @@ function startApp() {
         }
     });
 
-    document.getElementById('favoriteBtn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (!currentStock) return;
-        if (isInWatchlist(currentStock.code)) {
-            removeFromWatchlist(currentStock.code);
-        } else {
-            addToWatchlist(currentStock);
+    // Unified Favorite Button Listener (for all sections)
+    document.addEventListener('click', (e) => {
+        const favBtn = e.target.closest('.favorite-btn');
+        if (favBtn) {
+            e.preventDefault();
+            if (!currentStock) return;
+            if (isInWatchlist(currentStock.code)) {
+                removeFromWatchlist(currentStock.code);
+            } else {
+                addToWatchlist(currentStock);
+            }
         }
     });
 
