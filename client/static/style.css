@@ -523,7 +523,32 @@ html:not([data-theme="light"]) .nav-item.active i {
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    padding: 32px 40px 80px;
+    padding: 24px 40px 100px; /* Increased bottom padding for floating theme btn */
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 20px 100px;
+    }
+}
+
+.section-header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.section-header h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.section-header .section-desc {
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    margin-top: 6px;
 }
 
 /* Placeholder adjustments */
@@ -2041,15 +2066,72 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     flex-direction: column;
 }
 
+.ai-widget-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 20px;
+}
+
+.ai-insight-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .unit-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; }
 .unit-val { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 
 .ai-row-insight {
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     color: var(--text-sub);
-    line-height: 1.5;
-    padding-left: 10px;
-    border-left: 2px solid var(--border-soft);
+    line-height: 1.7;
+    padding: 8px 0 8px 12px;
+    border-left: 3px solid var(--primary-soft);
+}
+
+.fund-desc {
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    line-height: 1.7;
+    margin: 12px 0 8px;
+    opacity: 0.9;
+}
+
+/* ── Cycle Description Styles ── */
+.cyc-desc-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.cyc-desc-item {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    background: var(--bg-app);
+    line-height: 1.7;
+    font-size: 0.95rem;
+    transition: transform 0.2s ease;
+}
+
+.cyc-desc-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-soft);
+}
+
+.cyc-desc-item.summary {
+    background: rgba(16, 185, 129, 0.08);
+    border-left: 4px solid var(--accent);
+}
+
+.cyc-desc-item strong {
+    color: var(--text-main);
+}
+
+.cyc-desc-item.summary strong {
+    color: var(--accent);
 }
 
 @media (max-width: 1024px) {

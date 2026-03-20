@@ -1552,8 +1552,8 @@ function renderAiInsights(data) {
     }
 
     container.innerHTML = `
-        <div class="ai-widget-title" style="font-size: 1.1rem; margin-bottom: 16px;">AI 인지형 투자 매력도</div>
-        <div class="ai-insight-grid" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="ai-widget-title">AI 인지형 투자 매력도</div>
+        <div class="ai-insight-grid">
             ${probHtml}
             ${atrHtml}
             ${volHtml}
@@ -1597,7 +1597,7 @@ function renderAiInsights(data) {
 
         const cycHtml = `
         <div class="cyc-widget-inner">
-            <div class="ai-widget-title" style="font-size: 1.1rem; margin-bottom: 16px;">사이클 타임 예측 (변곡점 타이밍)</div>
+            <div class="ai-widget-title">사이클 타임 예측 (변곡점 타이밍)</div>
             <div class="cyc-phase-row">
                 <span class="cyc-phase-badge" style="color:${phaseColor}; border-color:${phaseColor};">${cyc.current_phase}</span>
                 <span class="cyc-conf" style="color:${confColor};">신뢰도: ${confLabel}</span>
@@ -1656,24 +1656,24 @@ function renderAiInsights(data) {
         <div id="cycleTimelineChart" style="margin-top: 16px; margin-bottom: 12px;"></div>
 
             <!-- 사이클 상세 설명 -->
-            <div class="cyc-desc-box" style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="cyc-desc-item" style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #10b981; line-height: 1.6;">
-                    <strong style="color: #10b981; display: inline-block; margin-bottom: 6px;">💡 현재 사이클 요약:</strong><br/>
-                    현재 다음 변곡점(추세가 꺾이는 지점) 도달까지 <strong style="color: #10b981;">${cyc.progress}% 진행</strong>되었으며, 주식 시장이 열리는 날 기준으로 <strong style="color: #10b981;">약 ${cyc.est_remaining_days}일</strong> 정도 남은 것으로 추정됩니다. 과거 주기의 평균이 <strong>${cyc.avg_cycle_days}일</strong>이므로, 이 추세라면 다음 변곡점은 대략 <strong style="color: #10b981;">${cyc.est_next_peak_date ? cyc.est_next_peak_date : '조만간'}</strong>에 나타날 가능성이 높습니다.
+            <div class="cyc-desc-box">
+                <div class="cyc-desc-item summary">
+                    <strong>💡 현재 사이클 요약:</strong><br/>
+                    현재 다음 변곡점(추세가 꺾이는 지점) 도달까지 <strong>${cyc.progress}% 진행</strong>되었으며, 주식 시장이 열리는 날 기준으로 <strong>약 ${cyc.est_remaining_days}일</strong> 정도 남은 것으로 추정됩니다. 과거 주기의 평균이 <strong>${cyc.avg_cycle_days}일</strong>이므로, 이 추세라면 다음 변곡점은 대략 <strong>${cyc.est_next_peak_date ? cyc.est_next_peak_date : '조만간'}</strong>에 나타날 가능성이 높습니다.
                 </div>
-                <div class="cyc-desc-item" style="background: var(--bg-card-hover, rgba(255, 255, 255, 0.04)); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));">
+                <div class="cyc-desc-item">
                     <strong>[진행률] 및 [잔여 거래일]:</strong> 과거 평균을 기준으로 다음 곡점(변곡점)이 오기까지 전체 주기 중 현재 몇 % 지점인지(진행률), 그리고 앞으로 주식 시장이 열리는 날 기준으로 며칠이 남았는지(잔여 거래일)를 알려주는 <strong>'타이밍'</strong> 지표입니다.
                 </div>
-                <div class="cyc-desc-item" style="background: var(--bg-card-hover, rgba(255, 255, 255, 0.04)); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));">
+                <div class="cyc-desc-item">
                     <strong>[예상 도달일] 및 [사이클 통계]:</strong> 주말과 공휴일을 제외하고 계산된 실제 다음 변곡점의 캘린더 날짜(예상 도달일)입니다. '사이클 통계'의 평균은 과거 주기의 평균 일수, 경과는 최근 고점부터 지금까지 지난 일수입니다.
                 </div>
-                <div class="cyc-desc-item" style="background: var(--bg-card-hover, rgba(255, 255, 255, 0.04)); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));">
+                <div class="cyc-desc-item">
                     <strong>사이클 감지 횟수 및 감지 강도:</strong> 과거 차트에서 주기적인 상승/하락 패턴이 몇 번이나 반복되었는지 보여주는 <strong>'감지 횟수'</strong>입니다. 이 횟수가 많을수록 데이터의 표본이 많다는 뜻입니다.
                 </div>
-                <div class="cyc-desc-item" style="background: var(--bg-card-hover, rgba(255, 255, 255, 0.04)); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));">
+                <div class="cyc-desc-item">
                     <strong>[상승/하락] 및 [신뢰도]:</strong> 현재 주가가 고점을 향하고 있는지(상승), 저점을 향하고 있는지(하락)를 나타냅니다. <strong>'신뢰도(높음/보통/낮음)'</strong>는 과거 사이클의 기간 길이나 변동폭이 얼마나 일정했는지를 분석한 결과입니다. 예를 들어 <strong>'하락 신뢰도: 낮음'</strong>이라면 "현재 단기적으로 하락 사이클을 타고 있긴 하지만, 과거 패턴의 주기 편차가 심해서 도착 예정일의 오차가 클 수 있으니 주의하라"는 의미입니다.
                 </div>
-                <div class="cyc-desc-item" style="background: var(--bg-card-hover, rgba(255, 255, 255, 0.04)); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));">
+                <div class="cyc-desc-item">
                     <strong>변수 보정 (피보나치, 저항선, 투자심리):</strong> 단순 일수 계산을 넘어, 황금비율(피보나치 타임존), 마디 가격(ex: 5만원, 10만원) 돌파 대기 시간, 그리고 거래량 폭주와 인간의 탐욕/공포(RSI)로 인한 속도 가속화 현상을 모두 자동 계산해 도달일을 정밀 예측합니다.
                 </div>
             </div>

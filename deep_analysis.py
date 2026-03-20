@@ -112,15 +112,15 @@ def compute_trade_probability(df, detected_patterns=None):
     else:             label = "매도 우세"
 
     return {
-        "score": score, 
+        "score": float(score), 
         "label": label, 
-        "rsi": round(rsi, 1), 
-        "macd_golden": ml_v > ms_v,
+        "rsi": float(round(rsi, 1)), 
+        "macd_golden": bool(ml_v > ms_v),
         "breakdown": {
-            "ma_alignment": ma_score,
-            "rsi": rsi_score,
-            "macd": macd_score,
-            "volume": vol_score
+            "ma_alignment": float(ma_score),
+            "rsi": float(rsi_score),
+            "macd": float(macd_score),
+            "volume": float(vol_score)
         }
     }
 
@@ -212,13 +212,13 @@ def compute_cycle_estimation(df):
 
     return {
         "current_phase": current_phase,
-        "cycles_detected": len(peaks),
-        "avg_cycle_days": round(avg_cycle),
-        "days_since_peak": days_since_peak,
-        "est_total": est_total,
-        "est_remaining_days": remaining,
+        "cycles_detected": int(len(peaks)),
+        "avg_cycle_days": float(round(avg_cycle, 1)),
+        "days_since_peak": int(days_since_peak),
+        "est_total": int(est_total),
+        "est_remaining_days": int(remaining),
         "est_next_peak_date": est_date,
-        "progress": progress,
+        "progress": float(progress),
         "confidence": "high" if len(peaks) > 4 else "medium",
         "cycle_history": history[-5:], # Last 5
         "fib_time_zones": fib_markers,
