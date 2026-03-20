@@ -260,8 +260,13 @@ function saveWatchlist(list) {
 }
 
 async function addToWatchlist(item) {
+    // Guest support using localStorage fallback
+    if (isInWatchlist(item.code)) return;
+
     if (!authUser || !authUser.logged_in) {
-        alert('로그인이 필요한 기능입니다.');
+        currentWatchlist.push(item);
+        saveWatchlist(currentWatchlist);
+        updateWatchlistBtn();
         return;
     }
     
@@ -289,7 +294,12 @@ async function addToWatchlist(item) {
 }
 
 async function removeFromWatchlist(code) {
-    if (!authUser || !authUser.logged_in) return;
+    if (!authUser || !authUser.logged_in) {
+        currentWatchlist = currentWatchlist.filter(w => w.code !== code);
+        saveWatchlist(currentWatchlist);
+        updateWatchlistBtn();
+        return;
+    }
     
     try {
         const res = await fetch(API_BASE_URL + `/api/watchlist/${code}`, {
@@ -326,7 +336,7 @@ function renderWatchlist() {
         return;
     }
 
-    container.innerHTML = `<div class="watchlist-grid">` + list.map(item => `
+    container.innerHTML = list.map(item => `
         <div class="watchlist-tile" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}" onclick="selectStock({code:'${escapeHtml(item.code)}', market:'${escapeHtml(item.market)}', name:'${escapeHtml(item.name)}'})">
             <div class="watchlist-tile-header">
                 <span class="watchlist-tile-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</span>
@@ -344,7 +354,7 @@ function renderWatchlist() {
                 </div>
             </div>
         </div>
-    `).join('') + `</div>`;
+    `).join('');
     
     // Proactively fetch mini data for tiles
     list.forEach(item => updateTileData(item.code));
@@ -2380,25 +2390,15 @@ async function initAuth() {
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.add('hidden');
             if (sidebarUserSection) sidebarUserSection.style.cursor = 'pointer';
 
-            // Clear and hide watchlist UI for Guests
-            currentWatchlist = [];
+            // Allow Watchlist for Guests (using localStorage)
+            if (navWatchlist) navWatchlist.classList.remove('hidden');
+            if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('hidden');
+            
+            // Load local watchlist if guest
+            const localList = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
+            currentWatchlist = localList;
             renderWatchlist();
             updateWatchlistCount();
-            
-            if (navWatchlist) {
-                console.log('[DEBUG] updateAuthUI - Hiding navWatchlist');
-                navWatchlist.classList.add('hidden');
-            }
-            if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.add('hidden');
-            
-            const watchlistSection = document.getElementById('watchlistSection');
-            if (watchlistSection) watchlistSection.classList.add('hidden');
-            
-            // Ensure we are not stuck on watchlist section
-            const dashboardHome = document.getElementById('dashboardHome');
-            if (watchlistSection && !watchlistSection.classList.contains('hidden')) {
-                showSection('dashboardHome');
-            }
         }
     };
 

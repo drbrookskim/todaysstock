@@ -4658,28 +4658,9 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     animation: fadeUp 0.4s ease-out;
 }
 
-.watchlist-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
-    padding: 20px 0;
-    width: 100%;
-}
+/* Watchlist Section Refined */
 
-.watchlist-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-main);
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow-sm);
-    position: relative;
-    overflow: hidden;
-}
+/* .watchlist-item removed — using .watchlist-tile instead */
 
 .watchlist-item::before {
     content: "";
@@ -4859,16 +4840,31 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 /* Watchlist Grid & Tiles */
 .watchlist-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-    padding: 10px 0;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 16px;
+    padding: 20px 0;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .watchlist-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 1024px) {
+    .watchlist-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .watchlist-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .watchlist-grid { grid-template-columns: 1fr; }
 }
 
 .watchlist-tile {
     background: var(--bg-card);
     border: 1px solid var(--border-soft);
     border-radius: 16px;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
