@@ -2195,7 +2195,6 @@ if (document.readyState === 'loading') {
 
 // ── Auth & User Session ──
 async function initAuth() {
-    const authBtn = document.getElementById('authBtn');
     const authModalOverlay = document.getElementById('authModalOverlay');
     const authModal = document.getElementById('authModal');
     const closeAuthModal = document.getElementById('closeAuthModal');
@@ -2232,7 +2231,6 @@ async function initAuth() {
         authErrorMsg.textContent = '';
     };
 
-    authBtn?.addEventListener('click', showModal);
     sidebarUserSection?.addEventListener('click', () => {
         if (!authUser || !authUser.logged_in) showModal();
     });
@@ -2382,7 +2380,6 @@ async function initAuth() {
         });
 
     const updateAuthUI = () => {
-        const authBtn = document.getElementById('authBtn');
         const userNameEl = document.getElementById('sidebarUserName');
         const userStatusEl = document.getElementById('sidebarUserStatus');
         const navWatchlist = document.getElementById('navWatchlist');
@@ -2392,13 +2389,15 @@ async function initAuth() {
         console.log('[DEBUG] updateAuthUI - logged_in:', authUser?.logged_in);
         if (authUser && authUser.logged_in) {
             console.log('[DEBUG] updateAuthUI - Updating UI for Logged In User');
-            if (authBtn) authBtn.textContent = '로그아웃';
             if (userNameEl) userNameEl.textContent = authUser.username ? `Hello, ${authUser.username}` : 'Hello, User';
             if (userStatusEl) userStatusEl.textContent = '로그인됨';
             if (pageGreeting) pageGreeting.textContent = authUser.username ? `Hello, ${authUser.username} 🕊️` : 'Hello, User 🕊️';
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
-            if (sidebarUserSection) sidebarUserSection.style.cursor = 'default';
+            if (sidebarUserSection) {
+                sidebarUserSection.style.cursor = 'default';
+                sidebarUserSection.title = "사용자 정보";
+            }
 
             // Show watchlist UI
             if (navWatchlist) {
@@ -2408,13 +2407,15 @@ async function initAuth() {
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
         } else {
             console.log('[DEBUG] updateAuthUI - Updating UI for Guest');
-            if (authBtn) authBtn.textContent = '로그인';
             if (userNameEl) userNameEl.textContent = 'Guest';
             if (userStatusEl) userStatusEl.textContent = '로그인이 필요합니다';
             if (pageGreeting) pageGreeting.textContent = 'Hello, Signnith 🕊️';
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.add('hidden');
-            if (sidebarUserSection) sidebarUserSection.style.cursor = 'pointer';
+            if (sidebarUserSection) {
+                sidebarUserSection.style.cursor = 'pointer';
+                sidebarUserSection.title = "로그인하려면 클릭하세요";
+            }
 
             // Allow Watchlist for Guests (using localStorage)
             if (navWatchlist) navWatchlist.classList.remove('hidden');
