@@ -1348,6 +1348,39 @@ html[data-theme="light"] .theme-icon-btn i {
     line-height: 1.2;
 }
 
+.favorite-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    border-radius: 50%;
+}
+
+.favorite-btn:hover {
+    background: rgba(81, 84, 238, 0.1); /* Primary color with alpha */
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+.favorite-btn.active {
+    color: #fbbf24; /* Amber/Gold star */
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
+}
+
+.favorite-btn.active i {
+    font-weight: bold;
+}
+
+.favorite-btn.active:hover {
+    transform: scale(1.2) rotate(15deg);
+}
+
 .stock-code {
     color: var(--text-muted);
     font-family: 'Space Grotesk', monospace;

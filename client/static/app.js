@@ -362,16 +362,31 @@ function renderWatchlist() {
 
 function updateWatchlistBtn() {
     const btn = document.getElementById('addWatchlistBtn');
-    if (!btn || !currentStock) return;
+    const favBtn = document.getElementById('favoriteBtn');
+    if (!currentStock) return;
 
-    if (isInWatchlist(currentStock.code)) {
-        btn.innerHTML = '<i class="ph ph-check"></i> 관심종목 추가됨';
-        btn.classList.add('added');
-        btn.onclick = () => removeFromWatchlist(currentStock.code);
-    } else {
-        btn.innerHTML = '<i class="ph ph-plus"></i> 관심종목 추가';
-        btn.classList.remove('added');
-        btn.onclick = () => addToWatchlist(currentStock);
+    const exists = isInWatchlist(currentStock.code);
+
+    if (btn) {
+        if (exists) {
+            btn.innerHTML = '<i class="ph ph-check"></i> 관심종목 추가됨';
+            btn.classList.add('added');
+            btn.onclick = () => removeFromWatchlist(currentStock.code);
+        } else {
+            btn.innerHTML = '<i class="ph ph-plus"></i> 관심종목 추가';
+            btn.classList.remove('added');
+            btn.onclick = () => addToWatchlist(currentStock);
+        }
+    }
+
+    if (favBtn) {
+        if (exists) {
+            favBtn.classList.add('active');
+            favBtn.innerHTML = '<i class="ph ph-star-fill"></i>'; // Use filled star if available in Phosphor
+        } else {
+            favBtn.classList.remove('active');
+            favBtn.innerHTML = '<i class="ph ph-star"></i>';
+        }
     }
 }
 
@@ -569,6 +584,7 @@ function renderResult(data) {
     marketBadge.className = `market-badge ${data.market.toLowerCase()}`;
 
     document.getElementById('stockName').textContent = data.name;
+    updateWatchlistBtn();
     document.getElementById('stockCode').textContent = data.code;
 
     document.getElementById('stockIndustry').textContent = data.industry || '분류되지 않음';
@@ -2117,6 +2133,16 @@ function startApp() {
 
     document.getElementById('addWatchlistBtn')?.addEventListener('click', () => {
         if (currentStock && !isInWatchlist(currentStock.code)) {
+            addToWatchlist(currentStock);
+        }
+    });
+
+    document.getElementById('favoriteBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!currentStock) return;
+        if (isInWatchlist(currentStock.code)) {
+            removeFromWatchlist(currentStock.code);
+        } else {
             addToWatchlist(currentStock);
         }
     });
