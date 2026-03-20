@@ -32,6 +32,8 @@ let activeIndex = -1;
 let debounceTimer = null;
 let currentWatchlist = [];
 let currentIndexChart = null; // Lightweight Chart instance
+let currentStock = null;
+let _lastAnalysisData = null;
 
 // ── Watchlist Constants ──
 const WATCHLIST_KEY = 'stockfinder-watchlist';
@@ -108,20 +110,16 @@ function initNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            navItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
             const targetId = sections[item.id];
             if (targetId) {
+                showSection(targetId);
+                navItems.forEach(i => i.classList.toggle('active', i === item));
+
                 if (targetId === 'analysisSection') {
-                    // If switching to analysisSection and we have a current stock, ensure it's loaded
-                    if (currentStock) {
-                        renderFundamentalReport(currentStock.code || currentStock.ticker);
-                    }
                     const emptyState = document.getElementById('analysisEmptyState');
                     const contentWrapper = document.getElementById('analysisContentWrapper');
                     const currentStockLabel = document.getElementById('analysisCurrentStock');
-                    
+
                     if (!currentStock) {
                         emptyState?.classList.remove('hidden');
                         contentWrapper?.classList.add('hidden');
@@ -129,38 +127,20 @@ function initNavigation() {
                     } else {
                         emptyState?.classList.add('hidden');
                         contentWrapper?.classList.remove('hidden');
-                        if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code})`;
+                        if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker})`;
+                        
+                        // Force refresh metrics
+                        if (_lastAnalysisData) {
+                            renderAiInsights(_lastAnalysisData);
+                        }
+                        if (localStorage.getItem('stockfinder-fund-enabled') !== 'false') {
+                            renderFundamentalReport(currentStock.code || currentStock.ticker);
+                        }
                     }
                 }
-                showSection(targetId);
             }
         });
     });
-
-    // Search Button Listener
-    const searchBtn = document.getElementById('searchBtn');
-    searchBtn?.addEventListener('click', () => {
-            const query = searchInput.value.trim();
-            if (query.length > 0) {
-                if (activeIndex >= 0 && suggestItems[activeIndex]) {
-                    selectStock(suggestItems[activeIndex]);
-                } else if (suggestItems.length > 0) {
-                    selectStock(suggestItems[0]);
-                } else {
-                    // FALLBACK: If API is down or no suggestions, just show mock if query matches
-                    const q = query.toLowerCase();
-                    if (q.includes('삼성') || q === '005930' || q.includes('전자')) {
-                        selectStock({ name: '삼성전자', code: '005930' });
-                    } else if (q.includes('하이닉스') || q === '000660') {
-                        selectStock({ name: 'SK하이닉스', code: '000660' });
-                    } else {
-                        fetchSuggestions(query).then(() => {
-                            if (suggestItems.length > 0) selectStock(suggestItems[0]);
-                        });
-                    }
-                }
-            }
-        });
 }
 
 function showSection(id) {
@@ -1269,7 +1249,9 @@ function renderAnalysisReport(data) {
     renderAiInsights(data);
 
     // ── Fundamental Analysis (async, 별도 API 호출) ──
-    renderFundamentalReport(data.code || data.ticker || '');
+    if (localStorage.getItem('stockfinder-fund-enabled') !== 'false') {
+        renderFundamentalReport(data.code || data.ticker || '');
+    }
 
     // ── Buy/Sell Reports ──
     const reportGrid = document.getElementById('reportGrid');
@@ -1280,8 +1262,6 @@ function renderAnalysisReport(data) {
     } else {
         if (reportGrid) reportGrid.classList.add('hidden');
     }
-
-    renderAiInsights(data);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1493,9 +1473,8 @@ function renderAiInsights(data) {
                 </div>
             </div>
             <div class="ai-row-details">
-                <div class="ai-badge-group">
-                    <span class="status-pill blue">RSI: ${prob.rsi}</span>
-                    <span class="status-pill ${prob.macd_golden ? 'green' : 'red'}">MACD: ${prob.macd_golden ? 'Golden' : 'Dead'}</span>
+                <div class="ai-breakdown-container">
+                    ${breakdownBars}
                 </div>
             </div>
             <div class="ai-row-insight">
@@ -1572,12 +1551,22 @@ function renderAiInsights(data) {
         </div>`;
     }
 
+    container.innerHTML = `
+        <div class="ai-widget-title" style="font-size: 1.1rem; margin-bottom: 16px;">AI 인지형 투자 매력도</div>
+        <div class="ai-insight-grid" style="display: flex; flex-direction: column; gap: 12px;">
+            ${probHtml}
+            ${atrHtml}
+            ${volHtml}
+        </div>
+    `;
+
     // ── 4. 사이클 타임 예측 (펀더멘탈 내부 컨테이너로 렌더링) ──
     const cyc = data.cycle_estimation;
     const cycContainer = document.getElementById('cycleWidgetContainer');
     if (cyc && cycContainer) {
-        const phaseColor = cyc.current_phase === '상승' ? '#10b981'
-            : cyc.current_phase === '하락' ? '#ef4444' : '#f59e0b';
+        const isBullish = cyc.current_phase && cyc.current_phase.includes('상승');
+        const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
+        const phaseColor = isBullish ? '#10b981' : (isBearish ? '#ef4444' : '#f59e0b');
         const confLabel = cyc.confidence === 'high' ? '높음'
             : cyc.confidence === 'medium' ? '보통' : '낮음';
         const confColor = cyc.confidence === 'high' ? '#10b981'
@@ -2076,7 +2065,7 @@ function initTheme() {
     updateThemeIcon();
 }
 
-let _lastAnalysisData = null;
+// _lastAnalysisData handled at top
 
 function toggleTheme() {
     const html = document.documentElement;
@@ -2130,11 +2119,35 @@ function startApp() {
     document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
 
-    // Core UI Init (Blocking-free)
+    // Core UI Init
     initNavigation();
     initMobileSidebar();
 
-    // Auth & Session Init (Async/Background)
+    // Search Button Listener (Moved outside initNavigation for robustness)
+    const searchBtn = document.getElementById('searchBtn');
+    searchBtn?.addEventListener('click', () => {
+        const query = searchInput.value.trim();
+        if (query.length > 0) {
+            if (activeIndex >= 0 && suggestItems[activeIndex]) {
+                selectStock(suggestItems[activeIndex]);
+            } else if (suggestItems.length > 0) {
+                selectStock(suggestItems[0]);
+            } else {
+                fetchSuggestions(query).then(() => {
+                    if (suggestItems.length > 0) selectStock(suggestItems[0]);
+                });
+            }
+        }
+    });
+
+    // Enter Key Search
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && activeIndex === -1) {
+            searchBtn?.click();
+        }
+    });
+
+    // Auth & Session Init
     initAuth();
 }
 
