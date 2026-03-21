@@ -175,7 +175,8 @@ function restoreStockContext(type) {
             showSection('watchlistSection');
             resSec.classList.remove('hidden');
         } else {
-            showSection('resultSection');
+            showSection('dashboardHome');
+            resSec.classList.remove('hidden');
         }
         
         // Restore State
@@ -197,11 +198,14 @@ function restoreStockContext(type) {
         } else {
             renderFundamentalReport(context.item.code);
         }
+        
+        // Final sanity check for result visibility
+        resSec.classList.remove('hidden');
     }
 }
 
 function showSection(id) {
-    const sections = ['dashboardHome', 'resultSection', 'analysisSection', 'historySection', 'watchlistSection'];
+    const sections = ['dashboardHome', 'analysisSection', 'historySection', 'watchlistSection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
@@ -627,7 +631,8 @@ async function selectStock(item) {
             if (placeholder) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
             }
-            showSection('resultSection');
+            showSection('dashboardHome'); 
+            resSec.classList.remove('hidden');
         }
 
         renderResult(data);
