@@ -49,6 +49,11 @@
     /* Radius */
     --radius-main: 16px; /* Slightly more rounded like Quicken */
     --radius-pill: 9999px;
+
+    /* Stock Colors (Korean Market Standard) */
+    --color-up: #ef4444;    /* Red for Increase */
+    --color-down: #3b82f6;  /* Blue for Decrease */
+    --color-neutral: #94a3b8;
 }
 
 /* ── Dark Theme Overrides ── */
@@ -2457,13 +2462,8 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     margin-left: 4px;
 }
 
-.ai-price-pct.up {
-    color: #10b981;
-}
-
-.ai-price-pct.down {
-    color: #ef4444;
-}
+.ai-price-pct.up { color: var(--color-up); }
+.ai-price-pct.down { color: var(--color-down); }
 
 .ai-rr-badge {
     font-size: 0.84rem;
@@ -4730,8 +4730,8 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     border-radius: 4px;
 }
 
-.indicator-change.up { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.indicator-change.down { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.indicator-change.up { background: rgba(239, 68, 68, 0.1); color: var(--color-up); }
+.indicator-change.down { background: rgba(59, 130, 246, 0.1); color: var(--color-down); }
 
 /* Fear & Greed Gauge */
 .fg-container {
@@ -5100,8 +5100,8 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     font-weight: 600;
 }
 
-.tile-pct.up { color: #10b981; }
-.tile-pct.down { color: #ef4444; }
+.tile-pct.up { color: var(--color-up); }
+.tile-pct.down { color: var(--color-down); }
 
 /* AI Report Expanded Styling */
 .ai-report-card {

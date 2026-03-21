@@ -1102,8 +1102,8 @@ function renderAnalysisReport(data) {
     const trendText = document.getElementById('trendStrengthText');
 
     const trendConfig = {
-        bullish: { icon: '🔥', cls: 'trend-bullish', color: '#10b981' },
-        bearish: { icon: '🧊', cls: 'trend-bearish', color: '#ef4444' },
+        bullish: { icon: '🔥', cls: 'trend-bullish', color: '#ef4444' },
+        bearish: { icon: '🧊', cls: 'trend-bearish', color: '#3b82f6' },
         neutral: { icon: '⚖️', cls: 'trend-neutral', color: '#6b7280' },
     };
 
@@ -1116,8 +1116,8 @@ function renderAnalysisReport(data) {
     
     // Apply matching bar colors
     let barColor = 'rgba(107, 114, 128, 0.8)';
-    if (data.trend === 'bullish') barColor = 'rgba(16, 185, 129, 0.8)';
-    if (data.trend === 'bearish') barColor = 'rgba(239, 68, 68, 0.8)';
+    if (data.trend === 'bullish') barColor = 'rgba(239, 68, 68, 0.8)';
+    if (data.trend === 'bearish') barColor = 'rgba(59, 130, 246, 0.8)';
     trendFill.style.backgroundColor = barColor;
 
     trendFill.style.transition = 'width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) 0.1s';
@@ -1341,7 +1341,7 @@ async function renderFundamentalReport(stockCode) {
         ['연간 매출 성장', q.rev_growth != null ? (q.rev_growth > 0 ? '+' : '') + q.rev_growth + '%' : '—'],
         ['분기 매출 성장', q.qtr_growth != null ? (q.qtr_growth > 0 ? '+' : '') + q.qtr_growth + '%' : '—'],
     ];
-    const scoreColor = q.score >= 75 ? '#10b981' : q.score >= 55 ? '#f59e0b' : '#ef4444';
+    const scoreColor = q.score >= 75 ? '#ef4444' : q.score >= 55 ? '#f59e0b' : '#3b82f6';
     document.getElementById('fundQuantContent').innerHTML = `
         <div class="prob-two-col" style="background:transparent; padding:0; gap:20px;">
             <div class="prob-left-col" style="flex:0 0 140px; border:none; padding-right:0;">
@@ -1577,11 +1577,11 @@ function renderAiInsights(data) {
     if (cyc && cycContainer) {
         const isBullish = cyc.current_phase && cyc.current_phase.includes('상승');
         const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
-        const phaseColor = isBullish ? '#10b981' : (isBearish ? '#ef4444' : '#f59e0b');
+        const phaseColor = isBullish ? '#ef4444' : (isBearish ? '#3b82f6' : '#f59e0b');
         const confLabel = cyc.confidence === 'high' ? '높음'
             : cyc.confidence === 'medium' ? '보통' : '낮음';
-        const confColor = cyc.confidence === 'high' ? '#10b981'
-            : cyc.confidence === 'medium' ? '#f59e0b' : '#ef4444';
+        const confColor = cyc.confidence === 'high' ? '#ef4444'
+            : cyc.confidence === 'medium' ? '#f59e0b' : '#3b82f6';
 
         const dashOffset = Math.round((1 - cyc.progress / 100) * 251);
 
@@ -1713,8 +1713,8 @@ function renderCycleTimelineChart(cyc) {
     const textFill = isLight ? '#64748b' : '#94a3b8';
     const lineFill = isLight ? '#cbd5e1' : '#334155';
     const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
-    const phaseColor = isBearish ? '#ef4444' : '#10b981';
-    const futureColor = isBearish ? '#3b82f6' : '#10b981';
+    const phaseColor = isBearish ? '#3b82f6' : '#ef4444';
+    const futureColor = isBearish ? '#3b82f6' : '#ef4444';
 
     // Build timeline data points: past peaks + current + projected future
     const points = [];
