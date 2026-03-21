@@ -481,6 +481,26 @@ html:not([data-theme="light"]) .nav-item.active i {
     font-size: 1.5rem;
     color: var(--text-sub);
     cursor: pointer;
+    z-index: 1001; /* Above main content, below sidebar if needed */
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
 }
 
 .greeting-text {
@@ -5162,4 +5182,136 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .ai-action-suggestion span {
     font-size: 0.85rem;
     color: var(--text-muted);
+}
+
+/* ── Workout Style AI Report Cards ── */
+.workout-style {
+    display: flex;
+    position: relative;
+    background: var(--bg-card);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-premium);
+    margin-bottom: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.workout-style:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.workout-stripe {
+    width: 8px;
+    flex-shrink: 0;
+}
+
+.workout-style.buy .workout-stripe {
+    background: linear-gradient(180deg, #10b981, #3b82f6);
+}
+
+.workout-style.sell .workout-stripe {
+    background: linear-gradient(180deg, #f59e0b, #ef4444);
+}
+
+.workout-content {
+    flex: 1;
+    padding: 24px;
+}
+
+.workout-header {
+    margin-bottom: 20px;
+}
+
+.workout-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.workout-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.workout-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    font-weight: 600;
+}
+
+.workout-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.workout-desc {
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.workout-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.w-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.w-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.w-val {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.workout-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.w-footer-item {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.w-footer-item.tip {
+    color: var(--text-sub);
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+    .workout-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

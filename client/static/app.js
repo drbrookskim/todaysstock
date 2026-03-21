@@ -279,6 +279,13 @@ function toggleSidebarOpen() {
     if (overlay) overlay.classList.toggle('show');
 }
 
+document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
+    const sidebar = document.getElementById('mainSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('show');
+});
+
 // ── Sidebar Toggle (Mobile) ──
 function initMobileSidebar() {
     const toggle = document.getElementById('sidebarToggle');
@@ -2139,16 +2146,21 @@ function renderBuyReport(report) {
     }
     card.classList.remove('hidden');
 
-    document.getElementById('buySignalBadge').textContent = `신호 ${report.signal_strength}%`;
-    document.getElementById('buyPattern').textContent = `핵심 패턴: ${report.primary_pattern}`;
+    const now = new Date();
+    const timeStr = `${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} 분석`;
+    const timeEl = document.getElementById('buyReportTime');
+    if (timeEl) timeEl.textContent = timeStr;
+
+    document.getElementById('buySignalBadge').textContent = `${report.signal_strength}%`;
+    document.getElementById('buyPattern').textContent = report.primary_pattern;
     document.getElementById('buyDesc').textContent = report.primary_pattern_desc;
     document.getElementById('buyAggressive').textContent = formatPrice(report.aggressive_entry);
     document.getElementById('buyConservative').textContent = formatPrice(report.conservative_entry);
     document.getElementById('buyTarget').textContent = formatPrice(report.target_price);
     document.getElementById('buyStopLoss').textContent = formatPrice(report.stop_loss);
-    document.getElementById('buyRiskReward').textContent = `리스크:리워드 = ${report.risk_reward}`;
-    document.getElementById('buyVolume').textContent = report.volume_note;
-    document.getElementById('buyTip').innerHTML = `<i class="ph ph-lightbulb" style="color:var(--text-muted); margin-right:4px;"></i> ${report.entry_tip}`;
+    document.getElementById('buyRiskReward').textContent = report.risk_reward;
+    document.getElementById('buyVolume').innerHTML = `<i class="ph ph-chart-bar"></i> ${report.volume_note}`;
+    document.getElementById('buyTip').innerHTML = `<i class="ph ph-lightbulb"></i> ${report.entry_tip}`;
     return true;
 }
 
@@ -2160,16 +2172,21 @@ function renderSellReport(report, atrTargets) {
     }
     card.classList.remove('hidden');
 
-    document.getElementById('sellSignalBadge').textContent = `신호 ${report.signal_strength}%`;
-    document.getElementById('sellPattern').textContent = `핵심 패턴: ${report.primary_pattern}`;
+    const now = new Date();
+    const timeStr = `${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} 분석`;
+    const timeEl = document.getElementById('sellReportTime');
+    if (timeEl) timeEl.textContent = timeStr;
+
+    document.getElementById('sellSignalBadge').textContent = `${report.signal_strength}%`;
+    document.getElementById('sellPattern').textContent = report.primary_pattern;
     document.getElementById('sellDesc').textContent = report.primary_pattern_desc;
     document.getElementById('sellPrice').textContent = formatPrice(report.sell_price);
     document.getElementById('sellConservative').textContent = formatPrice(report.conservative_sell);
     document.getElementById('sellTarget').textContent = formatPrice(report.target_price);
     document.getElementById('sellStopLoss').textContent = formatPrice(report.stop_loss);
-    document.getElementById('sellRiskReward').textContent = `리스크:리워드 = ${report.risk_reward}`;
-    document.getElementById('sellVolume').textContent = report.volume_note;
-    document.getElementById('sellTip').innerHTML = `<i class="ph ph-lightbulb" style="color:var(--text-muted); margin-right:4px;"></i> ${report.exit_tip}`;
+    document.getElementById('sellRiskReward').textContent = report.risk_reward;
+    document.getElementById('sellVolume').innerHTML = `<i class="ph ph-chart-bar"></i> ${report.volume_note}`;
+    document.getElementById('sellTip').innerHTML = `<i class="ph ph-lightbulb"></i> ${report.exit_tip}`;
 
     // ATR 비교 노트 표시
     const sellAtrNote = document.getElementById('sellAtrNote');

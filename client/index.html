@@ -481,80 +481,93 @@
                     <!-- Buy / Sell Reports Grid -->
                     <div class="report-grid" id="reportGrid">
                         <!-- Buy Report -->
-                        <div id="buyReport" class="report-card report-buy hidden">
-                            <div class="report-header report-header-buy">
-                                <span class="report-icon"><i class="ph ph-trend-up"></i></span>
-                                <span class="report-title">매수 리포트</span>
-                                <span id="buySignalBadge" class="signal-badge signal-buy"></span>
-                            </div>
-                            <div class="report-body">
-                                <div class="report-pattern" id="buyPattern"></div>
-                                <div class="report-desc" id="buyDesc"
-                                    style="font-size: 0.85rem; color: var(--text-color); opacity: 0.7; margin-bottom: 12px; line-height: 1.4;">
+                        <div id="buyReport" class="report-card workout-style buy hidden">
+                            <div class="workout-stripe"></div>
+                            <div class="workout-content">
+                                <div class="workout-header">
+                                    <div class="workout-time" id="buyReportTime">AI 분석 리포트</div>
+                                    <h3 class="workout-title">매수 권장 패턴 포착</h3>
+                                    <div class="workout-subtitle" id="buyPattern"></div>
                                 </div>
-                                <div class="report-prices">
-                                    <div class="price-row-item">
-                                        <span class="price-label">적극 매수가</span>
-                                        <span id="buyAggressive" class="price-val buy-color"></span>
+                                <div class="workout-body">
+                                    <div class="workout-desc" id="buyDesc"></div>
+                                    <div class="workout-stats-grid">
+                                        <div class="w-stat">
+                                            <span class="w-label">신호 강도</span>
+                                            <span class="w-val" id="buySignalBadge"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">적극 매수가</span>
+                                            <span class="w-val buy-color" id="buyAggressive"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">보수 매수가</span>
+                                            <span class="w-val buy-color" id="buyConservative"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">목표가</span>
+                                            <span class="w-val target-color" id="buyTarget"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">손절가</span>
+                                            <span class="w-val sell-color" id="buyStopLoss"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">손익비</span>
+                                            <span class="w-val" id="buyRiskReward"></span>
+                                        </div>
                                     </div>
-                                    <div class="price-row-item">
-                                        <span class="price-label">보수 매수가</span>
-                                        <span id="buyConservative" class="price-val buy-color"></span>
-                                    </div>
-                                    <div class="price-row-item">
-                                        <span class="price-label">목표가</span>
-                                        <span id="buyTarget" class="price-val target-color"></span>
-                                    </div>
-                                    <div class="price-row-item stop-loss">
-                                        <span class="price-label">손절가</span>
-                                        <span id="buyStopLoss" class="price-val sell-color"></span>
+                                    <div class="workout-footer">
+                                        <div class="w-footer-item" id="buyVolume"></div>
+                                        <div class="w-footer-item tip" id="buyTip"></div>
                                     </div>
                                 </div>
-                                <div class="report-meta">
-                                    <div id="buyRiskReward" class="risk-reward"></div>
-                                    <div id="buyVolume" class="volume-note"></div>
-                                </div>
-                                <div id="buyTip" class="report-tip"></div>
                             </div>
                         </div>
 
                         <!-- Sell Report -->
-                        <div id="sellReport" class="report-card report-sell hidden">
-                            <div class="report-header report-header-sell">
-                                <span class="report-icon"><i class="ph ph-trend-down"></i></span>
-                                <span class="report-title">매도 리포트</span>
-                                <span id="sellSignalBadge" class="signal-badge signal-sell"></span>
-                            </div>
-                            <div class="report-body">
-                                <div class="report-pattern" id="sellPattern"></div>
-                                <div class="report-desc" id="sellDesc"
-                                    style="font-size: 0.85rem; color: var(--text-color); opacity: 0.7; margin-bottom: 12px; line-height: 1.4;">
+                        <div id="sellReport" class="report-card workout-style sell hidden">
+                            <div class="workout-stripe"></div>
+                            <div class="workout-content">
+                                <div class="workout-header">
+                                    <div class="workout-time" id="sellReportTime">AI 분석 리포트</div>
+                                    <h3 class="workout-title">매도 유의 패턴 포착</h3>
+                                    <div class="workout-subtitle" id="sellPattern"></div>
                                 </div>
-                                <div class="report-prices">
-                                    <div class="price-row-item">
-                                        <span class="price-label">즉시 매도가</span>
-                                        <span id="sellPrice" class="price-val sell-color"></span>
+                                <div class="workout-body">
+                                    <div class="workout-desc" id="sellDesc"></div>
+                                    <div class="workout-stats-grid">
+                                        <div class="w-stat">
+                                            <span class="w-label">신호 강도</span>
+                                            <span class="w-val" id="sellSignalBadge"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">즉시 매도가</span>
+                                            <span class="w-val sell-color" id="sellPrice"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">보수 매도가</span>
+                                            <span class="w-val sell-color" id="sellConservative"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">예상 하락가</span>
+                                            <span class="w-val target-color" id="sellTarget"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">최대 손절가</span>
+                                            <span class="w-val buy-color" id="sellStopLoss"></span>
+                                        </div>
+                                        <div class="w-stat">
+                                            <span class="w-label">손익비</span>
+                                            <span class="w-val" id="sellRiskReward"></span>
+                                        </div>
                                     </div>
-                                    <div class="price-row-item">
-                                        <span class="price-label">보수 매도가</span>
-                                        <span id="sellConservative" class="price-val sell-color"></span>
-                                    </div>
-                                    <div class="price-row-item">
-                                        <span class="price-label">예상 하락가</span>
-                                        <span id="sellTarget" class="price-val target-color"></span>
-                                    </div>
-                                    <div class="price-row-item stop-loss">
-                                        <span class="price-label">최대 손절가</span>
-                                        <span id="sellStopLoss" class="price-val buy-color"></span>
+                                    <div class="workout-footer">
+                                        <div class="w-footer-item" id="sellVolume"></div>
+                                        <div class="w-footer-item tip" id="sellTip"></div>
+                                        <div id="sellAtrNote" class="sell-atr-note" style="display:none;"></div>
                                     </div>
                                 </div>
-                                <div class="report-meta">
-                                    <div id="sellRiskReward" class="risk-reward"></div>
-                                    <div id="sellVolume" class="volume-note"></div>
-                                </div>
-                                <div id="sellTip" class="report-tip"></div>
-                                <!-- ATR 비교 노트 -->
-                                <div id="sellAtrNote" class="sell-atr-note" style="display:none;"></div>
                             </div>
                         </div>
                     </div>
