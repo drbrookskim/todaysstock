@@ -4,6 +4,7 @@ pykrx
 pandas
 scipy
 requests
+beautifulsoup4
 gunicorn
 supabase
 python-dotenv
