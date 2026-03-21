@@ -5340,3 +5340,19 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .workout-style .fund-axis-grid {
     gap: 16px;
 }
+
+/* ── Watchlist Result Alignment ── */
+/* Ensure nested containers in watchlist (like moved resultSection) use full width 
+   to match the 5-column grid above them. */
+.watchlist-section .container .container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+#watchlistResultPlaceholder + #resultSection .container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+}
