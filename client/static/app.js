@@ -169,6 +169,9 @@ function restoreStockContext(type) {
     const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
     const placeholder = document.getElementById(placeholderId);
     if (placeholder && resSec) {
+        const triggerContainer = document.getElementById('analysisTriggerContainer');
+        const patternReportSection = document.getElementById('patternReportSection');
+
         placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
         resSec.classList.remove('hidden');
         if (type === 'watchlist') {
@@ -184,9 +187,11 @@ function restoreStockContext(type) {
         renderResult(context.data);
         
         if (context.analysis) {
+            if (triggerContainer) triggerContainer.style.display = 'none';
             renderAnalysisReport(context.analysis);
         } else {
-            fetchAnalysis(context.item);
+            if (triggerContainer) triggerContainer.style.display = 'block';
+            if (patternReportSection) patternReportSection.classList.add('hidden');
         }
 
         if (context.fundamental) {
@@ -641,7 +646,7 @@ async function selectStock(item) {
         if (currentStock) {
             renderFundamentalReport(currentStock.code || currentStock.ticker || '');
         }
-        fetchAnalysis(item);
+        // AI Analysis now triggered by button, no automatic fetch here
     } catch (err) {
         console.error('selectStock error:', err);
         loadingSpinner.classList.add('hidden');
@@ -734,9 +739,22 @@ function renderResult(data) {
     // Show result
     resultSection.classList.remove('hidden');
 
-    // Reset analysis section
+    // Reset analysis section & trigger button
     const patternReportSection = document.getElementById('patternReportSection');
+    const triggerContainer = document.getElementById('analysisTriggerContainer');
+    const showAnalysisBtn = document.getElementById('btnShowAnalysis');
+
     if (patternReportSection) patternReportSection.classList.add('hidden');
+    if (triggerContainer) triggerContainer.style.display = 'block';
+
+    if (showAnalysisBtn) {
+        // Remove previous listeners to avoid duplicates
+        const newBtn = showAnalysisBtn.cloneNode(true);
+        showAnalysisBtn.parentNode.replaceChild(newBtn, showAnalysisBtn);
+        newBtn.addEventListener('click', () => {
+            fetchAnalysis(currentStock);
+        });
+    }
 }
 
 function renderNxtCard(nxt) {
@@ -1131,12 +1149,17 @@ function updateFearGreed(value) {
 
 async function fetchAnalysis(item) {
     const patternReportSection = document.getElementById('patternReportSection');
+    const triggerContainer = document.getElementById('analysisTriggerContainer');
     const analysisLoading = document.getElementById('analysisLoading');
 
+    if (triggerContainer) triggerContainer.style.display = 'none';
     if (patternReportSection) patternReportSection.classList.remove('hidden');
     
     if (analysisLoading) analysisLoading.classList.remove('hidden');
-    document.getElementById('trendContainer').style.display = 'none';
+    // Important: Center and show only loading first
+    const trendContainer = document.getElementById('trendContainer');
+    if (trendContainer) trendContainer.style.display = 'none';
+    
     document.getElementById('patternsCard').classList.add('hidden');
     document.getElementById('candleChartCard').classList.add('hidden');
     document.getElementById('reportGrid').classList.add('hidden');
