@@ -3021,19 +3021,9 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
-    cursor: pointer;
-    list-style: none;
-}
-
-.glossary-title::-webkit-details-marker {
-    display: none;
-}
-
-.glossary-section[open] .glossary-title {
-    margin-bottom: 12px;
 }
 
 .glossary-table {
@@ -3797,13 +3787,9 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     line-height: 1.5;
 }
 
-/* Body / collapse */
+/* Body / section content */
 .fund-body {
     margin-top: 14px;
-}
-
-.fund-collapsed {
-    display: none;
 }
 
 /* Full-width 1-column axis stack */

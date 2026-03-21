@@ -1412,17 +1412,7 @@ async function renderFundamentalReport(stockCode) {
     document.getElementById('fundAxesUsed').innerHTML =
         axes.map(a => `<span class="fund-axis-tag">${a}</span>`).join('');
 
-    // ── 토글 버튼 ──
-    const toggleBtn = document.getElementById('fundToggleBtn');
-    const fundBody = document.getElementById('fundBody');
-    if (toggleBtn && !toggleBtn.dataset.bound) {
-        toggleBtn.dataset.bound = '1';
-        toggleBtn.addEventListener('click', () => {
-            fundBody.classList.toggle('fund-collapsed');
-            const collapsed = fundBody.classList.contains('fund-collapsed');
-            toggleBtn.querySelector('i').className = collapsed ? 'ph ph-caret-down' : 'ph ph-caret-up';
-        });
-    }
+    // ── 토글 버튼 (제거됨 - 항상 펼쳐짐) ──
 }
 
 function renderAiInsights(data) {

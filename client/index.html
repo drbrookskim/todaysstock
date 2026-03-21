@@ -398,9 +398,6 @@
                                     d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                             </svg>
                             AI 캔들 패턴 분석 리포트
-                            <button class="favorite-btn analysis-fav-btn" title="관심종목 토글" style="margin-left: 10px; font-size: 1.2rem;">
-                                <i class="ph ph-star"></i>
-                            </button>
                         </h3>
                         <div class="analysis-loading hidden" id="analysisLoading">
                             <div class="spinner spinner-sm"></div>
@@ -558,11 +555,11 @@
                         <strong>최종적인 투자 판단과 책임은 온전히 투자자 본인에게 있습니다.</strong>
                     </div>
 
-                    <!-- 📚 주식용어정리 Glossary -->
-                    <details class="glossary-section" id="glossarySection">
-                        <summary class="glossary-title">
+                    <!-- 📚 주식용어정리 Glossary (Always Expanded) -->
+                    <div class="glossary-section" id="glossarySection">
+                        <div class="glossary-title">
                             <i class="ph ph-book-open" style="margin-right: 6px;"></i> 주식 용어 정리
-                        </summary>
+                        </div>
                         <table class="glossary-table">
                             <thead>
                                 <tr>
@@ -634,7 +631,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </details>
+                    </div>
                 </div> <!-- End .container -->
             </section> <!-- End resultSection -->
 
@@ -642,7 +639,12 @@
             <section id="analysisSection" class="analysis-section hidden">
                 <div class="container animate-in">
                     <div class="section-header">
-                        <h3>심층 분석 (펀더멘탈 & 사이클 타임)</h3>
+                        <h3 style="display: flex; align-items: center; gap: 10px;">
+                            심층 분석 (펀더멘탈 & 사이클 타임)
+                            <button class="favorite-btn analysis-fav-btn" title="관심종목 토글" style="font-size: 1.2rem;">
+                                <i class="ph ph-star"></i>
+                            </button>
+                        </h3>
                         <p class="section-desc" id="analysisCurrentStock"></p>
                     </div>
 
@@ -686,13 +688,10 @@
                                 </div>
                                 <div class="fund-header-right">
                                     <span id="fundSignalBadge" class="fund-signal-badge"></span>
-                                    <button id="fundToggleBtn" class="fund-toggle-btn">
-                                        <i class="ph ph-caret-down"></i>
-                                    </button>
                                 </div>
                             </div>
                             <div id="fundSignalReason" class="fund-signal-reason"></div>
-                            <div id="fundBody" class="fund-body fund-collapsed">
+                            <div id="fundBody" class="fund-body">
                                 <div class="fund-axis-grid">
                                     <div class="fund-axis-card">
                                         <div class="fund-axis-title">📊 Quant</div>
@@ -711,6 +710,36 @@
                                 <div class="fund-desc" style="margin-top: 16px;">DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를
                                     알고리즘적으로 분석합니다.</div>
                             </div>
+                        </div>
+                        
+                        <!-- 📚 주식용어정리 Glossary (Always Expanded - Analysis Section) -->
+                        <div class="glossary-section" id="glossarySectionAnalysis" style="margin-top: 30px;">
+                            <div class="glossary-title">
+                                <i class="ph ph-book-open" style="margin-right: 6px;"></i> 주식 용어 정리
+                            </div>
+                            <table class="glossary-table">
+                                <thead>
+                                    <tr>
+                                        <th>약어</th>
+                                        <th>영문 정식 명칭</th>
+                                        <th>설명</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>MA</td><td>Moving Average</td><td>이동평균선 — 일정 기간의 종가 평균을 연결한 추세선</td></tr>
+                                    <tr><td>RSI</td><td>Relative Strength Index</td><td>상대강도지수 — 매수·매도 세력의 상대적 강도를 0~100으로 표시</td></tr>
+                                    <tr><td>MACD</td><td>Moving Average Convergence Divergence</td><td>이동평균수렴확산 — 단기·장기 이동평균 차이로 추세 전환 감지</td></tr>
+                                    <tr><td>ATR</td><td>Average True Range</td><td>평균실질범위 — 일정 기간의 고가-저가 변동폭을 평균한 변동성 지표</td></tr>
+                                    <tr><td>R:R</td><td>Risk-Reward Ratio</td><td>위험보상비율 — 손실 대비 기대 수익의 비율 (1:2 이상 권장)</td></tr>
+                                    <tr><td>Z-score</td><td>Standard Score</td><td>표준점수 — 평균으로부터 표준편차 몇 배 떨어졌는지를 나타내는 통계 지표</td></tr>
+                                    <tr><td>ROE</td><td>Return on Equity</td><td>자기자본이익률 — 자기자본 대비 순이익 비율</td></tr>
+                                    <tr><td>EV/EBITDA</td><td>Enterprise Value / EBITDA</td><td>기업가치 대비 세전·이자·감가상각 전 영업이익 비율</td></tr>
+                                    <tr><td>DART</td><td>Data Analysis, Retrieval and Transfer</td><td>금융감독원 전자공시시스템</td></tr>
+                                    <tr><td>ECOS</td><td>Economic Statistics System</td><td>한국은행 경제통계시스템</td></tr>
+                                    <tr><td>IDM</td><td>Integrated Device Manufacturer</td><td>종합 반도체 기업</td></tr>
+                                    <tr><td>YoY</td><td>Year over Year</td><td>전년 동기 대비 증감률</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
