@@ -5315,3 +5315,28 @@ html:not([data-theme="light"]) .trend-pill.bullish {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ── Deep Analysis Stripe Colors ── */
+.workout-style.ai-insights .workout-stripe {
+    background: linear-gradient(180deg, #6366f1, #a855f7); /* Purple/Indigo */
+}
+
+.workout-style.cycle .workout-stripe {
+    background: linear-gradient(180deg, #06b6d4, #3b82f6); /* Cyan/Blue */
+}
+
+.workout-style.rating .workout-stripe,
+.workout-style.fundamental .workout-stripe {
+    background: linear-gradient(180deg, #f59e0b, #fbbf24); /* Amber/Gold */
+}
+
+/* Specific Adjustments for Deep Analysis Cards */
+.workout-style .workout-body .ai-insight-row {
+    padding: 0;
+    border: none;
+    margin-bottom: 0;
+}
+
+.workout-style .fund-axis-grid {
+    gap: 16px;
+}

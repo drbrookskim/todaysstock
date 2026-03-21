@@ -1567,7 +1567,8 @@ async function renderFundamentalReport(stockCode) {
 
 function renderAiInsights(data) {
     const container = document.getElementById('aiInsightsCard');
-    if (!container) return;
+    const body = document.getElementById('aiInsightsBody');
+    if (!container || !body) return;
 
     const prob = data.trade_probability;
     const atr = data.atr_targets;
@@ -1704,7 +1705,7 @@ function renderAiInsights(data) {
         </div>`;
     }
 
-    container.innerHTML = `
+    body.innerHTML = `
         <div class="ai-widget-title">AI 인지형 투자 매력도</div>
         <div class="ai-insight-grid">
             ${probHtml}
@@ -1716,7 +1717,8 @@ function renderAiInsights(data) {
     // ── 4. 사이클 타임 예측 (펀더멘탈 내부 컨테이너로 렌더링) ──
     const cyc = data.cycle_estimation;
     const cycContainer = document.getElementById('cycleWidgetContainer');
-    if (cyc && cycContainer) {
+    const cycBody = document.getElementById('cycleWidgetBody');
+    if (cyc && cycContainer && cycBody) {
         const isBullish = cyc.current_phase && cyc.current_phase.includes('상승');
         const isBearish = cyc.current_phase && cyc.current_phase.includes('하락');
         const phaseColor = isBullish ? '#ef4444' : (isBearish ? '#3b82f6' : '#f59e0b');
@@ -1832,17 +1834,15 @@ function renderAiInsights(data) {
             </div>
         </div>`;
 
-        cycContainer.innerHTML = cycHtml;
-        cycContainer.style.display = 'block';
+        cycBody.innerHTML = cycHtml;
+        cycContainer.classList.remove('hidden');
 
         // ── 📊 Dedicated Cycle Timeline SVG Chart ──
         renderCycleTimelineChart(cyc);
     } else if (cycContainer) {
-        cycContainer.style.display = 'none';
-        cycContainer.innerHTML = '';
+        cycContainer.classList.add('hidden');
+        if (cycBody) cycBody.innerHTML = '';
     }
-
-    container.innerHTML = `<div class="ai-insights-grid">${probHtml}${atrHtml}${volHtml}</div>`;
 }
 
 
