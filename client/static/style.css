@@ -5356,3 +5356,118 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     padding-right: 0 !important;
     max-width: none !important;
 }
+
+/* ── AI Analysis Trigger Button Redesign ── */
+.analysis-trigger-container {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+    padding: 0 20px;
+}
+
+.btn-analysis-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 36px 10px 10px; /* Left padding small for the orb */
+    background: #05070a; /* Deep black to make the border pop */
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    overflow: visible; /* To allow glow to bleed out */
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Premium Gradient Border */
+.btn-analysis-trigger::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 102px;
+    padding: 2px;
+    background: linear-gradient(90deg, #6366f1, #06b6d4, #a855f7);
+    -webkit-mask: 
+       linear-gradient(#fff 0 0) content-box, 
+       linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    z-index: 0;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+/* Glowing Orb on the Left */
+.btn-analysis-trigger i {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: radial-gradient(circle at 30% 30%, #38bdf8, #2563eb);
+    border-radius: 50%;
+    color: white;
+    font-size: 1.4rem;
+    box-shadow: 
+        0 0 20px rgba(56, 189, 248, 0.6),
+        inset -4px -4px 10px rgba(0, 0, 0, 0.3),
+        inset 4px 4px 10px rgba(255, 255, 255, 0.3);
+    transition: all 0.4s ease;
+}
+
+/* Refined Animation for Orb */
+.btn-analysis-trigger i::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.3);
+    filter: blur(8px);
+    z-index: -1;
+    animation: orb-pulse 2s infinite ease-in-out;
+}
+
+@keyframes orb-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+/* Button Text Styling */
+.btn-analysis-trigger span {
+    position: relative;
+    z-index: 2;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #38bdf8; /* Cyan text as in the image */
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    transition: all 0.3s ease;
+}
+
+/* Interaction Effects */
+.btn-analysis-trigger:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.btn-analysis-trigger:hover::after {
+    opacity: 1;
+}
+
+.btn-analysis-trigger:hover i {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.9);
+}
+
+.btn-analysis-trigger:hover span {
+    color: #fff;
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+}
+
+.btn-analysis-trigger:active {
+    transform: translateY(0) scale(0.98);
+}

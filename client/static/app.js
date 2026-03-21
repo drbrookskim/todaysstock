@@ -188,6 +188,7 @@ function restoreStockContext(type) {
         
         if (context.analysis) {
             if (triggerContainer) triggerContainer.style.display = 'none';
+            if (patternReportSection) patternReportSection.classList.remove('hidden');
             renderAnalysisReport(context.analysis);
         } else {
             if (triggerContainer) triggerContainer.style.display = 'block';
