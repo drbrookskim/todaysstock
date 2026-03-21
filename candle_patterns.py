@@ -1280,7 +1280,9 @@ def analyze_candle_patterns(df):
         "conservative_entry": conservative_entry,
         "target_price": target_price,
         "stop_loss": stop_loss,
-        "risk_reward": "1:2",
+        "risk_reward": "1:2.0",
+        "volume_note": volume_note,
+        "entry_tip": "전일 종가 부근에서 지지 확인 후 진입 추천" if bullish_patterns else "강력한 매수 신호가 없어 관망 권장"
     }
 
     # ── 매도 리포트 ──
@@ -1291,22 +1293,26 @@ def analyze_candle_patterns(df):
         sell_primary_pattern = best_sell["name"]
         sell_primary_desc = best_sell["description"]
         sell_price = int(current_price)
+        conservative_sell = int(current_price * 1.02)
         stop_loss_sell = int(current_price * 1.05)
         target_sell = int(current_price * 0.9)
     else:
         sell_signal_strength = 30
         sell_primary_pattern = "강한 매도 패턴 미감지"
         sell_primary_desc = "뚜렷한 하락 반전 패턴이 발견되지 않았습니다."
-        sell_price = stop_loss_sell = target_sell = "보류"
+        sell_price = conservative_sell = stop_loss_sell = target_sell = "보류"
 
     sell_report = {
         "signal_strength": sell_signal_strength,
         "primary_pattern": sell_primary_pattern,
         "primary_pattern_desc": sell_primary_desc,
         "sell_price": sell_price,
+        "conservative_sell": conservative_sell,
         "stop_loss": stop_loss_sell,
         "target_price": target_sell,
-        "risk_reward": "1:2",
+        "risk_reward": "1:2.0",
+        "volume_note": volume_note,
+        "exit_tip": "분할 매도로 대응하며 추가 하락 지지선 확인 권장" if bearish_patterns else "안정적인 상승 흐름 유지 중"
     }
 
     return {
