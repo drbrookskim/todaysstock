@@ -197,7 +197,7 @@ def compute_cycle_estimation(df):
         history.append({
             "peak_date": df.index[p1_idx].strftime("%Y-%m-%d"),
             "next_peak_date": df.index[p2_idx].strftime("%Y-%m-%d"),
-            "days": p2_idx - p1_idx
+            "days": int(p2_idx - p1_idx)
         })
 
     # Fibonacci Time Zones markers
