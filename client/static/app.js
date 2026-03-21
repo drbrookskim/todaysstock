@@ -35,6 +35,10 @@ let currentIndexChart = null; // Lightweight Chart instance
 let currentStock = null;
 let _lastAnalysisData = null;
 
+// --- Independent Section Contexts ---
+let homeStockContext = { item: null, data: null, analysis: null };
+let watchlistStockContext = { item: null, data: null, analysis: null };
+
 // ── Watchlist Constants ──
 const WATCHLIST_KEY = 'stockfinder-watchlist';
 
@@ -137,9 +141,63 @@ function initNavigation() {
                         }
                     }
                 }
+
+                // --- Section Persistence Restore ---
+                if (targetId === 'dashboardHome') {
+                    restoreStockContext('home');
+                } else if (targetId === 'watchlistSection') {
+                    restoreStockContext('watchlist');
+                }
             }
         });
     });
+}
+
+function restoreStockContext(type) {
+    const context = (type === 'home') ? homeStockContext : watchlistStockContext;
+    const resSec = document.getElementById('resultSection');
+    
+    if (!context.item || !context.data) {
+        // No previously searched stock for this section
+        if (type === 'home') {
+            // Home might show macro cards by default if result is hidden
+        }
+        return;
+    }
+
+    // Move resultSection back to the correct placeholder
+    const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
+    const placeholder = document.getElementById(placeholderId);
+    if (placeholder && resSec) {
+        placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+        resSec.classList.remove('hidden');
+        if (type === 'watchlist') {
+            showSection('watchlistSection');
+            resSec.classList.remove('hidden');
+        } else {
+            showSection('resultSection');
+        }
+        
+        // Restore State
+        currentStock = context.item;
+        renderResult(context.data);
+        
+        if (context.analysis) {
+            renderAnalysisReport(context.analysis);
+        } else {
+            fetchAnalysis(context.item);
+        }
+
+        if (context.fundamental) {
+            // Call renderFundamentalReport logic or just use cached d
+            // Since Fundamental report is a bit long, if we don't want to re-fetch, we can just call it with the cached data
+            // But currently renderFundamentalReport does its own fetch. 
+            // Let's just re-fetch for simplicity or check if we can pass data.
+            renderFundamentalReport(context.item.code); 
+        } else {
+            renderFundamentalReport(context.item.code);
+        }
+    }
 }
 
 function showSection(id) {
@@ -543,19 +601,28 @@ async function selectStock(item) {
         currentStock = item; // Store current stock
         loadingSpinner.classList.add('hidden');
 
-        // --- Handle Result Placement ---
+        // --- Handle Result Placement & Context Save ---
         const isFav = isInWatchlist(item.code);
         const resSec = document.getElementById('resultSection');
+        
+        const context = {
+            item: item,
+            data: data,
+            analysis: null // Will be updated by fetchAnalysis
+        };
+
         if (isFav) {
+            watchlistStockContext = context;
             // Move to watchlist footer
             const placeholder = document.getElementById('watchlistResultPlaceholder');
             if (placeholder) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
             }
             showSection('watchlistSection');
-            resSec.classList.remove('hidden'); // UNHIDE since showSection hides it
+            resSec.classList.remove('hidden'); 
         } else {
-            // Move to main (home) result area
+            homeStockContext = context;
+            // Move to home result area
             const placeholder = document.getElementById('mainResultPlaceholder');
             if (placeholder) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
@@ -1076,6 +1143,17 @@ async function fetchAnalysis(item) {
         
         const data = await response.json();
         
+        // Cache in context
+        if (isInWatchlist(item.code)) {
+            if (watchlistStockContext.item && watchlistStockContext.item.code === item.code) {
+                watchlistStockContext.analysis = data;
+            }
+        } else {
+            if (homeStockContext.item && homeStockContext.item.code === item.code) {
+                homeStockContext.analysis = data;
+            }
+        }
+
         if (analysisLoading) analysisLoading.classList.add('hidden');
         renderAnalysisReport(data);
     } catch (err) {
@@ -1440,7 +1518,16 @@ async function renderFundamentalReport(stockCode) {
     document.getElementById('fundAxesUsed').innerHTML =
         axes.map(a => `<span class="fund-axis-tag">${a}</span>`).join('');
 
-    // ── 토글 버튼 (제거됨 - 항상 펼쳐짐) ──
+    // Cache in context
+    if (isInWatchlist(stockCode)) {
+        if (watchlistStockContext.item && (watchlistStockContext.item.code === stockCode || watchlistStockContext.item.ticker === stockCode)) {
+            watchlistStockContext.fundamental = d;
+        }
+    } else {
+        if (homeStockContext.item && (homeStockContext.item.code === stockCode || homeStockContext.item.ticker === stockCode)) {
+            homeStockContext.fundamental = d;
+        }
+    }
 }
 
 function renderAiInsights(data) {
