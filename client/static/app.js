@@ -102,7 +102,6 @@ function initNavigation() {
     const sections = {
         'navHome': 'dashboardHome',
         'navAnalysis': 'analysisSection',
-        'navHistory': 'historySection',
         'navWatchlist': 'watchlistSection'
     };
 
@@ -2374,9 +2373,8 @@ async function initAuth() {
                 sidebarUserSection.title = "사용자 정보";
             }
 
-            // Show watchlist UI
+            // Watchlist is always visible
             if (navWatchlist) {
-                console.log('[DEBUG] updateAuthUI - Showing navWatchlist');
                 navWatchlist.classList.remove('hidden');
             }
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
@@ -2392,7 +2390,7 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // Allow Watchlist for Guests (using localStorage)
+            // Watchlist is always visible
             if (navWatchlist) navWatchlist.classList.remove('hidden');
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('hidden');
             
