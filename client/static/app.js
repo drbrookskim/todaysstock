@@ -542,7 +542,27 @@ async function selectStock(item) {
         
         currentStock = item; // Store current stock
         loadingSpinner.classList.add('hidden');
-        showSection('resultSection');
+
+        // --- Handle Result Placement ---
+        const isFav = isInWatchlist(item.code);
+        const resSec = document.getElementById('resultSection');
+        if (isFav) {
+            // Move to watchlist footer
+            const placeholder = document.getElementById('watchlistResultPlaceholder');
+            if (placeholder) {
+                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+            }
+            showSection('watchlistSection');
+            resSec.classList.remove('hidden'); // UNHIDE since showSection hides it
+        } else {
+            // Move to main (home) result area
+            const placeholder = document.getElementById('mainResultPlaceholder');
+            if (placeholder) {
+                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+            }
+            showSection('resultSection');
+        }
+
         renderResult(data);
         
         // Ensure fundamental report is also called if we were in analysis mode
