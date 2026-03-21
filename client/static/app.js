@@ -368,7 +368,7 @@ function updateWatchlistBtn() {
     favBtns.forEach(favBtn => {
         if (exists) {
             favBtn.classList.add('active');
-            favBtn.innerHTML = '<i class="ph ph-star-fill"></i>';
+            favBtn.innerHTML = '<i class="ph ph-star ph-fill"></i>';
         } else {
             favBtn.classList.remove('active');
             favBtn.innerHTML = '<i class="ph ph-star"></i>';
