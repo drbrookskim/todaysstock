@@ -1410,6 +1410,96 @@ html[data-theme="light"] .theme-icon-btn i {
     letter-spacing: -1px;
 }
 
+/* 기업 개요 및 사업 영역 스타일 */
+.company-summary-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.company-summary-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.summary-formatted {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.summary-subtitle {
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.summary-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.summary-list li {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.summary-list li strong {
+    color: var(--text-main);
+    min-width: 70px;
+    font-weight: 600;
+}
+
+.summary-value {
+    color: var(--text-muted);
+    word-break: break-all;
+}
+
+.summary-value a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.summary-value a:hover {
+    text-decoration: underline;
+}
+
+.summary-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin: 0;
+    white-space: pre-wrap;
+}
+
 .price-change {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.1rem;

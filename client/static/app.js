@@ -627,6 +627,15 @@ function renderResult(data) {
     // --- Visual Bars ---
     renderVisualBars(data);
 
+    // --- Company Summary ---
+    const summaryEl = document.getElementById('companySummary');
+    if (data.company_summary) {
+        summaryEl.innerHTML = data.company_summary;
+        summaryEl.classList.remove('hidden');
+    } else {
+        summaryEl.classList.add('hidden');
+    }
+
     // --- NXT After-hours ---
     renderNxtCard(data.nxt);
 
