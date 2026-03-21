@@ -2,6 +2,7 @@ flask
 yfinance
 pykrx
 pandas
+scipy
 requests
 gunicorn
 supabase
