@@ -1588,7 +1588,7 @@ function renderAiInsights(data) {
                         : '#ef4444';
         const bd = prob.breakdown || {};
         const items = [
-            { label: 'MA 배열', val: bd.ma_alignment ?? 0, max: 35 },
+            { label: 'MA배열', val: bd.ma_alignment ?? 0, max: 35 },
             { label: 'RSI', val: bd.rsi ?? 0, max: 25 },
             { label: 'MACD', val: bd.macd ?? 0, max: 25 },
             { label: '거래량', val: bd.volume ?? 0, max: 15 },

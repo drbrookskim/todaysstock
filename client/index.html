@@ -13,20 +13,20 @@
         rel="stylesheet">
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="./static/favicon.svg">
     <!-- PWA -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0a0f1e">
     <meta name="mobile-web-app-capable" content="yes">
     <!-- Apple / iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Waiting for the Peak">
-    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="./static/icons/icon-192.png">
     <!-- Microsoft -->
-    <meta name="msapplication-TileImage" content="/static/icons/icon-192.png">
+    <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="/static/style.css?v=7">
+    <link rel="stylesheet" href="./static/style.css?v=8">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -46,7 +46,7 @@
     <!-- ── PWA 설치 배너 (Chrome/Edge: beforeinstallprompt) ── -->
     <div id="pwaInstallBanner" class="pwa-banner" style="display:none;" role="dialog" aria-label="앱 설치 안내">
         <div class="pwa-banner-icon">
-            <img src="/static/icons/icon-192.png" alt="Waiting for the Peak" width="40" height="40">
+            <img src="./static/icons/icon-192.png" alt="Waiting for the Peak" width="40" height="40">
         </div>
         <div class="pwa-banner-text">
             <strong>Waiting for the Peak 앱 설치</strong>
@@ -247,69 +247,63 @@
                 <!-- Duplicates Removed to ensure unambiguous ID selection -->
 
                 <!-- Stock Header Card -->
-                <div class="workout-style stock-main">
-                    <div class="workout-stripe"></div>
-                    <div class="workout-content stock-header-card">
-                        <div class="stock-title-row">
-                            <div class="stock-name-group">
-                                <!-- Row 1: badges -->
-                                <div class="stock-badges-row">
-                                    <span id="stockMarketBadge" class="market-badge">KOSPI</span>
-                                    <span id="stockIndustry" class="industry-badge"></span>
-                                </div>
-                                <!-- Row 2: name + code -->
-                                <div class="stock-name-row">
-                                    <h2 id="stockName" class="stock-name">삼성전자</h2>
-                                    <button id="favoriteBtn" class="favorite-btn" title="관심종목 토글">
-                                        <i class="ph ph-star"></i>
-                                    </button>
-                                    <span id="stockCode" class="stock-code">005930</span>
-                                </div>
+                <div class="stock-header-card">
+                    <div class="stock-title-row">
+                        <div class="stock-name-group">
+                            <!-- Row 1: badges -->
+                            <div class="stock-badges-row">
+                                <span id="stockMarketBadge" class="market-badge">KOSPI</span>
+                                <span id="stockIndustry" class="industry-badge"></span>
                             </div>
-                            <div id="stockDate" class="stock-date"></div>
+                            <!-- Row 2: name + code -->
+                            <div class="stock-name-row">
+                                <h2 id="stockName" class="stock-name">삼성전자</h2>
+                                <button id="favoriteBtn" class="favorite-btn" title="관심종목 토글">
+                                    <i class="ph ph-star"></i>
+                                </button>
+                                <span id="stockCode" class="stock-code">005930</span>
+                            </div>
                         </div>
+                        <div id="stockDate" class="stock-date"></div>
+                    </div>
 
-                        <div class="price-row">
-                            <span id="stockPrice" class="current-price">0</span>
-                            <span id="stockChange" class="price-change">0 (0.00%)</span>
+                    <div class="price-row">
+                        <span id="stockPrice" class="current-price">0</span>
+                        <span id="stockChange" class="price-change">0 (0.00%)</span>
+                    </div>
+
+                    <!-- 기업 개요 및 핵심 사업 영역 -->
+                    <div id="companySummary" class="company-summary-card hidden"></div>
+                    <div class="ohlv-row">
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">시가</span>
+                            <span id="stockOpen" class="ohlv-value">0</span>
                         </div>
-
-                        <!-- 기업 개요 및 핵심 사업 영역 -->
-                        <div id="companySummary" class="company-summary-card hidden"></div>
-                        <div class="ohlv-row">
-                            <div class="ohlv-item">
-                                <span class="ohlv-label">시가</span>
-                                <span id="stockOpen" class="ohlv-value">0</span>
-                            </div>
-                            <div class="ohlv-item">
-                                <span class="ohlv-label">고가</span>
-                                <span id="stockHigh" class="ohlv-value">0</span>
-                            </div>
-                            <div class="ohlv-item">
-                                <span class="ohlv-label">저가</span>
-                                <span id="stockLow" class="ohlv-value">0</span>
-                            </div>
-                            <div class="ohlv-item">
-                                <span class="ohlv-label">거래량</span>
-                                <span id="stockVolume" class="ohlv-value">0</span>
-                            </div>
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">고가</span>
+                            <span id="stockHigh" class="ohlv-value">0</span>
+                        </div>
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">저가</span>
+                            <span id="stockLow" class="ohlv-value">0</span>
+                        </div>
+                        <div class="ohlv-item">
+                            <span class="ohlv-label">거래량</span>
+                            <span id="stockVolume" class="ohlv-value">0</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- NXT 시간외 거래 카드 -->
-                <div id="nxtCard" class="workout-style nxt hidden">
+                <div id="nxtCard" class="workout-style nxt-card hidden">
                     <div class="workout-stripe"></div>
-                    <div class="workout-content nxt-card">
-                        <div class="nxt-header">
-                            <div class="nxt-title-row">
-                                <span class="nxt-badge">NXT</span>
-                                <h3 class="nxt-title">시간외 거래</h3>
-                                <span id="nxtStatus" class="nxt-status"></span>
-                            </div>
-                            <span id="nxtTime" class="nxt-time"></span>
+                    <div class="workout-content">
+                        <div class="workout-header">
+                            <div class="workout-title">시간외 거래</div>
+                            <div id="nxtStatus" class="workout-subtitle"></div>
                         </div>
-                        <div class="nxt-body">
+                        <div class="workout-body">
+                            <div id="nxtTime" class="nxt-time" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;"></div>
                             <div class="nxt-price-row">
                                 <span id="nxtPrice" class="nxt-price">0</span>
                                 <span id="nxtChange" class="nxt-change">0원 (0%)</span>
@@ -332,71 +326,67 @@
                     </div>
                 </div>
 
-
                 <!-- Moving Averages Card -->
-                <div class="workout-style ma">
+                <div class="workout-style ma-card">
                     <div class="workout-stripe"></div>
-                    <div class="workout-content ma-card">
-                        <h3 class="ma-title">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                            </svg>
-                            이동평균선 (Moving Averages)
-                        </h3>
-                        <div class="ma-grid">
-                            <div class="ma-item" id="ma5Card">
-                                <div class="ma-period">
-                                    <span class="ma-dot ma-dot-5"></span>
-                                    5일선
+                    <div class="workout-content">
+                        <div class="workout-header">
+                            <div class="workout-title">이동평균선 (Moving Averages)</div>
+                            <div class="workout-subtitle">주요 기간별 가격 추세 정보</div>
+                        </div>
+                        <div class="workout-body">
+                            <div class="ma-grid">
+                                <div class="ma-item" id="ma5Card">
+                                    <div class="ma-period">
+                                        <span class="ma-dot ma-dot-5"></span>
+                                        5일선
+                                    </div>
+                                    <div id="ma5Value" class="ma-value">-</div>
+                                    <div id="ma5Diff" class="ma-diff">-</div>
                                 </div>
-                                <div id="ma5Value" class="ma-value">-</div>
-                                <div id="ma5Diff" class="ma-diff">-</div>
-                            </div>
-                            <div class="ma-item" id="ma10Card">
-                                <div class="ma-period">
-                                    <span class="ma-dot ma-dot-10"></span>
-                                    10일선
+                                <div class="ma-item" id="ma10Card">
+                                    <div class="ma-period">
+                                        <span class="ma-dot ma-dot-10"></span>
+                                        10일선
+                                    </div>
+                                    <div id="ma10Value" class="ma-value">-</div>
+                                    <div id="ma10Diff" class="ma-diff">-</div>
                                 </div>
-                                <div id="ma10Value" class="ma-value">-</div>
-                                <div id="ma10Diff" class="ma-diff">-</div>
-                            </div>
-                            <div class="ma-item" id="ma20Card">
-                                <div class="ma-period">
-                                    <span class="ma-dot ma-dot-20"></span>
-                                    20일선
+                                <div class="ma-item" id="ma20Card">
+                                    <div class="ma-period">
+                                        <span class="ma-dot ma-dot-20"></span>
+                                        20일선
+                                    </div>
+                                    <div id="ma20Value" class="ma-value">-</div>
+                                    <div id="ma20Diff" class="ma-diff">-</div>
                                 </div>
-                                <div id="ma20Value" class="ma-value">-</div>
-                                <div id="ma20Diff" class="ma-diff">-</div>
-                            </div>
-                            <div class="ma-item" id="ma60Card">
-                                <div class="ma-period">
-                                    <span class="ma-dot ma-dot-60"></span>
-                                    60일선
+                                <div class="ma-item" id="ma60Card">
+                                    <div class="ma-period">
+                                        <span class="ma-dot ma-dot-60"></span>
+                                        60일선
+                                    </div>
+                                    <div id="ma60Value" class="ma-value">-</div>
+                                    <div id="ma60Diff" class="ma-diff">-</div>
                                 </div>
-                                <div id="ma60Value" class="ma-value">-</div>
-                                <div id="ma60Diff" class="ma-diff">-</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- MA Visual Bar -->
-                <div class="workout-style ma-visual">
+                <div class="workout-style ma-visual-card">
                     <div class="workout-stripe"></div>
-                    <div class="workout-content ma-visual-card">
-                        <h3 class="ma-title">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                style="color: var(--secondary); margin-right: 4px;">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                            </svg>
-                            이동평균 대비 현재가 위치
-                        </h3>
-                        <div id="maVisualBars" class="ma-visual-bars"></div>
-                        <div class="ma-visual-legend">
-                            <span class="ma-visual-legend-line"></span>
-                            | 세로선은 <strong>현재가</strong>를 의미합니다.
+                    <div class="workout-content">
+                        <div class="workout-header">
+                            <div class="workout-title">이동평균 대비 현재가 위치</div>
+                            <div class="workout-subtitle">현 주가와 이평선 간의 이격 현황</div>
+                        </div>
+                        <div class="workout-body">
+                            <div id="maVisualBars" class="ma-visual-bars"></div>
+                            <div class="ma-visual-legend">
+                                <span class="ma-visual-legend-line"></span>
+                                | 세로선은 <strong>현재가</strong>를 의미합니다.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -412,59 +402,51 @@
                 <!-- AI Candle Pattern Analysis Report -->
                 <div id="patternReportSection" class="analysis-section hidden">
                     <!-- Analysis Header -->
-                    <div class="workout-style ai-pattern">
-                        <div class="workout-stripe"></div>
-                        <div class="workout-content analysis-header-card">
-                            <h3 class="analysis-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                                </svg>
-                                AI 캔들 패턴 분석 리포트
-                            </h3>
-                            <div class="analysis-loading hidden" id="analysisLoading">
-                                <div class="spinner"></div>
-                                <span>패턴 분석 중...</span>
-                            </div>
+                    <div class="analysis-header-card">
+                        <h3 class="analysis-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                            </svg>
+                            AI 캔들 패턴 분석 리포트
+                        </h3>
+                        <div class="analysis-loading hidden" id="analysisLoading">
+                            <div class="spinner"></div>
+                            <span>패턴 분석 중...</span>
+                        </div>
 
-                            <!-- Trend Badge -->
-                            <div class="trend-container" id="trendContainer">
-                                <div id="trendBadge" class="trend-pill">
-                                    <span id="trendIcon" class="trend-icon"></span>
-                                    <span id="trendLabel" class="trend-label"></span>
+                        <!-- Trend Badge -->
+                        <div class="trend-container" id="trendContainer">
+                            <div id="trendBadge" class="trend-pill">
+                                <span id="trendIcon" class="trend-icon"></span>
+                                <span id="trendLabel" class="trend-label"></span>
+                            </div>
+                            <div class="trend-strength-layout">
+                                <div class="trend-strength-bar">
+                                    <div id="trendStrengthFill" class="trend-strength-fill"></div>
                                 </div>
-                                <div class="trend-strength-layout">
-                                    <div class="trend-strength-bar">
-                                        <div id="trendStrengthFill" class="trend-strength-fill"></div>
-                                    </div>
-                                    <span id="trendStrengthText" class="trend-strength-text"></span>
-                                </div>
+                                <span id="trendStrengthText" class="trend-strength-text"></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Detected Patterns -->
-                    <div class="workout-style ai-pattern">
-                        <div class="workout-stripe"></div>
-                        <div class="workout-content patterns-card" id="patternsCard">
-                            <h4 class="card-subtitle">
-                                <i class="ph ph-chart-bar" style="margin-right: 6px;"></i> 감지된 캔들 패턴
-                            </h4>
-                            <div id="patternsList" class="patterns-list"></div>
-                            <div id="noPatternsMsg" class="no-patterns hidden">
-                                현재 뚜렷한 캔들 패턴이 감지되지 않았습니다.
-                            </div>
+                    <div class="patterns-card" id="patternsCard">
+                        <h4 class="card-subtitle">
+                            <i class="ph ph-chart-bar" style="margin-right: 6px;"></i> 감지된 캔들 패턴
+                        </h4>
+                        <div id="patternsList" class="patterns-list"></div>
+                        <div id="noPatternsMsg" class="no-patterns hidden">
+                            현재 뚜렷한 캔들 패턴이 감지되지 않았습니다.
                         </div>
                     </div>
 
                     <!-- Candlestick Mini Chart -->
-                    <div class="workout-style ai-pattern">
-                        <div class="workout-stripe"></div>
-                        <div class="workout-content candle-chart-card" id="candleChartCard">
-                            <h4 class="card-subtitle" id="chartTitle">
-                                <i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 3개월 간 캔들 차트
-                            </h4>
+                    <div class="candle-chart-card" id="candleChartCard">
+                        <h4 class="card-subtitle" id="chartTitle">
+                            <i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 3개월 간 캔들 차트
+                        </h4>
 
                         <!-- Phase 2 Chart Legend -->
                         <div class="chart-legend">
@@ -501,92 +483,86 @@
                     <!-- Buy / Sell Reports Grid -->
                     <div class="report-grid" id="reportGrid">
                         <!-- Buy Report -->
-                        <div id="buyReport" class="report-card workout-style buy hidden">
-                            <div class="workout-stripe"></div>
-                            <div class="workout-content">
-                                <div class="workout-header">
-                                    <div class="workout-time" id="buyReportTime">AI 분석 리포트</div>
-                                    <h3 class="workout-title">매수 권장 패턴 포착</h3>
-                                    <div class="workout-subtitle" id="buyPattern"></div>
+                        <div id="buyReport" class="report-card buy hidden">
+                            <div class="workout-header">
+                                <div class="workout-time" id="buyReportTime">AI 분석 리포트</div>
+                                <h3 class="workout-title">매수 권장 패턴 포착</h3>
+                                <div class="workout-subtitle" id="buyPattern"></div>
+                            </div>
+                            <div class="workout-body">
+                                <div class="workout-desc" id="buyDesc"></div>
+                                <div class="workout-stats-grid">
+                                    <div class="w-stat">
+                                        <span class="w-label">신호 강도</span>
+                                        <span class="w-val" id="buySignalBadge"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">적극 매수가</span>
+                                        <span class="w-val buy-color" id="buyAggressive"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">보수 매수가</span>
+                                        <span class="w-val buy-color" id="buyConservative"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">목표가</span>
+                                        <span class="w-val target-color" id="buyTarget"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">손절가</span>
+                                        <span class="w-val sell-color" id="buyStopLoss"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">손익비</span>
+                                        <span class="w-val" id="buyRiskReward"></span>
+                                    </div>
                                 </div>
-                                <div class="workout-body">
-                                    <div class="workout-desc" id="buyDesc"></div>
-                                    <div class="workout-stats-grid">
-                                        <div class="w-stat">
-                                            <span class="w-label">신호 강도</span>
-                                            <span class="w-val" id="buySignalBadge"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">적극 매수가</span>
-                                            <span class="w-val buy-color" id="buyAggressive"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">보수 매수가</span>
-                                            <span class="w-val buy-color" id="buyConservative"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">목표가</span>
-                                            <span class="w-val target-color" id="buyTarget"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">손절가</span>
-                                            <span class="w-val sell-color" id="buyStopLoss"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">손익비</span>
-                                            <span class="w-val" id="buyRiskReward"></span>
-                                        </div>
-                                    </div>
-                                    <div class="workout-footer">
-                                        <div class="w-footer-item" id="buyVolume"></div>
-                                        <div class="w-footer-item tip" id="buyTip"></div>
-                                    </div>
+                                <div class="workout-footer">
+                                    <div class="w-footer-item" id="buyVolume"></div>
+                                    <div class="w-footer-item tip" id="buyTip"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Sell Report -->
-                        <div id="sellReport" class="report-card workout-style sell hidden">
-                            <div class="workout-stripe"></div>
-                            <div class="workout-content">
-                                <div class="workout-header">
-                                    <div class="workout-time" id="sellReportTime">AI 분석 리포트</div>
-                                    <h3 class="workout-title">매도 유의 패턴 포착</h3>
-                                    <div class="workout-subtitle" id="sellPattern"></div>
+                        <div id="sellReport" class="report-card sell hidden">
+                            <div class="workout-header">
+                                <div class="workout-time" id="sellReportTime">AI 분석 리포트</div>
+                                <h3 class="workout-title">매도 유의 패턴 포착</h3>
+                                <div class="workout-subtitle" id="sellPattern"></div>
+                            </div>
+                            <div class="workout-body">
+                                <div class="workout-desc" id="sellDesc"></div>
+                                <div class="workout-stats-grid">
+                                    <div class="w-stat">
+                                        <span class="w-label">신호 강도</span>
+                                        <span class="w-val" id="sellSignalBadge"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">즉시 매도가</span>
+                                        <span class="w-val sell-color" id="sellPrice"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">보수 매도가</span>
+                                        <span class="w-val sell-color" id="sellConservative"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">예상 하락가</span>
+                                        <span class="w-val target-color" id="sellTarget"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">최대 손절가</span>
+                                        <span class="w-val buy-color" id="sellStopLoss"></span>
+                                    </div>
+                                    <div class="w-stat">
+                                        <span class="w-label">손익비</span>
+                                        <span class="w-val" id="sellRiskReward"></span>
+                                    </div>
                                 </div>
-                                <div class="workout-body">
-                                    <div class="workout-desc" id="sellDesc"></div>
-                                    <div class="workout-stats-grid">
-                                        <div class="w-stat">
-                                            <span class="w-label">신호 강도</span>
-                                            <span class="w-val" id="sellSignalBadge"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">즉시 매도가</span>
-                                            <span class="w-val sell-color" id="sellPrice"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">보수 매도가</span>
-                                            <span class="w-val sell-color" id="sellConservative"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">예상 하락가</span>
-                                            <span class="w-val target-color" id="sellTarget"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">최대 손절가</span>
-                                            <span class="w-val buy-color" id="sellStopLoss"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">손익비</span>
-                                            <span class="w-val" id="sellRiskReward"></span>
-                                        </div>
-                                    </div>
-                                    <div class="workout-footer">
-                                        <div class="w-footer-item" id="sellVolume"></div>
-                                        <div class="w-footer-item tip" id="sellTip"></div>
-                                        <div id="sellAtrNote" class="sell-atr-note" style="display:none;"></div>
-                                    </div>
+                                <div class="workout-footer">
+                                    <div class="w-footer-item" id="sellVolume"></div>
+                                    <div class="w-footer-item tip" id="sellTip"></div>
+                                    <div id="sellAtrNote" class="sell-atr-note" style="display:none;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1019,7 +995,7 @@
             });
         })();
     </script>
-    <script src="/static/app.js?v=7"></script>
+    <script src="./static/app.js?v=8"></script>
 </body>
 
 </html>

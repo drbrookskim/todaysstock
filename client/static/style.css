@@ -1170,11 +1170,18 @@ html[data-theme="light"] .theme-icon-btn i {
 .nxt-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-soft);
-    border-radius: var(--radius-main);
+    border-radius: 16px;
     box-shadow: var(--shadow-premium);
-    padding: 24px;
+    padding: 32px;
     margin-bottom: 24px;
     transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Workout-style cards in result section should have 0 padding */
+.workout-style.ma-card,
+.workout-style.ma-visual-card,
+.workout-style.nxt-card {
+    padding: 0;
 }
 
 .stock-header-card:hover,
@@ -2438,7 +2445,7 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 
 .ai-breakdown-row {
     display: grid;
-    grid-template-columns: 50px 1fr 40px;
+    grid-template-columns: 80px 1fr 40px;
     align-items: center;
     gap: 8px;
 }
@@ -2446,6 +2453,7 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 .ai-breakdown-label {
     font-size: 0.84rem;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 
 .ai-breakdown-track {
@@ -2976,11 +2984,10 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 }
 
 .report-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     overflow: hidden;
-    backdrop-filter: blur(20px);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -5225,10 +5232,10 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     display: flex;
     position: relative;
     background: var(--bg-card);
-    border-radius: 20px;
+    border-radius: 12px; /* Standard card radius */
     overflow: hidden;
-    border: 1px solid var(--border-soft);
-    box-shadow: var(--shadow-premium);
+    border: 1px solid var(--border-heavy); /* More defined border */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Soft but visible shadow */
     margin-bottom: 24px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -5244,16 +5251,16 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .workout-style.buy .workout-stripe {
-    background: linear-gradient(180deg, #10b981, #3b82f6);
+    background: linear-gradient(180deg, #94a3b8, #64748b); /* Monochrome Blueish-Gray */
 }
 
 .workout-style.sell .workout-stripe {
-    background: linear-gradient(180deg, #f59e0b, #ef4444);
+    background: linear-gradient(180deg, #cbd5e1, #94a3b8); /* Lighter Monochrome Gray */
 }
 
 .workout-content {
     flex: 1;
-    padding: 24px;
+    padding: 32px; /* Increased padding for better readability */
 }
 
 .workout-header {
@@ -5354,53 +5361,32 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 
 /* ── Deep Analysis Stripe Colors ── */
 .workout-style.ai-insights .workout-stripe {
-    background: linear-gradient(180deg, #6366f1, #a855f7); /* Purple/Indigo */
+    background: linear-gradient(180deg, #64748b, #334155);
 }
 
 .workout-style.cycle .workout-stripe {
-    background: linear-gradient(180deg, #06b6d4, #3b82f6); /* Cyan/Blue */
+    background: linear-gradient(180deg, #94a3b8, #475569);
 }
 
 .workout-style.rating .workout-stripe,
 .workout-style.fundamental .workout-stripe {
-    background: linear-gradient(180deg, #f59e0b, #fbbf24); /* Amber/Gold */
+    background: linear-gradient(180deg, #cbd5e1, #64748b);
 }
 
-/* ── Basic Analysis Stripe Colors ── */
-.workout-style.stock-main .workout-stripe {
-    background: linear-gradient(180deg, var(--primary), #3b82f6);
+/* ── Basic Results Stripe Colors ── */
+.workout-style.nxt-card .workout-stripe {
+    background: linear-gradient(180deg, #818cf8, #4f46e5); /* Indigo/Purple */
 }
 
-.workout-style.ma .workout-stripe {
-    background: linear-gradient(180deg, #10b981, #06b6d4);
+.workout-style.ma-card .workout-stripe {
+    background: linear-gradient(180deg, #34d399, #059669); /* Emerald/Green */
 }
 
-.workout-style.ma-visual .workout-stripe {
-    background: linear-gradient(180deg, #f59e0b, #ec4899);
+.workout-style.ma-visual-card .workout-stripe {
+    background: linear-gradient(180deg, #fbbf24, #d97706); /* Amber/Orange */
 }
 
-.workout-style.nxt .workout-stripe {
-    background: linear-gradient(180deg, #6366f1, #a855f7);
-}
 
-.workout-style.ai-pattern .workout-stripe {
-    background: linear-gradient(180deg, #38bdf8, #818cf8);
-}
-
-/* ── Strip Background/Border from Inner Cards ── */
-.workout-content.stock-header-card,
-.workout-content.ma-card,
-.workout-content.ma-visual-card,
-.workout-content.nxt-card,
-.workout-content.analysis-header-card,
-.workout-content.patterns-card,
-.workout-content.candle-chart-card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin-bottom: 0 !important;
-}
 
 /* Hide legacy pseudo-top-bar for NXT */
 .workout-content.nxt-card::before {
@@ -5469,7 +5455,10 @@ html:not([data-theme="light"]) .trend-pill.bullish {
        linear-gradient(#fff 0 0) content-box, 
        linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
-            mask-composite: exclude;
+    mask: 
+       linear-gradient(#fff 0 0) content-box, 
+       linear-gradient(#fff 0 0);
+    mask-composite: exclude;
     z-index: 0;
     opacity: 0.8;
     transition: opacity 0.3s ease;
