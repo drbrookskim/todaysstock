@@ -5366,6 +5366,47 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     background: linear-gradient(180deg, #f59e0b, #fbbf24); /* Amber/Gold */
 }
 
+/* ── Basic Analysis Stripe Colors ── */
+.workout-style.stock-main .workout-stripe {
+    background: linear-gradient(180deg, var(--primary), #3b82f6);
+}
+
+.workout-style.ma .workout-stripe {
+    background: linear-gradient(180deg, #10b981, #06b6d4);
+}
+
+.workout-style.ma-visual .workout-stripe {
+    background: linear-gradient(180deg, #f59e0b, #ec4899);
+}
+
+.workout-style.nxt .workout-stripe {
+    background: linear-gradient(180deg, #6366f1, #a855f7);
+}
+
+.workout-style.ai-pattern .workout-stripe {
+    background: linear-gradient(180deg, #38bdf8, #818cf8);
+}
+
+/* ── Strip Background/Border from Inner Cards ── */
+.workout-content.stock-header-card,
+.workout-content.ma-card,
+.workout-content.ma-visual-card,
+.workout-content.nxt-card,
+.workout-content.analysis-header-card,
+.workout-content.patterns-card,
+.workout-content.candle-chart-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Hide legacy pseudo-top-bar for NXT */
+.workout-content.nxt-card::before {
+    display: none;
+}
+
 /* Specific Adjustments for Deep Analysis Cards */
 .workout-style .workout-body .ai-insight-row {
     padding: 0;
