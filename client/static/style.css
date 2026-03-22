@@ -5359,7 +5359,27 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     }
 }
 
-/* ── Deep Analysis Stripe Colors ── */
+/* ── Basic Results (Indigo) ── */
+.workout-style.nxt-card .workout-stripe,
+.workout-style.ma-card .workout-stripe,
+.workout-style.ma-visual-card .workout-stripe {
+    background: linear-gradient(180deg, #818cf8, #4f46e5);
+}
+
+/* ── AI Analysis (Emerald) ── */
+.workout-style.analysis-header-card .workout-stripe,
+.workout-style.patterns-card .workout-stripe,
+.workout-style.candle-chart-card .workout-stripe {
+    background: linear-gradient(180deg, #34d399, #059669);
+}
+
+/* ── Trade Signals (Amber) ── */
+.workout-style.report-card.buy .workout-stripe,
+.workout-style.report-card.sell .workout-stripe {
+    background: linear-gradient(180deg, #fbbf24, #d97706);
+}
+
+/* ── Deep Analysis (Neutral/Slate) ── */
 .workout-style.ai-insights .workout-stripe {
     background: linear-gradient(180deg, #64748b, #334155);
 }
@@ -5371,19 +5391,6 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .workout-style.rating .workout-stripe,
 .workout-style.fundamental .workout-stripe {
     background: linear-gradient(180deg, #cbd5e1, #64748b);
-}
-
-/* ── Basic Results Stripe Colors ── */
-.workout-style.nxt-card .workout-stripe {
-    background: linear-gradient(180deg, #818cf8, #4f46e5); /* Indigo/Purple */
-}
-
-.workout-style.ma-card .workout-stripe {
-    background: linear-gradient(180deg, #34d399, #059669); /* Emerald/Green */
-}
-
-.workout-style.ma-visual-card .workout-stripe {
-    background: linear-gradient(180deg, #fbbf24, #d97706); /* Amber/Orange */
 }
 
 
