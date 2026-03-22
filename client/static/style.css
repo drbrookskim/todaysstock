@@ -1955,6 +1955,30 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     padding: 24px;
     box-shadow: var(--shadow-premium);
     margin-bottom: 24px;
+    position: relative;
+    min-height: 100px;
+}
+
+.analysis-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.analysis-loading .spinner {
+    margin-bottom: 16px;
+    width: 50px;
+    height: 50px;
+}
+
+.analysis-loading span {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 /* Patterns & Candle Cards */
