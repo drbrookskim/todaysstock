@@ -289,13 +289,7 @@ document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
 
 // ── Sidebar Toggle (Mobile) ──
 function initMobileSidebar() {
-    const toggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('mainSidebar');
-    if (toggle && sidebar) {
-        toggle.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-open');
-        });
-    }
+    // Redundant toggle removed: toggleSidebarOpen handles both overlay and sidebar classes.
 }
 
 // ── Auth Tokens ──
