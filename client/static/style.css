@@ -1924,9 +1924,19 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
         left: -240px;
         width: 240px;
         z-index: 1001;
+        transition: left 0.3s ease, width 0.3s ease;
     }
-    .main-sidebar.mobile-open {
+    .main-sidebar.mobile-open,
+    .main-sidebar.pinned {
         left: 0;
+    }
+    /* If pinned on mobile, shift content and hide overlay to allow interaction */
+    body[data-sidebar-pinned="true"] .main-content {
+        margin-left: 240px;
+        width: calc(100vw - 240px);
+    }
+    body[data-sidebar-pinned="true"] .sidebar-overlay {
+        display: none !important;
     }
     .brand-text, .user-info, .nav-item span {
         display: block;
@@ -4996,9 +5006,10 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     pointer-events: none;
 }
 
-/* Pin button: visible when pinned or hovered */
+/* Pin button: visible when pinned or hovered (or open on mobile) */
 .main-sidebar.pinned .pin-btn,
-.main-sidebar:hover .pin-btn {
+.main-sidebar:hover .pin-btn,
+.main-sidebar.mobile-open .pin-btn {
     opacity: 1;
     pointer-events: all;
 }

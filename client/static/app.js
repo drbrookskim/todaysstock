@@ -247,11 +247,13 @@ function setSidebarPinned(pinned) {
 function applySidebarPinState() {
     const sidebar = document.getElementById('mainSidebar');
     const pinBtn = document.getElementById('sidebarPinBtn');
+    const overlay = document.getElementById('sidebarOverlay');
     if (!sidebar) return;
     
     if (isSidebarPinned()) {
         sidebar.classList.add('pinned');
         document.body.setAttribute('data-sidebar-pinned', 'true');
+        if (overlay) overlay.classList.remove('show');
         if (pinBtn) {
             pinBtn.classList.add('active');
             pinBtn.title = '사이드바 고정 해제';
