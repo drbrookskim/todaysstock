@@ -1923,6 +1923,7 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
         position: fixed;
         left: -240px;
         width: 240px;
+        z-index: 1001;
     }
     .main-sidebar.mobile-open {
         left: 0;
