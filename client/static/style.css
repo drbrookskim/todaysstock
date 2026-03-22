@@ -5585,3 +5585,71 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .analysis-title {
     margin-bottom: 24px;
 }
+
+/* Glossary Collapsible */
+.glossary-collapsible {
+    width: 100%;
+    background: var(--surface-light);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-top: 30px;
+}
+
+[data-theme="dark"] .glossary-collapsible {
+    background: var(--surface-dark);
+    border-color: var(--border-dark);
+}
+
+.glossary-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    list-style: none; /* Hide default arrow */
+    font-weight: 600;
+    color: var(--text-primary);
+    user-select: none;
+}
+
+.glossary-summary::-webkit-details-marker {
+    display: none;
+}
+
+.summary-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+}
+
+.summary-content i {
+    color: var(--primary-color);
+}
+
+.toggle-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    color: var(--text-secondary);
+}
+
+details[open] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.glossary-content {
+    padding: 0 20px 20px;
+    border-top: 1px solid var(--border-light);
+}
+
+[data-theme="dark"] .glossary-content {
+    border-top-color: var(--border-dark);
+}
+
+/* Ensure table inside collapsible remains styled */
+.glossary-content .glossary-table {
+    margin-top: 15px;
+    border-top: none;
+}
