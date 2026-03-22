@@ -1180,7 +1180,11 @@ html[data-theme="light"] .theme-icon-btn i {
 /* Workout-style cards in result section should have 0 padding */
 .workout-style.ma-card,
 .workout-style.ma-visual-card,
-.workout-style.nxt-card {
+.workout-style.nxt-card,
+.workout-style.analysis-header-card,
+.workout-style.patterns-card,
+.workout-style.candle-chart-card,
+.workout-style.report-card {
     padding: 0;
 }
 
