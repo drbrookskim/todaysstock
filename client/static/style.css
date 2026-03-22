@@ -5472,3 +5472,40 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .btn-analysis-trigger:active {
     transform: translateY(0) scale(0.98);
 }
+
+/* ── Light Mode Button Styling ── */
+[data-theme="light"] .btn-analysis-trigger {
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;
+}
+[data-theme="light"] .btn-analysis-trigger::after {
+    display: none; /* remove neon gradient border in light mode for a cleaner look */
+}
+[data-theme="light"] .btn-analysis-trigger span {
+    color: #0f172a; 
+    text-shadow: none;
+}
+[data-theme="light"] .btn-analysis-trigger i {
+    background: radial-gradient(circle at 30% 30%, #38bdf8, #3b82f6);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3), inset -2px -2px 6px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .btn-analysis-trigger i::before {
+    background: rgba(56, 189, 248, 0.4);
+    filter: blur(6px);
+}
+[data-theme="light"] .btn-analysis-trigger:hover {
+    background: #f8fafc;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); border-color: #cbd5e1;
+}
+[data-theme="light"] .btn-analysis-trigger:hover i {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5), inset -2px -2px 6px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .btn-analysis-trigger:hover span {
+    color: #1e40af;
+    text-shadow: none;
+}
+
+/* ── Spacing Adjustments ── */
+.analysis-title {
+    margin-bottom: 24px;
+}
