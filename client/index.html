@@ -102,6 +102,10 @@
                     <i class="ph ph-chart-line-up"></i>
                     <span>심층분석</span>
                 </a>
+                <a href="#" class="nav-item" id="navValueChain">
+                    <i class="ph ph-tree-structure"></i>
+                    <span>밸류체인</span>
+                </a>
             </nav>
 
             <div class="sidebar-bottom">
@@ -136,6 +140,24 @@
                     </div>
                 </div>
             </header>
+
+
+            <!-- ── 밸류체인 섹션 (Value Chain Section) ── -->
+            <section id="valueChainSection" class="value-chain-section hidden">
+                <div class="container animate-in">
+                    <div class="section-header">
+                        <div class="section-title-wrap">
+                            <i class="ph ph-tree-structure"></i>
+                            <h2 class="section-title">밸류체인</h2>
+                        </div>
+                    </div>
+                    <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-muted); background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border-soft);">
+                        <i class="ph ph-layout" style="font-size: 3.5rem; opacity: 0.2; margin-bottom: 16px; display: block;"></i>
+                        <h3 style="color: var(--text-main); margin-bottom: 8px;">밸류체인 서비스 준비 중</h3>
+                        <p>곧 멋진 기능을 선보일 예정입니다. 잠시만 기다려 주세요!</p>
+                    </div>
+                </div>
+            </section>
 
 
             <!-- Status Alerts (Spinner/Error) -->
@@ -290,6 +312,43 @@
                         <div class="ohlv-item">
                             <span class="ohlv-label">거래량</span>
                             <span id="stockVolume" class="ohlv-value">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Valuation Metrics (Phase 8 & Expansion) -->
+                    <div class="valuation-row">
+                        <div class="valuation-item">
+                            <span class="valuation-label">PER</span>
+                            <span id="valPER" class="valuation-value" style="color: var(--accent-indigo);">-</span>
+                        </div>
+                        <div class="valuation-item">
+                            <span class="valuation-label">PBR</span>
+                            <span id="valPBR" class="valuation-value" style="color: var(--accent-emerald);">-</span>
+                        </div>
+                        <div class="valuation-item">
+                            <span class="valuation-label">ROE</span>
+                            <span id="valROE" class="valuation-value" style="color: #a78bfa;">-</span>
+                        </div>
+                        <div class="valuation-item">
+                            <span class="valuation-label">배당수익률</span>
+                            <span id="valDiv" class="valuation-value" style="color: #fbbf24;">-</span>
+                        </div>
+                        <!-- New metrics -->
+                        <div class="valuation-item">
+                            <span class="valuation-label">PCR</span>
+                            <span id="valPCR" class="valuation-value" style="color: #ec4899;">-</span>
+                        </div>
+                        <div class="valuation-item">
+                            <span class="valuation-label">PSR</span>
+                            <span id="valPSR" class="valuation-value" style="color: #06b6d4;">-</span>
+                        </div>
+                        <div class="valuation-item">
+                            <span class="valuation-label">EV/Sales</span>
+                            <span id="valEVSales" class="valuation-value" style="color: #6366f1;">-</span>
+                        </div>
+                        <div class="valuation-item">
+                            <span class="valuation-label">EV/EBITDA</span>
+                            <span id="valEVEbitda" class="valuation-value" style="color: #10b981;">-</span>
                         </div>
                     </div>
                 </div>
@@ -740,8 +799,17 @@
                                             <tr><td>ATR</td><td>Average True Range</td><td>평균실질범위 — 일정 기간의 고가-저가 변동폭을 평균한 변동성 지표</td></tr>
                                             <tr><td>R:R</td><td>Risk-Reward Ratio</td><td>위험보상비율 — 손실 대비 기대 수익의 비율 (1:2 이상 권장)</td></tr>
                                             <tr><td>Z-score</td><td>Standard Score</td><td>표준점수 — 평균으로부터 표준편차 몇 배 떨어졌는지를 나타내는 통계 지표</td></tr>
-                                            <tr><td>ROE</td><td>Return on Equity</td><td>자기자본이익률 — 자기자본 대비 순이익 비율</td></tr>
+                                            <!-- Valuation Metrics -->
+                                            <tr><td>PER</td><td>Price-to-Earnings Ratio</td><td>주가수익비율 — 주가를 주당순이익(EPS)으로 나눈 값</td></tr>
+                                            <tr><td>PBR</td><td>Price-to-Book Ratio</td><td>주가순자산비율 — 주가를 주당순자산(BPS)으로 나눈 값</td></tr>
+                                            <tr><td>PCR</td><td>Price-to-Cash Flow Ratio</td><td>주가현금흐름비율 — 주가를 주당현금흐름(CFPS)으로 나눈 값</td></tr>
+                                            <tr><td>PSR</td><td>Price-to-Sales Ratio</td><td>주가매출비율 — 주가를 주당매출액(SPS)으로 나눈 값</td></tr>
+                                            <tr><td>ROE</td><td>Return on Equity</td><td>자기자본이익률 — 자기자본 대비 순이익 비율 (수익성 지표)</td></tr>
+                                            <tr><td>EV/Sales</td><td>Enterprise Value / Sales</td><td>기업가치 대비 매출액 비율 — 시가총액+순채무를 매출액으로 나눈 값</td></tr>
                                             <tr><td>EV/EBITDA</td><td>Enterprise Value / EBITDA</td><td>기업가치 대비 세전·이자·감가상각 전 영업이익 비율</td></tr>
+                                            <tr><td>배당수익률</td><td>Dividend Yield</td><td>주당 배당금을 현재 주가로 나눈 비율 (%)</td></tr>
+                                            
+                                            <!-- Other Context -->
                                             <tr><td>DART</td><td>Data Analysis, Retrieval and Transfer</td><td>금융감독원 전자공시시스템</td></tr>
                                             <tr><td>ECOS</td><td>Economic Statistics System</td><td>한국은행 경제통계시스템</td></tr>
                                             <tr><td>IDM</td><td>Integrated Device Manufacturer</td><td>종합 반도체 기업</td></tr>

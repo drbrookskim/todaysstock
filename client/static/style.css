@@ -1582,6 +1582,34 @@ html[data-theme="light"] .theme-icon-btn i {
     color: var(--text-secondary);
 }
 
+/* ── Valuation Row (Phase 8) ── */
+.valuation-row {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-soft);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px 12px;
+}
+
+.valuation-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.valuation-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.valuation-value {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
 /* ── NXT After-Hours Card ── */
 .nxt-card {
     background: var(--bg-card);
