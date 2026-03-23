@@ -34,6 +34,8 @@ let currentWatchlist = [];
 let currentIndexChart = null; // Lightweight Chart instance
 let currentStock = null;
 let _lastAnalysisData = null;
+let sectionScrollPositions = {};
+let currentActiveSectionId = 'dashboardHome'; // Track currently visible section
 
 // --- Independent Section Contexts ---
 let homeStockContext = { item: null, data: null, analysis: null };
@@ -114,9 +116,16 @@ function initNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
+            
+            // --- Scroll Persistence: Save current ---
+            if (currentActiveSectionId) {
+                sectionScrollPositions[currentActiveSectionId] = window.scrollY;
+            }
+
             const targetId = sections[item.id];
             if (targetId) {
                 showSection(targetId);
+                currentActiveSectionId = targetId;
                 navItems.forEach(i => i.classList.toggle('active', i === item));
 
                 if (targetId === 'analysisSection') {
@@ -149,9 +158,22 @@ function initNavigation() {
                 } else if (targetId === 'watchlistSection') {
                     restoreStockContext('watchlist');
                 }
+
+                // --- Scroll Persistence: Restore target ---
+                requestAnimationFrame(() => {
+                    const savedPos = sectionScrollPositions[targetId] || 0;
+                    window.scrollTo({ top: savedPos, behavior: 'auto' });
+                });
             }
         });
     });
+}
+
+function navigateToSection(navId) {
+    const navItem = document.getElementById(navId);
+    if (navItem) {
+        navItem.click();
+    }
 }
 
 function restoreStockContext(type) {
@@ -225,6 +247,7 @@ function showSection(id) {
     if (target) {
         target.classList.remove('hidden');
         target.style.display = ''; // Let CSS handle visibility
+        currentActiveSectionId = id; // Sync current active section for scroll persistence
         
         requestAnimationFrame(() => {
             console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
@@ -338,6 +361,8 @@ async function addToWatchlist(item) {
         currentWatchlist.push(item);
         saveWatchlist(currentWatchlist);
         updateWatchlistBtn();
+        // Redirect to Home as requested
+        navigateToSection('navHome');
         return;
     }
     
@@ -355,6 +380,8 @@ async function addToWatchlist(item) {
             currentWatchlist.push(item);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
+            // Redirect to Home as requested
+            navigateToSection('navHome');
         } else {
             const data = await res.json();
             alert('추가 실패: ' + (data.message || '알 수 없는 오류'));
