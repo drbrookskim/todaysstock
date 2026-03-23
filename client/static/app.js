@@ -361,8 +361,8 @@ async function addToWatchlist(item) {
         currentWatchlist.push(item);
         saveWatchlist(currentWatchlist);
         updateWatchlistBtn();
-        // Redirect to Home as requested
-        navigateToSection('navHome');
+        // Redirect to Watchlist as requested: 즐겨찾기 추가하면 관심종목이 선택되고
+        navigateToSection('navWatchlist');
         return;
     }
     
@@ -380,8 +380,8 @@ async function addToWatchlist(item) {
             currentWatchlist.push(item);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
-            // Redirect to Home as requested
-            navigateToSection('navHome');
+            // Redirect to Watchlist as requested: 즐겨찾기 추가하면 관심종목이 선택되고
+            navigateToSection('navWatchlist');
         } else {
             const data = await res.json();
             alert('추가 실패: ' + (data.message || '알 수 없는 오류'));
@@ -396,6 +396,8 @@ async function removeFromWatchlist(code) {
         currentWatchlist = currentWatchlist.filter(w => w.code !== code);
         saveWatchlist(currentWatchlist);
         updateWatchlistBtn();
+        // Redirect to Home as requested: 해제하면 다시 홈으로 가게
+        navigateToSection('navHome');
         return;
     }
     
@@ -409,6 +411,8 @@ async function removeFromWatchlist(code) {
             currentWatchlist = currentWatchlist.filter(w => w.code !== code);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
+            // Redirect to Home as requested: 해제하면 다시 홈으로 가게
+            navigateToSection('navHome');
         }
     } catch (e) {
         console.error('Watchlist remove error', e);
@@ -659,7 +663,7 @@ async function selectStock(item) {
             if (placeholder) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
             }
-            showSection('watchlistSection');
+            navigateToSection('navWatchlist');
             resSec.classList.remove('hidden'); 
         } else {
             homeStockContext = context;
@@ -668,7 +672,7 @@ async function selectStock(item) {
             if (placeholder) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
             }
-            showSection('dashboardHome'); 
+            navigateToSection('navHome'); 
             resSec.classList.remove('hidden');
         }
 
