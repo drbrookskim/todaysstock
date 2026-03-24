@@ -424,6 +424,10 @@ async function removeFromWatchlist(code) {
         saveWatchlist(currentWatchlist);
         updateWatchlistBtn();
 
+        if (removedItem) {
+            showToast(`${removedItem.name || code} 종목이 삭제되었습니다.`, 'info');
+        }
+
         // --- Context Handling ---
         // When unfavoriting from Watchlist, sync back to Home context
         if (removedItem) {
@@ -454,6 +458,10 @@ async function removeFromWatchlist(code) {
             currentWatchlist = currentWatchlist.filter(w => w.code !== code);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
+
+            if (removedItem) {
+                showToast(`${removedItem.name || code} 종목이 삭제되었습니다.`, 'info');
+            }
 
             // --- Context Handling ---
             if (removedItem) {
