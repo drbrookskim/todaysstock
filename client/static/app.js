@@ -418,31 +418,24 @@ async function addToWatchlist(item) {
 }
 
 async function removeFromWatchlist(code) {
+    // Determine the item to remove
+    const removedItem = currentWatchlist.find(w => w.code === code) || (currentStock?.code === code ? currentStock : null);
+    
     if (!authUser || !authUser.logged_in) {
-        const removedItem = currentWatchlist.find(w => w.code === code) || (currentStock?.code === code ? currentStock : null);
         currentWatchlist = currentWatchlist.filter(w => w.code !== code);
         saveWatchlist(currentWatchlist);
         updateWatchlistBtn();
 
         if (removedItem) {
-            showToast(`${removedItem.name || code} 종목이 삭제되었습니다.`, 'info');
+            showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
+            // Sync context if the removed stock matches current context
+            if (removedItem.code === currentStock?.code) {
+                 homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
+                 watchlistStockContext = { item: null, data: null, analysis: null };
+            }
         }
 
-        // --- Context Handling ---
-        // When unfavoriting from Watchlist, sync back to Home context
-        if (removedItem) {
-             homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
-        }
-
-        // Move resultSection to Home container
-        const resSec = document.getElementById('resultSection');
-        const placeholder = document.getElementById('mainResultPlaceholder');
-        if (resSec && placeholder) {
-            placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-            resSec.classList.remove('hidden');
-        }
-
-        // Redirect to Home as requested: 해제하면 다시 홈으로 가게
+        // Always redirect back to Home as per user request
         navigateToSection('navHome');
         return;
     }
@@ -454,29 +447,19 @@ async function removeFromWatchlist(code) {
         });
         
         if (res.ok) {
-            const removedItem = currentWatchlist.find(w => w.code === code) || (currentStock?.code === code ? currentStock : null);
             currentWatchlist = currentWatchlist.filter(w => w.code !== code);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
 
             if (removedItem) {
-                showToast(`${removedItem.name || code} 종목이 삭제되었습니다.`, 'info');
+                showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
+                if (removedItem.code === currentStock?.code) {
+                    homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
+                    watchlistStockContext = { item: null, data: null, analysis: null };
+                }
             }
 
-            // --- Context Handling ---
-            if (removedItem) {
-                homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
-            }
-
-            // Move resultSection to Home container
-            const resSec = document.getElementById('resultSection');
-            const placeholder = document.getElementById('mainResultPlaceholder');
-            if (resSec && placeholder) {
-                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-                resSec.classList.remove('hidden');
-            }
-
-            // Redirect to Home as requested: 해제하면 다시 홈으로 가게
+            // Always redirect back to Home as per user request
             navigateToSection('navHome');
         }
     } catch (e) {

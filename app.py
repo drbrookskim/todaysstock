@@ -312,14 +312,7 @@ def get_stock_data(code, market):
         print(f"캐시 히트 ({code})")
         return cached
 
-    df = download_stock_df(code, market)
-    if df is None:
-        return None
-
-    df["MA5"]  = df["Close"].rolling(window=5).mean()
-    df["MA10"] = df["Close"].rolling(window=10).mean()
-    df["MA20"] = df["Close"].rolling(window=20).mean()
-    df["MA60"] = df["Close"].rolling(window=60).mean()
+    # (Moved to ThreadPoolExecutor below)
 
     latest = df.iloc[-1]
     prev   = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
@@ -403,9 +396,13 @@ def get_stock_data(code, market):
             print(f"yfinance/번역 오류 ({ticker}): {e}")
         return {}
 
-    with ThreadPoolExecutor(max_workers=2) as ex:
+    def fetch_df():
+        return download_stock_df(code, market)
+
+    with ThreadPoolExecutor(max_workers=3) as ex:
         f_dart  = ex.submit(fetch_dart)
         f_naver = ex.submit(fetch_naver_info)
+        f_df    = ex.submit(fetch_df)
         
         try:
             dart_r = f_dart.result(timeout=4)
@@ -415,6 +412,18 @@ def get_stock_data(code, market):
             naver_r = f_naver.result(timeout=4)
         except Exception:
             naver_r = {}
+        try:
+            df = f_df.result(timeout=6)
+        except Exception:
+            df = None
+
+    if df is None:
+        return None
+
+    df["MA5"]  = df["Close"].rolling(window=5).mean()
+    df["MA10"] = df["Close"].rolling(window=10).mean()
+    df["MA20"] = df["Close"].rolling(window=20).mean()
+    df["MA60"] = df["Close"].rolling(window=60).mean()
 
     est_dt = dart_r.get("est_dt", "")
     ceo    = dart_r.get("ceo", "")
