@@ -2601,6 +2601,9 @@ async function initAuth() {
                 navWatchlist.classList.remove('hidden');
             }
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
+            
+            // Update UI count
+            updateWatchlistCount();
         } else {
             console.log('[DEBUG] updateAuthUI - Updating UI for Guest');
             if (userNameEl) userNameEl.textContent = 'Guest';
