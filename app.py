@@ -213,7 +213,7 @@ def download_stock_df(code, market):
                 "resultType": "json",
                 "likeSrtnCd": code
             }
-            resp = http_requests.get(url, params=params, timeout=10)
+            resp = http_requests.get(url, params=params, timeout=3)
             resp.raise_for_status()
             data = resp.json()
 
@@ -362,24 +362,34 @@ def get_stock_data(code, market):
             print(f"DART API 오류: {e}")
         return {}
 
-    def fetch_naver_industry():
+    def fetch_naver_info():
         try:
             nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
             resp = http_requests.get(
                 nav_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=3)
             if resp.status_code == 200:
-                m = re.search(
-                    r'h_sub sub_tit7.*?<a[^>]*>(.*?)</a>', resp.text, re.DOTALL)
-                if m:
-                    parsed = re.sub(r'<[^>]+>', '', m.group(1)).strip()
-                    if parsed and len(parsed) < 30:
-                        return parsed
-        except Exception as e:
-            print(f"네이버 업종 파싱 오류 ({code}): {e}")
-        return None
+                html_txt = resp.text
+                
+                ind = None
+                m_ind = re.search(r'h_sub sub_tit7.*?<a[^>]*>(.*?)</a>', html_txt, re.DOTALL)
+                if m_ind:
+                    parsed = re.sub(r'<[^>]+>', '', m_ind.group(1)).strip()
+                    if parsed and len(parsed) < 30: ind = parsed
 
-    def fetch_yf_info():
+                dsc = None
+                m_dsc = re.search(r'summary_info.*?<p>(.*?)</p>', html_txt, re.DOTALL)
+                if m_dsc:
+                    txt = re.sub(r'<[^>]+>', '', m_dsc.group(1)).strip()
+                    if txt and 10 < len(txt) < 1000: dsc = txt
+                
+                return {"industry": ind, "desc": dsc}
+        except Exception as e:
+            print(f"Naver 기업정보 파싱 오류 ({code}): {e}")
+        return {}
+
+    def fetch_yf_info_lazy():
         try:
+            print(f"⚠️ 네이버 대신 yfinance 폴백 실행 ({code})")
             from deep_translator import GoogleTranslator
             tr = GoogleTranslator(source='en', target='ko')
             info = yf.Ticker(ticker).info
@@ -393,60 +403,33 @@ def get_stock_data(code, market):
             print(f"yfinance/번역 오류 ({ticker}): {e}")
         return {}
 
-    def fetch_naver_desc():
-        """네이버 금융 종목 주요 현황 요약 (이미 한국어, 번역 불필요)"""
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        f_dart  = ex.submit(fetch_dart)
+        f_naver = ex.submit(fetch_naver_info)
+        
         try:
-            nav_url = f"https://finance.naver.com/item/main.naver?code={code}"
-            resp = http_requests.get(
-                nav_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
-            if resp.status_code != 200:
-                return None
-            m = re.search(r'summary_info.*?<p>(.*?)</p>', resp.text, re.DOTALL)
-            if m:
-                txt = re.sub(r'<[^>]+>', '', m.group(1)).strip()
-                if txt and 10 < len(txt) < 1000:
-                    return txt
-        except Exception as e:
-            print(f"Naver 기업요약 파싱 오류 ({code}): {e}")
-        return None
-
-    with ThreadPoolExecutor(max_workers=4) as ex:
-        f_dart      = ex.submit(fetch_dart)
-        f_naver_ind = ex.submit(fetch_naver_industry)
-        f_naver_dsc = ex.submit(fetch_naver_desc)
-        f_yf        = ex.submit(fetch_yf_info)
-        try:
-            dart_r    = f_dart.result(timeout=15)
+            dart_r = f_dart.result(timeout=4)
         except Exception:
             dart_r = {}
         try:
-            naver_r   = f_naver_ind.result(timeout=8)
+            naver_r = f_naver.result(timeout=4)
         except Exception:
-            naver_r = None
-        try:
-            naver_dsc = f_naver_dsc.result(timeout=8)
-        except Exception:
-            naver_dsc = None
-        try:
-            yf_r      = f_yf.result(timeout=20)
-        except Exception:
-            yf_r = {}
+            naver_r = {}
 
     est_dt = dart_r.get("est_dt", "")
     ceo    = dart_r.get("ceo", "")
     adres  = dart_r.get("adres", "")
     hm_url = dart_r.get("hm_url", "")
 
-    if naver_r:
-        industry = naver_r
-    elif yf_r.get("industry"):
-        industry = yf_r["industry"]
+    industry = naver_r.get("industry")
+    translated_desc = naver_r.get("desc")
 
-    # 기업 설명: 네이버(한국어, 우선) → yfinance 번역 → 기본 오류 문자열
-    if naver_dsc:
-        translated_desc = naver_dsc
-    elif yf_r.get("desc"):
-        translated_desc = yf_r["desc"]
+    # If naver summary missing, fetch fallback lazily
+    if not translated_desc:
+        yf_r = fetch_yf_info_lazy()
+        industry = industry or yf_r.get("industry")
+        translated_desc = yf_r.get("desc")
+
 
     # 이오테크닉스 예외 하드코딩
     if code == "039030":
