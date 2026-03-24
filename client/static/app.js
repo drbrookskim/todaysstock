@@ -1308,18 +1308,16 @@ async function updateTileData(code) {
     if (!statEl) return;
 
     try {
-        // We use the search API for a quick quote if possible, or fallback to full info
-        // For simplicity, let's use the basic info API as it's cached/fast
-        const res = await fetch(`${API_BASE_URL}/api/stock/${code}`);
+        const res = await fetch(`${API_BASE_URL}/api/stock?code=${code}`);
         if (!res.ok) return;
         const data = await res.json();
         
-        const change = data.price_change || 0;
-        const pct = data.price_change_percent || 0;
+        const change = data.change || 0;
+        const pct = data.change_pct || 0;
         const isUp = change >= 0;
         
         statEl.innerHTML = `
-            <div class="tile-price">${data.current_price?.toLocaleString() || '—'}</div>
+            <div class="tile-price">${data.price?.toLocaleString() || '—'}</div>
             <div class="tile-pct ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${pct}%</div>
         `;
     } catch (e) {

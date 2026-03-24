@@ -91,13 +91,16 @@ def load_dart_corp_codes():
                     root = tree.getroot()
                     
             for item in root.findall('list'):
-                stock_code = item.find('stock_code').text
-                if stock_code and stock_code.strip():
-                    corp_code = item.find('corp_code').text
-                    DART_CORP_CODES[stock_code.strip()] = corp_code.strip()
+                stock_node = item.find('stock_code')
+                corp_node  = item.find('corp_code')
+                if stock_node is not None and stock_node.text:
+                    s_code = stock_node.text.strip()
+                    if s_code and corp_node is not None and corp_node.text:
+                        DART_CORP_CODES[s_code] = corp_node.text.strip()
                     
         print(f"🏢 DART 기업코드 {len(DART_CORP_CODES)}개 로드 완료")
     except Exception as e:
+        print(f"🏢 DART 기업코드 로드 실패: {e}")
         print(f"⚠️ DART 기업코드 로드 실패: {e}")
 
 # 내장 종목 리스트 (KRX 로드 실패 시 폴백용)
