@@ -312,25 +312,10 @@ def get_stock_data(code, market):
         print(f"캐시 히트 ({code})")
         return cached
 
-    # (Moved to ThreadPoolExecutor below)
-
-    latest = df.iloc[-1]
-    prev   = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
-
-    close_price = float(latest["Close"])
-    prev_close  = float(prev["Close"])
-    change      = close_price - prev_close
-    change_pct  = (change / prev_close) * 100 if prev_close != 0 else 0
-
     suffix = ".KS" if market == "KOSPI" else ".KQ"
     ticker = code + suffix
 
-    # 기본값
-    est_dt = ceo = hm_url = adres = ""
-    industry = "분류되지 않음"
-    translated_desc = "기업 상세 정보를 불러오는 중 오류가 발생했습니다."
-
-    # -- 병렬 외부 API 호출 --
+    # -- 병렬 외부 API 호출을 위한 내부 함수들 --
     def fetch_dart():
         if not (DART_API_KEY and code in DART_CORP_CODES):
             return {}
@@ -362,19 +347,16 @@ def get_stock_data(code, market):
                 nav_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=3)
             if resp.status_code == 200:
                 html_txt = resp.text
-                
                 ind = None
                 m_ind = re.search(r'h_sub sub_tit7.*?<a[^>]*>(.*?)</a>', html_txt, re.DOTALL)
                 if m_ind:
                     parsed = re.sub(r'<[^>]+>', '', m_ind.group(1)).strip()
                     if parsed and len(parsed) < 30: ind = parsed
-
                 dsc = None
                 m_dsc = re.search(r'summary_info.*?<p>(.*?)</p>', html_txt, re.DOTALL)
                 if m_dsc:
                     txt = re.sub(r'<[^>]+>', '', m_dsc.group(1)).strip()
                     if txt and 10 < len(txt) < 1000: dsc = txt
-                
                 return {"industry": ind, "desc": dsc}
         except Exception as e:
             print(f"Naver 기업정보 파싱 오류 ({code}): {e}")
@@ -399,26 +381,30 @@ def get_stock_data(code, market):
     def fetch_df():
         return download_stock_df(code, market)
 
+    # -- 실행 테이블 구성 --
     with ThreadPoolExecutor(max_workers=3) as ex:
         f_dart  = ex.submit(fetch_dart)
         f_naver = ex.submit(fetch_naver_info)
         f_df    = ex.submit(fetch_df)
         
-        try:
-            dart_r = f_dart.result(timeout=4)
-        except Exception:
-            dart_r = {}
-        try:
-            naver_r = f_naver.result(timeout=4)
-        except Exception:
-            naver_r = {}
-        try:
-            df = f_df.result(timeout=6)
-        except Exception:
-            df = None
+        try: dart_r = f_dart.result(timeout=4)
+        except Exception: dart_r = {}
+        try: naver_r = f_naver.result(timeout=4)
+        except Exception: naver_r = {}
+        try: df = f_df.result(timeout=10) # DF는 약간 더 기다림
+        except Exception: df = None
 
-    if df is None:
+    if df is None or df.empty:
         return None
+
+    # --- 실시간 가격 및 변동률 계산 ---
+    latest = df.iloc[-1]
+    prev   = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
+
+    close_price = float(latest["Close"])
+    prev_close  = float(prev["Close"])
+    change      = close_price - prev_close
+    change_pct  = (change / prev_close) * 100 if prev_close != 0 else 0
 
     df["MA5"]  = df["Close"].rolling(window=5).mean()
     df["MA10"] = df["Close"].rolling(window=10).mean()
@@ -433,11 +419,11 @@ def get_stock_data(code, market):
     industry = naver_r.get("industry")
     translated_desc = naver_r.get("desc")
 
-    # If naver summary missing, fetch fallback lazily
     if not translated_desc:
         yf_r = fetch_yf_info_lazy()
         industry = industry or yf_r.get("industry")
         translated_desc = yf_r.get("desc")
+
 
 
     # 이오테크닉스 예외 하드코딩
@@ -480,6 +466,8 @@ def get_stock_data(code, market):
     )
 
     result = {
+        "code":       code,
+        "market":     market,
         "price":      int(close_price),
         "change":     int(change),
         "change_pct": round(change_pct, 2),
