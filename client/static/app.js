@@ -71,6 +71,27 @@ function clearRecentSearches() {
     renderRecentSearches();
 }
 
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = 'ph-info';
+    if (type === 'error') icon = 'ph-warning-circle';
+    if (type === 'success') icon = 'ph-check-circle';
+    
+    toast.innerHTML = `<i class="ph ${icon}"></i><span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
 function renderRecentSearches() {
     const container = document.getElementById('recentSearches');
     const list = document.getElementById('recentList');
@@ -351,7 +372,7 @@ async function addToWatchlist(item) {
     if (isInWatchlist(item.code)) return;
 
     if (!authUser || !authUser.logged_in) {
-        alert('관심종목을 등록하려면 로그인이 필요합니다.');
+        showToast('관심종목을 등록하려면 로그인이 필요합니다.', 'error');
         const authModal = document.getElementById('authModal');
         if (authModal) authModal.classList.remove('hidden');
         return;
@@ -372,6 +393,8 @@ async function addToWatchlist(item) {
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
 
+            showToast(`${item.name} 종목이 관심종목에 추가되었습니다.`, 'success');
+
             // --- Context Handling ---
             watchlistStockContext = { item: item, data: homeStockContext.data || null, analysis: homeStockContext.analysis || null };
             
@@ -387,7 +410,7 @@ async function addToWatchlist(item) {
             navigateToSection('navWatchlist');
         } else {
             const data = await res.json();
-            alert('추가 실패: ' + (data.message || '알 수 없는 오류'));
+            showToast('추가 실패: ' + (data.message || '알 수 없는 오류'), 'error');
         }
     } catch (e) {
         console.error('Watchlist add error', e);
