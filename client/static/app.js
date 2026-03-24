@@ -197,14 +197,7 @@ function restoreStockContext(type) {
 
         placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
         resSec.classList.remove('hidden');
-        if (type === 'watchlist') {
-            showSection('watchlistSection');
-            resSec.classList.remove('hidden');
-        } else {
-            showSection('dashboardHome');
-            resSec.classList.remove('hidden');
-        }
-        
+
         // Restore State
         currentStock = context.item;
         renderResult(context.data);
@@ -358,11 +351,9 @@ async function addToWatchlist(item) {
     if (isInWatchlist(item.code)) return;
 
     if (!authUser || !authUser.logged_in) {
-        currentWatchlist.push(item);
-        saveWatchlist(currentWatchlist);
-        updateWatchlistBtn();
-        // Redirect to Watchlist as requested: 즐겨찾기 추가하면 관심종목이 선택되고
-        navigateToSection('navWatchlist');
+        alert('관심종목을 등록하려면 로그인이 필요합니다.');
+        const authModal = document.getElementById('authModal');
+        if (authModal) authModal.classList.remove('hidden');
         return;
     }
     
@@ -380,6 +371,18 @@ async function addToWatchlist(item) {
             currentWatchlist.push(item);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
+
+            // --- Context Handling ---
+            watchlistStockContext = { item: item, data: homeStockContext.data || null, analysis: homeStockContext.analysis || null };
+            
+            // Move resultSection to Watchlist container
+            const resSec = document.getElementById('resultSection');
+            const placeholder = document.getElementById('watchlistResultPlaceholder');
+            if (resSec && placeholder) {
+                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+                resSec.classList.remove('hidden');
+            }
+
             // Redirect to Watchlist as requested: 즐겨찾기 추가하면 관심종목이 선택되고
             navigateToSection('navWatchlist');
         } else {
@@ -393,9 +396,25 @@ async function addToWatchlist(item) {
 
 async function removeFromWatchlist(code) {
     if (!authUser || !authUser.logged_in) {
+        const removedItem = currentWatchlist.find(w => w.code === code) || (currentStock?.code === code ? currentStock : null);
         currentWatchlist = currentWatchlist.filter(w => w.code !== code);
         saveWatchlist(currentWatchlist);
         updateWatchlistBtn();
+
+        // --- Context Handling ---
+        // When unfavoriting from Watchlist, sync back to Home context
+        if (removedItem) {
+             homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
+        }
+
+        // Move resultSection to Home container
+        const resSec = document.getElementById('resultSection');
+        const placeholder = document.getElementById('mainResultPlaceholder');
+        if (resSec && placeholder) {
+            placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+            resSec.classList.remove('hidden');
+        }
+
         // Redirect to Home as requested: 해제하면 다시 홈으로 가게
         navigateToSection('navHome');
         return;
@@ -408,9 +427,24 @@ async function removeFromWatchlist(code) {
         });
         
         if (res.ok) {
+            const removedItem = currentWatchlist.find(w => w.code === code) || (currentStock?.code === code ? currentStock : null);
             currentWatchlist = currentWatchlist.filter(w => w.code !== code);
             saveWatchlist(currentWatchlist);
             updateWatchlistBtn();
+
+            // --- Context Handling ---
+            if (removedItem) {
+                homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
+            }
+
+            // Move resultSection to Home container
+            const resSec = document.getElementById('resultSection');
+            const placeholder = document.getElementById('mainResultPlaceholder');
+            if (resSec && placeholder) {
+                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+                resSec.classList.remove('hidden');
+            }
+
             // Redirect to Home as requested: 해제하면 다시 홈으로 가게
             navigateToSection('navHome');
         }
@@ -2620,9 +2654,8 @@ async function initAuth() {
             if (navWatchlist) navWatchlist.classList.remove('hidden');
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('hidden');
             
-            // Load local watchlist if guest
-            const localList = JSON.parse(localStorage.getItem(WATCHLIST_KEY)) || [];
-            currentWatchlist = localList;
+            // For Guest users, reset currentWatchlist to empty as requested
+            currentWatchlist = [];
             renderWatchlist();
             updateWatchlistCount();
         }
