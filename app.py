@@ -400,6 +400,11 @@ def get_stock_data(code, market):
     if df is None or df.empty:
         return None
 
+    df["MA5"]  = df["Close"].rolling(window=5).mean()
+    df["MA10"] = df["Close"].rolling(window=10).mean()
+    df["MA20"] = df["Close"].rolling(window=20).mean()
+    df["MA60"] = df["Close"].rolling(window=60).mean()
+
     # --- 실시간 가격 및 변동률 계산 ---
     latest = df.iloc[-1]
     prev   = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
@@ -408,11 +413,6 @@ def get_stock_data(code, market):
     prev_close  = float(prev["Close"])
     change      = close_price - prev_close
     change_pct  = (change / prev_close) * 100 if prev_close != 0 else 0
-
-    df["MA5"]  = df["Close"].rolling(window=5).mean()
-    df["MA10"] = df["Close"].rolling(window=10).mean()
-    df["MA20"] = df["Close"].rolling(window=20).mean()
-    df["MA60"] = df["Close"].rolling(window=60).mean()
 
     est_dt = dart_r.get("est_dt", "")
     ceo    = dart_r.get("ceo", "")
