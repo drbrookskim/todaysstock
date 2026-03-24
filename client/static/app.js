@@ -396,18 +396,16 @@ async function addToWatchlist(item) {
             showToast(`${item.name} 종목이 관심종목에 추가되었습니다.`, 'success');
 
             // --- Context Handling ---
-            watchlistStockContext = { item: item, data: homeStockContext.data || null, analysis: homeStockContext.analysis || null };
+            // Stay in Home context, even after adding to favorites
+            homeStockContext = { item: item, data: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === item.code) ? homeStockContext.analysis : null };
             
-            // Move resultSection to Watchlist container
+            // Result section remains/stays in Home
             const resSec = document.getElementById('resultSection');
-            const placeholder = document.getElementById('watchlistResultPlaceholder');
+            const placeholder = document.getElementById('mainResultPlaceholder');
             if (resSec && placeholder) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
                 resSec.classList.remove('hidden');
             }
-
-            // Redirect to Watchlist as requested: 즐겨찾기 추가하면 관심종목이 선택되고
-            navigateToSection('navWatchlist');
         } else {
             const data = await res.json();
             showToast('추가 실패: ' + (data.message || '알 수 없는 오류'), 'error');
@@ -441,9 +439,10 @@ async function removeFromWatchlist(code) {
     }
     
     try {
-        const res = await fetch(API_BASE_URL + `/api/watchlist/${code}`, {
+        const res = await fetch(API_BASE_URL + '/api/watchlist', {
             method: 'DELETE',
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ code: code })
         });
         
         if (res.ok) {
@@ -454,16 +453,23 @@ async function removeFromWatchlist(code) {
             if (removedItem) {
                 showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
                 if (removedItem.code === currentStock?.code) {
-                    homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
-                    watchlistStockContext = { item: null, data: null, analysis: null };
+                    homeStockContext = { item: removedItem, data: (homeStockContext.item?.code === removedItem.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === removedItem.code) ? homeStockContext.analysis : null };
                 }
             }
 
             // Always redirect back to Home as per user request
             navigateToSection('navHome');
+        } else {
+            const errData = await res.json();
+            console.error('Delete failed', errData);
+            // Even if backend fails, provide local removal for better UX if it was already deleted in another session
+            currentWatchlist = currentWatchlist.filter(w => w.code !== code);
+            saveWatchlist(currentWatchlist);
+            navigateToSection('navHome');
         }
     } catch (e) {
         console.error('Watchlist remove error', e);
+        navigateToSection('navHome');
     }
 }
 
@@ -694,35 +700,25 @@ async function selectStock(item) {
         currentStock = item; // Store current stock
         loadingSpinner.classList.add('hidden');
 
-        // --- Handle Result Placement & Context Save ---
-        const isFav = isInWatchlist(item.code);
+        // --- Handle Result Placement (Always in Home) ---
         const resSec = document.getElementById('resultSection');
+        const placeholder = document.getElementById('mainResultPlaceholder');
         
-        const context = {
+        // Save to home context
+        homeStockContext = {
             item: item,
             data: data,
-            analysis: null // Will be updated by fetchAnalysis
+            analysis: null
         };
 
-        if (isFav) {
-            watchlistStockContext = context;
-            // Move to watchlist footer
-            const placeholder = document.getElementById('watchlistResultPlaceholder');
-            if (placeholder) {
-                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-            }
-            navigateToSection('navWatchlist');
-            resSec.classList.remove('hidden'); 
-        } else {
-            homeStockContext = context;
-            // Move to home result area
-            const placeholder = document.getElementById('mainResultPlaceholder');
-            if (placeholder) {
-                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-            }
-            navigateToSection('navHome'); 
-            resSec.classList.remove('hidden');
+        if (placeholder && resSec) {
+            placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
         }
+        
+        // Always navigate to Home when viewing a stock
+        navigateToSection('navHome');
+        resSec.classList.remove('hidden'); 
+
 
         renderResult(data);
         
