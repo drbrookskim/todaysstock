@@ -44,10 +44,19 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24).hex())
 
 load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")  # anon key (공개 키)
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")  # service role key (서버 전용)
 
-# Global client (mostly for auth admin actions like sign up/in)
+# Auth 전용 클라이언트 (anon key — auth.get_user() 검증용)
 supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+
+# DB 전용 서비스 롤 클라이언트 (RLS를 우회하고, 코드에서 user_id로 보안 필터링)
+# service role key가 없으면 supabase_global로 폴백 (RLS 오류 위험 있음)
+db_client: Client = (
+    create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    if SUPABASE_URL and SUPABASE_SERVICE_KEY
+    else supabase_global
+)
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -707,7 +716,7 @@ def session():
         # Watchlist: 서비스 롤 클라이언트를 사용하고 user_id로 명시적 필터링
         try:
             user_id = user_res.user.id
-            wl_res = supabase_global.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            wl_res = db_client.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             watchlist = [
                 {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
                 for item in wl_res.data
@@ -736,7 +745,7 @@ def manage_watchlist():
 
     try:
         if request.method == "GET":
-            res = supabase_global.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            res = db_client.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
             return jsonify(mapped)
 
@@ -747,7 +756,7 @@ def manage_watchlist():
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
 
             # 중복 방지: 이미 있는지 확인
-            existing = supabase_global.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
+            existing = db_client.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
             if existing.data:
                 return jsonify({"success": True, "message": "이미 관심종목에 있습니다."})
 
@@ -757,7 +766,7 @@ def manage_watchlist():
                 "stock_name": data.get("name"),
                 "market": data.get("market", "KOSPI")
             }
-            supabase_global.table("watchlist").insert(item).execute()
+            db_client.table("watchlist").insert(item).execute()
             return jsonify({"success": True})
 
         elif request.method == "DELETE":
@@ -765,7 +774,7 @@ def manage_watchlist():
             code = data.get("code")
             if not code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
-            supabase_global.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
+            db_client.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
             return jsonify({"success": True})
 
     except Exception as e:
