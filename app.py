@@ -468,8 +468,9 @@ def get_stock_data(code, market):
             '</div>'
         )
 
-    ei = html.escape(industry)
-    ed = html.escape(translated_desc)
+    # None 가드: html.escape()는 None을 허용하지 않으므로 반드시 str로 변환해야 합니다.
+    ei = html.escape(industry or "업종 정보 없음")
+    ed = html.escape(translated_desc or "기업 설명을 불러올 수 없습니다.")
     company_summary = (
         '<div class="summary-formatted">'
         f'<div class="summary-subtitle"><strong>"글로벌 경쟁력 기반의 {ei} 선도 기업"</strong></div>'

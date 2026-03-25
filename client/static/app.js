@@ -455,38 +455,33 @@ async function removeFromWatchlist(code) {
         return;
     }
     
+    // ── 로그인 사용자: 낙관적 UI (Optimistic Update) ──
+    // 1. 즉시 UI에서 제거 (서버 응답 대기 없음)
+    const rollbackSnapshot = [...currentWatchlist];
+    currentWatchlist = currentWatchlist.filter(w => w.code !== code);
+    saveWatchlist(currentWatchlist);
+    updateWatchlistBtn();
+    if (removedItem) {
+        showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
+    }
+    navigateToSection('navHome');
+
+    // 2. 백그라운드에서 서버 DELETE 요청 (fire-and-forget)
     try {
-        const res = await fetch(API_BASE_URL + '/api/watchlist', {
+        const res = await fetchWithTimeout(API_BASE_URL + '/api/watchlist', {
             method: 'DELETE',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ code: code })
+            body: JSON.stringify({ code: code }),
+            timeout: 8000
         });
-        
-        if (res.ok) {
-            currentWatchlist = currentWatchlist.filter(w => w.code !== code);
-            saveWatchlist(currentWatchlist);
-            updateWatchlistBtn();
-
-            if (removedItem) {
-                showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
-                if (removedItem.code === currentStock?.code) {
-                    homeStockContext = { item: removedItem, data: (homeStockContext.item?.code === removedItem.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === removedItem.code) ? homeStockContext.analysis : null };
-                }
-            }
-
-            // Always redirect back to Home as per user request
-            navigateToSection('navHome');
-        } else {
-            const errData = await res.json();
-            console.error('Delete failed', errData);
-            // Even if backend fails, provide local removal for better UX if it was already deleted in another session
-            currentWatchlist = currentWatchlist.filter(w => w.code !== code);
-            saveWatchlist(currentWatchlist);
-            navigateToSection('navHome');
-        }
+        if (!res.ok) throw new Error('Server delete failed');
     } catch (e) {
-        console.error('Watchlist remove error', e);
-        navigateToSection('navHome');
+        // 3. 서버 실패 시 롤백
+        console.error('Watchlist remove error (background):', e);
+        currentWatchlist = rollbackSnapshot;
+        saveWatchlist(currentWatchlist);
+        updateWatchlistBtn();
+        showToast('삭제 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
     }
 }
 
