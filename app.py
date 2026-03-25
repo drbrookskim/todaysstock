@@ -7,7 +7,7 @@
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
-from supabase import create_client, Client, ClientOptions
+from supabase import create_client, Client
 import os
 import html
 import time
@@ -61,14 +61,17 @@ def handle_exception(e):
         "status": 500
     }), 500
 
-def get_user_supabase():
-    """요청의 JWT 토큰을 바탕으로 RLS가 적용되는 독립된 Supabase 클라이언트 생성"""
-    token = request.headers.get("Authorization")
-    headers = {}
-    if token and token.startswith("Bearer "):
-        headers["Authorization"] = token
-    options = ClientOptions(headers=headers)
-    return create_client(SUPABASE_URL, SUPABASE_KEY, options=options)
+def get_user_id_from_token(token: str):
+    """주어진 JWT 토큰으로 user_id를 검증하고 반환. 실패 시 None 반환."""
+    if not token or not supabase_global:
+        return None
+    try:
+        user_res = supabase_global.auth.get_user(token)
+        if user_res and user_res.user:
+            return user_res.user.id
+    except Exception as e:
+        print(f"Token validation error: {e}")
+    return None
 
 # ─────────────────────────────────────────────
 # ─────────────────────────────────────────────
@@ -701,10 +704,10 @@ def session():
         email     = user_res.user.email or ""
         username  = full_name or (email.split('@')[0] if email else "사용자")
 
-        # Watchlist: 토큰 기반 RLS client 로 가져오기
+        # Watchlist: 서비스 롤 클라이언트를 사용하고 user_id로 명시적 필터링
         try:
-            client = get_user_supabase()
-            wl_res = client.table("watchlist").select("stock_code,stock_name,market").execute()
+            user_id = user_res.user.id
+            wl_res = supabase_global.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             watchlist = [
                 {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
                 for item in wl_res.data
@@ -721,55 +724,55 @@ def session():
 
 @app.route("/api/watchlist", methods=["GET", "POST", "DELETE"])
 def manage_watchlist():
-    """Data Minimization 및 RLS가 적용된 Supabase DB 접근 라우트"""
-    try:
-        client = get_user_supabase()
-        # 토큰을 바탕으로 유저 정보를 미리 파악
-        token = request.headers.get("Authorization", "").replace("Bearer ", "")
-        
-        user_id = None
-        if token and supabase_global:
-            try:
-                user_res = supabase_global.auth.get_user(token)
-                if user_res and user_res.user:
-                    user_id = user_res.user.id
-            except Exception as auth_err:
-                print(f"Watchlist auth verify error: {auth_err}")
+    """서비스 롤 Supabase 클라이언트를 사용하고 user_id로 명시적 필터링하여 RLS 역할 수행"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_id = get_user_id_from_token(token)
 
-        if not user_id:
-            return jsonify({"success": False, "message": "사용자 인증에 실패했습니다. 다시 로그인해주세요."}), 401
-            
+    if not user_id:
+        return jsonify({"success": False, "message": "사용자 인증에 실패했습니다. 다시 로그인해주세요."}), 401
+
+    if not supabase_global:
+        return jsonify({"success": False, "message": "서버 설정 오류 (DB 연결 없음)"}), 500
+
+    try:
         if request.method == "GET":
-            res = client.table("watchlist").select("stock_code,stock_name,market").execute()
+            res = supabase_global.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
             return jsonify(mapped)
-            
+
         elif request.method == "POST":
             data = request.json
+            stock_code = data.get("code")
+            if not stock_code:
+                return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
+
+            # 중복 방지: 이미 있는지 확인
+            existing = supabase_global.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
+            if existing.data:
+                return jsonify({"success": True, "message": "이미 관심종목에 있습니다."})
+
             item = {
                 "user_id": user_id,
-                "stock_code": data.get("code"),
+                "stock_code": stock_code,
                 "stock_name": data.get("name"),
                 "market": data.get("market", "KOSPI")
             }
-            # RLS (Insert own items) 강제 검사됨
-            client.table("watchlist").insert(item).execute()
+            supabase_global.table("watchlist").insert(item).execute()
             return jsonify({"success": True})
-            
+
         elif request.method == "DELETE":
-            # RLS (Delete own items) 강제 검사됨
             data = request.json
             code = data.get("code")
-            # user_id 필터를 추가하여 삭제 권한 명시 (RLS가 처리하지만 파라미터 전달 보장)
-            client.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
+            if not code:
+                return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
+            supabase_global.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
             return jsonify({"success": True})
-            
+
     except Exception as e:
         print(f"Watchlist error: {e}")
         import traceback
         traceback.print_exc()
-        # 에러 원인을 프론트엔드에서 알 수 있도록 메시지에 포함
-        return jsonify({"success": False, "message": f"관심목록 처리 오류: {str(e)}"}), 400
+        return jsonify({"success": False, "message": f"관심목록 처리 오류: {str(e)}"}), 500
 
 # ─────────────────────────────────────────────
 # 라우트
