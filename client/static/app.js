@@ -28,7 +28,7 @@ function escapeHtml(unsafe) {
 }
 
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 15000 } = options;
+    const { timeout = 30000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     try {
@@ -40,6 +40,11 @@ async function fetchWithTimeout(resource, options = {}) {
         return response;
     } catch (error) {
         clearTimeout(id);
+        if (error.name === 'AbortError') {
+            const err = new Error('서버 응답 시간이 초과되었습니다 (30초). 잠시 후 다시 시도해 주세요.');
+            err.name = 'TimeoutError';
+            throw err;
+        }
         throw error;
     }
 }
@@ -385,7 +390,6 @@ function saveWatchlist(list) {
 }
 
 async function addToWatchlist(item) {
-    // Guest support using localStorage fallback
     if (isInWatchlist(item.code)) return;
 
     if (!authUser || !authUser.logged_in) {
@@ -395,43 +399,44 @@ async function addToWatchlist(item) {
         return;
     }
     
-    // Check duplicate
     if (currentWatchlist.some(w => w.code === item.code)) return;
     
+    // ── 낙관적 UI 업데이트 (Optimistic Update) ──
+    const rollbackSnapshot = [...currentWatchlist];
+    currentWatchlist.push(item);
+    saveWatchlist(currentWatchlist);
+    updateWatchlistBtn();
+    showToast(`${item.name} 종목이 관심종목에 추가되었습니다.`, 'success');
+
+    // Context handling (stay in Home)
+    homeStockContext = { item: item, data: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null };
+    const resSec = document.getElementById('resultSection');
+    const placeholder = document.getElementById('mainResultPlaceholder');
+    if (resSec && placeholder) {
+        placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+        resSec.classList.remove('hidden');
+    }
+
+    // 백그라운드 서버 요청
     try {
         const res = await fetchWithTimeout(API_BASE_URL + '/api/watchlist', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ code: item.code, name: item.name, market: item.market }),
-            timeout: 10000
+            timeout: 30000
         });
         
         const data = await res.json();
-        if (res.ok) {
-            currentWatchlist.push(item);
-            saveWatchlist(currentWatchlist);
-            updateWatchlistBtn();
-
-            showToast(`${item.name} 종목이 관심종목에 추가되었습니다.`, 'success');
-
-            // --- Context Handling ---
-            // Stay in Home context, even after adding to favorites
-            homeStockContext = { item: item, data: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null };
-            
-            // Result section remains/stays in Home
-            const resSec = document.getElementById('resultSection');
-            const placeholder = document.getElementById('mainResultPlaceholder');
-            if (resSec && placeholder) {
-                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-                resSec.classList.remove('hidden');
-            }
-        } else {
-            showToast('추가 실패: ' + (data.message || '알 수 없는 오류'), 'error');
-            console.error('Watchlist add failed:', data);
+        if (!res.ok) {
+            throw new Error(data.message || '서버 오류');
         }
     } catch (e) {
-        console.error('Watchlist add error', e);
-        showToast('추가 중 오류가 발생했습니다: ' + e.message, 'error');
+        console.error('Watchlist add background error:', e);
+        // 실패 시 롤백
+        currentWatchlist = rollbackSnapshot;
+        saveWatchlist(currentWatchlist);
+        updateWatchlistBtn();
+        showToast('추가 처리 중 오류가 발생했습니다: ' + e.message, 'error');
     }
 }
 
@@ -475,7 +480,7 @@ async function removeFromWatchlist(code) {
             method: 'DELETE',
             headers: getAuthHeaders(),
             body: JSON.stringify({ code: code }),
-            timeout: 8000
+            timeout: 30000
         });
         if (!res.ok) throw new Error('Server delete failed');
     } catch (e) {
@@ -610,7 +615,7 @@ document.addEventListener('click', (e) => {
 // ── Suggestions API ──
 async function fetchSuggestions(query) {
     try {
-        const res = await fetchWithTimeout(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`, { timeout: 8000 });
+        const res = await fetchWithTimeout(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`, { timeout: 30000 });
         const data = await res.json();
         suggestItems = data;
         activeIndex = -1;
@@ -708,7 +713,7 @@ async function selectStock(item) {
         const url = `${API_BASE_URL}/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
         console.log('[DEBUG] Fetching stock data from:', url);
         // 15초 타임아웃 적용하여 무한 로딩 방지
-        const response = await fetchWithTimeout(url, { timeout: 15000 });
+        const response = await fetchWithTimeout(url, { timeout: 30000 });
         if (!response.ok) throw new Error('데이터를 불러오는데 실패했습니다.');
         
         const data = await response.json();
@@ -1020,7 +1025,7 @@ async function renderMacroIndicators() {
 
     try {
         console.log('[DEBUG] Fetching macro data from:', `${API_BASE_URL}/api/macro`);
-        const resp = await fetchWithTimeout(`${API_BASE_URL}/api/macro`, { timeout: 10000 });
+        const resp = await fetchWithTimeout(`${API_BASE_URL}/api/macro`, { timeout: 30000 });
         if (!resp.ok) throw new Error('Macro data fetch failed');
         const data = await resp.json();
         console.log('[DEBUG] Macro data received:', data);
@@ -1133,7 +1138,7 @@ async function renderIndexChart(symbol, name) {
     }
 
     try {
-        const resp = await fetch(`${API_BASE_URL}/api/market-index/history?symbol=${encodeURIComponent(symbol)}`);
+        const resp = await fetchWithTimeout(`${API_BASE_URL}/api/market-index/history?symbol=${encodeURIComponent(symbol)}`);
         if (!resp.ok) throw new Error('History Fetch Failed');
         const data = await resp.json();
 
@@ -1324,7 +1329,7 @@ async function updateTileData(code) {
     if (!statEl) return;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/api/stock?code=${code}`);
+        const res = await fetchWithTimeout(`${API_BASE_URL}/api/stock?code=${code}`);
         if (!res.ok) return;
         const data = await res.json();
         
@@ -1564,7 +1569,7 @@ async function renderFundamentalReport(stockCode) {
 
     let d;
     try {
-        const res = await fetch(API_BASE_URL + `/api/fundamental/${encodeURIComponent(stockCode)}`);
+        const res = await fetchWithTimeout(API_BASE_URL + `/api/fundamental/${encodeURIComponent(stockCode)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         if (text.startsWith('<')) throw new Error('HTML response');
@@ -2690,7 +2695,7 @@ async function initAuth() {
         try {
             const token = getSupaToken();
             console.log('Fetching session from:', API_BASE_URL + '/api/session');
-            const res = await fetch(API_BASE_URL + '/api/session', {
+            const res = await fetchWithTimeout(API_BASE_URL + '/api/session', {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             console.log('Session response status:', res.status);
