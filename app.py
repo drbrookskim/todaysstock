@@ -49,6 +49,18 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 # Global client (mostly for auth admin actions like sign up/in)
 supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # API 요청 중 발생한 모든 예외를 잡아서 JSON 형태로 반환합니다.
+    print(f"🌍 Server Error: {e}")
+    import traceback
+    traceback.print_exc()
+    return jsonify({
+        "error": "서버 내부 오류가 발생했습니다.",
+        "details": str(e),
+        "status": 500
+    }), 500
+
 def get_user_supabase():
     """요청의 JWT 토큰을 바탕으로 RLS가 적용되는 독립된 Supabase 클라이언트 생성"""
     token = request.headers.get("Authorization")
@@ -471,13 +483,13 @@ def get_stock_data(code, market):
     result = {
         "code":       code,
         "market":     market,
-        "price":      int(close_price),
-        "change":     int(change),
-        "change_pct": round(change_pct, 2),
-        "high":   int(float(latest["High"])),
-        "low":    int(float(latest["Low"])),
-        "open":   int(float(latest["Open"])),
-        "volume": int(float(latest["Volume"])),
+        "price":      int(close_price) if pd.notna(close_price) else None,
+        "change":     int(change) if pd.notna(change) else None,
+        "change_pct": round(change_pct, 2) if pd.notna(change_pct) else None,
+        "high":   int(float(latest["High"])) if pd.notna(latest["High"]) else None,
+        "low":    int(float(latest["Low"])) if pd.notna(latest["Low"]) else None,
+        "open":   int(float(latest["Open"])) if pd.notna(latest["Open"]) else None,
+        "volume": int(float(latest["Volume"])) if pd.notna(latest["Volume"]) else None,
         "ma5":  int(float(latest["MA5"]))  if pd.notna(latest["MA5"])  else None,
         "ma10": int(float(latest["MA10"])) if pd.notna(latest["MA10"]) else None,
         "ma20": int(float(latest["MA20"])) if pd.notna(latest["MA20"]) else None,
