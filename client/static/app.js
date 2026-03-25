@@ -27,6 +27,23 @@ function escapeHtml(unsafe) {
     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 15000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+        const response = await fetch(resource, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return response;
+    } catch (error) {
+        clearTimeout(id);
+        throw error;
+    }
+}
+
 let suggestItems = [];
 let activeIndex = -1;
 let debounceTimer = null;
@@ -595,7 +612,7 @@ document.addEventListener('click', (e) => {
 // ── Suggestions API ──
 async function fetchSuggestions(query) {
     try {
-        const res = await fetch(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`);
+        const res = await fetchWithTimeout(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`, { timeout: 8000 });
         const data = await res.json();
         suggestItems = data;
         activeIndex = -1;
@@ -692,13 +709,13 @@ async function selectStock(item) {
     try {
         const url = `${API_BASE_URL}/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
         console.log('[DEBUG] Fetching stock data from:', url);
-        const response = await fetch(url);
+        // 15초 타임아웃 적용하여 무한 로딩 방지
+        const response = await fetchWithTimeout(url, { timeout: 15000 });
         if (!response.ok) throw new Error('데이터를 불러오는데 실패했습니다.');
         
         const data = await response.json();
         
         currentStock = item; // Store current stock
-        loadingSpinner.classList.add('hidden');
 
         // --- Handle Result Placement (Always in Home) ---
         const resSec = document.getElementById('resultSection');
@@ -729,8 +746,9 @@ async function selectStock(item) {
         // AI Analysis now triggered by button, no automatic fetch here
     } catch (err) {
         console.error('selectStock error:', err);
+        showError(err.name === 'AbortError' ? '요청 시간이 초과되었습니다. 다시 시도해주세요.' : err.message);
+    } finally {
         loadingSpinner.classList.add('hidden');
-        showError(err.message);
     }
 }
 
@@ -1004,7 +1022,7 @@ async function renderMacroIndicators() {
 
     try {
         console.log('[DEBUG] Fetching macro data from:', `${API_BASE_URL}/api/macro`);
-        const resp = await fetch(`${API_BASE_URL}/api/macro`);
+        const resp = await fetchWithTimeout(`${API_BASE_URL}/api/macro`, { timeout: 10000 });
         if (!resp.ok) throw new Error('Macro data fetch failed');
         const data = await resp.json();
         console.log('[DEBUG] Macro data received:', data);
