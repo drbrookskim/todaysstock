@@ -726,17 +726,21 @@ def manage_watchlist():
         client = get_user_supabase()
         # 토큰을 바탕으로 유저 정보를 미리 파악
         token = request.headers.get("Authorization", "").replace("Bearer ", "")
-        user_res = supabase_global.auth.get_user(token) if token else None
         
-        if not user_res or not user_res.user:
-            return jsonify({"success": False, "message": "Unauthorized"}), 401
-            
-        user_id = user_res.user.id
+        user_id = None
+        if token and supabase_global:
+            try:
+                user_res = supabase_global.auth.get_user(token)
+                if user_res and user_res.user:
+                    user_id = user_res.user.id
+            except Exception as auth_err:
+                print(f"Watchlist auth verify error: {auth_err}")
+
+        if not user_id:
+            return jsonify({"success": False, "message": "사용자 인증에 실패했습니다. 다시 로그인해주세요."}), 401
             
         if request.method == "GET":
-            # Data Minimization 원칙: select('*') 사용 불가
             res = client.table("watchlist").select("stock_code,stock_name,market").execute()
-            # 프론트엔드 포맷(code, name, market)으로 매핑
             mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
             return jsonify(mapped)
             
@@ -756,12 +760,16 @@ def manage_watchlist():
             # RLS (Delete own items) 강제 검사됨
             data = request.json
             code = data.get("code")
-            client.table("watchlist").delete().eq("stock_code", code).execute()
+            # user_id 필터를 추가하여 삭제 권한 명시 (RLS가 처리하지만 파라미터 전달 보장)
+            client.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
             return jsonify({"success": True})
             
     except Exception as e:
         print(f"Watchlist error: {e}")
-        return jsonify({"success": False, "message": "관심목록 처리 중 오류가 발생했습니다."}), 400
+        import traceback
+        traceback.print_exc()
+        # 에러 원인을 프론트엔드에서 알 수 있도록 메시지에 포함
+        return jsonify({"success": False, "message": f"관심목록 처리 오류: {str(e)}"}), 400
 
 # ─────────────────────────────────────────────
 # 라우트

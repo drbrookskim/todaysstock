@@ -399,12 +399,14 @@ async function addToWatchlist(item) {
     if (currentWatchlist.some(w => w.code === item.code)) return;
     
     try {
-        const res = await fetch(API_BASE_URL + '/api/watchlist', {
+        const res = await fetchWithTimeout(API_BASE_URL + '/api/watchlist', {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ code: item.code, name: item.name, market: item.market })
+            body: JSON.stringify({ code: item.code, name: item.name, market: item.market }),
+            timeout: 10000
         });
         
+        const data = await res.json();
         if (res.ok) {
             currentWatchlist.push(item);
             saveWatchlist(currentWatchlist);
@@ -414,7 +416,7 @@ async function addToWatchlist(item) {
 
             // --- Context Handling ---
             // Stay in Home context, even after adding to favorites
-            homeStockContext = { item: item, data: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === item.code) ? homeStockContext.analysis : null };
+            homeStockContext = { item: item, data: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null };
             
             // Result section remains/stays in Home
             const resSec = document.getElementById('resultSection');
@@ -424,11 +426,12 @@ async function addToWatchlist(item) {
                 resSec.classList.remove('hidden');
             }
         } else {
-            const data = await res.json();
             showToast('추가 실패: ' + (data.message || '알 수 없는 오류'), 'error');
+            console.error('Watchlist add failed:', data);
         }
     } catch (e) {
         console.error('Watchlist add error', e);
+        showToast('추가 중 오류가 발생했습니다: ' + e.message, 'error');
     }
 }
 
