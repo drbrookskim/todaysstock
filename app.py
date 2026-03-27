@@ -815,19 +815,41 @@ def market_index_history():
         if df.empty:
             return jsonify({"error": "데이터를 불러올 수 없습니다."}), 404
             
+        # NaN 값이 포함된 행 제거 (JSON 직렬화 오류 방지)
+        df = df.dropna(subset=['Close', 'Open', 'High', 'Low'])
+        
+        if df.empty:
+            return jsonify({"error": "유효한 데이터가 없습니다."}), 404
+
         history = []
+        import math
         for i in range(len(df)):
             row = df.iloc[i]
-            history.append({
+            
+            # 모든 값이 유효한지 최종 확인
+            vals = {
                 "time": df.index[i].strftime("%Y-%m-%d"),
-                "value": round(float(row["Close"]), 2),
-                "open": round(float(row["Open"]), 2),
-                "high": round(float(row["High"]), 2),
-                "low": round(float(row["Low"]), 2),
-                "close": round(float(row["Close"]), 2)
+                "open": float(row["Open"]),
+                "high": float(row["High"]),
+                "low": float(row["Low"]),
+                "close": float(row["Close"])
+            }
+            
+            # NaN 발생 시 건너뜀 (이미 dropna 했지만 안전장치)
+            if any(math.isnan(v) for v in [vals["open"], vals["high"], vals["low"], vals["close"]]):
+                continue
+
+            history.append({
+                "time": vals["time"],
+                "value": round(vals["close"], 2),
+                "open": round(vals["open"], 2),
+                "high": round(vals["high"], 2),
+                "low": round(vals["low"], 2),
+                "close": round(vals["close"], 2)
             })
             
         return jsonify({
+            "status": "success",
             "symbol": symbol_name,
             "ticker": ticker_symbol,
             "history": history

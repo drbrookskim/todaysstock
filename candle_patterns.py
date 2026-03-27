@@ -1221,22 +1221,35 @@ def analyze_candle_patterns(df):
     df["_MA120"] = df["Close"].rolling(window=120).mean()
 
     # ── 최근 캔들 데이터 ──
-    recent_count = min(60, len(df))
+    # NaN이 포함된 데이터 제거
+    df_clean = df.dropna(subset=["Open", "High", "Low", "Close"])
+    recent_count = min(60, len(df_clean))
     recent_candles = []
+    import math
+
     for i in range(-recent_count, 0):
-        row = df.iloc[i]
+        row = df_clean.iloc[i]
+        
+        # NaN 체크 (한 번 더 확인)
+        o, h, l, c = float(row["Open"]), float(row["High"]), float(row["Low"]), float(row["Close"])
+        if any(math.isnan(v) for v in [o, h, l, c]):
+            continue
+
         candle = {
-            "date": df.index[i].strftime("%m/%d"),
-            "open": int(float(row["Open"])),
-            "high": int(float(row["High"])),
-            "low": int(float(row["Low"])),
-            "close": int(float(row["Close"])),
-            "volume": int(float(row["Volume"])),
-            "is_bullish": bool(row["Close"] > row["Open"]),
+            "date": df_clean.index[i].strftime("%m/%d"),
+            "open": int(o),
+            "high": int(h),
+            "low": int(l),
+            "close": int(c),
+            "volume": int(float(row["Volume"])) if pd.notna(row["Volume"]) else 0,
+            "is_bullish": bool(c > o),
         }
         for ma_col, ma_key in [("_MA5", "ma5"), ("_MA10", "ma10"), ("_MA20", "ma20"), ("_MA60", "ma60"), ("_MA120", "ma120")]:
             val = row.get(ma_col)
-            candle[ma_key] = round(float(val)) if pd.notna(val) else None
+            if pd.notna(val) and not math.isnan(float(val)):
+                candle[ma_key] = round(float(val))
+            else:
+                candle[ma_key] = None
         recent_candles.append(candle)
 
     latest = df.iloc[-1]

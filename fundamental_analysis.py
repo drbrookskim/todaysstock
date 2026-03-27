@@ -9,10 +9,13 @@ Antigravity 펀더멘탈 분석 엔진
   4. Alt Data     — Phase 2 (KIPRIS 특허)
 """
 
-import requests
+import math
 import time
+import requests
 import yfinance as yf
 from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
 from typing import List, Tuple, Optional
 
 # ── 메모리 캐시 ──────────────────────────────────────────────
@@ -29,6 +32,17 @@ TTL_FIN = 21600   # 6h  — 재무제표
 TTL_DIS = 3600    # 1h  — 공시
 TTL_MAC = 600     # 10m — 거시
 
+
+# ── 헬퍼: JSON 안전한 숫자 변환 ──────────────────────────────
+def _safe_num(v, n=2):
+    """NaN/Inf를 None(JSON null)으로 변환하고 소수점 제한"""
+    try:
+        if v is None: return None
+        fv = float(v)
+        if math.isnan(fv) or math.isinf(fv): return None
+        return round(fv, n)
+    except:
+        return None
 
 # ════════════════════════════════════════════════════════════
 # 1.  기업 유형 분류
@@ -263,19 +277,19 @@ def compute_quant(financials: dict) -> dict:
     return {
         "score":         total,
         "grade":         grade(total),
-        "roe":           _r(roe),
-        "op_margin":     _r(op_margin),
-        "rev_growth":    _r(rev_growth),
-        "qtr_growth":    _r(qtr_growth),
-        "debt_ratio":    _r(debt_ratio),
-        "inv_turnover":  _r(inv_turn),
+        "roe":           _safe_num(roe),
+        "op_margin":     _safe_num(op_margin),
+        "rev_growth":    _safe_num(rev_growth),
+        "qtr_growth":    _safe_num(qtr_growth),
+        "debt_ratio":    _safe_num(debt_ratio),
+        "inv_turnover":  _safe_num(inv_turn),
         "breakdown":     {"roe": s_roe, "op_margin": s_opm,
                           "rev_growth": s_grw, "debt_ratio": s_dbt},
         "period":        financials.get("annual", {}).get("period", ""),
         "qtr_period":    financials.get("quarterly", {}).get("period", ""),
         "data_available": financials.get("has_annual", False),
-        "equity_raw":    eq_c,
-        "net_income_raw": net_c,
+        "equity_raw":    _safe_num(eq_c, 0),
+        "net_income_raw": _safe_num(net_c, 0),
     }
 
 
@@ -367,14 +381,14 @@ def get_macro(ecos_key: str) -> dict:
                 if df.empty: continue
                 
                 cur_v = float(df['Close'].iloc[-1])
-                m[key] = round(cur_v, 3 if key == "us10y" else 2)
+                m[key] = _safe_num(cur_v, 3 if key == "us10y" else 2)
                 
                 if len(df) >= 2:
                     prv_v = float(df['Close'].iloc[-2])
                     if key == "us10y":
-                        m[f"{key}_chg"] = round(cur_v - prv_v, 3)
+                        m[f"{key}_chg"] = _safe_num(cur_v - prv_v, 3)
                     else:
-                        m[f"{key}_chg"] = round((cur_v - prv_v) / prv_v * 100, 3)
+                        m[f"{key}_chg"] = _safe_num((cur_v - prv_v) / prv_v * 100, 3)
                 
                 # 52주 고가/저가는 별도 처리가 필요할 수 있으나 속도를 위해 현재가 위주로 구성
             except: pass
@@ -525,13 +539,13 @@ def _calculate_target(qnt, current_price, shares):
     elif upside < -10: status = "고평가"
 
     return {
-        "value":       round(target_p),
-        "upside":      round(upside, 1),
+        "value":       _safe_num(target_p, 0),
+        "upside":      _safe_num(upside, 1),
         "status":      status,
-        "srim":        round(srim_price),
-        "basic":       round(basic_price),
+        "srim":        _safe_num(srim_price, 0),
+        "basic":       _safe_num(basic_price, 0),
         "method":      "S-RIM & ROE 모델 혼합",
-        "shares":      shares
+        "shares":      _safe_num(shares, 0)
     }
 
 
@@ -599,20 +613,43 @@ def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
     
     comparisons = []
     if stock_roe is not None and means.get("roe") is not None:
-        diff = float(stock_roe) - float(means["roe"])
+        val_roe = float(stock_roe)
+        mean_roe = float(means["roe"])
+        diff = val_roe - mean_roe
         status = "우위" if diff > 0 else "열위"
-        comparisons.append({"label": "ROE (수익성)", "value": f"{stock_roe}%", "avg": f"{means['roe']}%", "status": status, "diff": round(diff, 1)})
+        comparisons.append({
+            "label": "ROE (수익성)", 
+            "value": f"{_safe_num(val_roe)}%", 
+            "avg": f"{mean_roe}%", 
+            "status": status, 
+            "diff": _safe_num(diff, 1)
+        })
     
     if stock_per is not None and means.get("per") is not None:
-        diff = float(stock_per) - float(means["per"])
-        # PER는 낮을수록 저평가(우위)
+        val_per = float(stock_per)
+        mean_per = float(means["per"])
+        diff = val_per - mean_per
         status = "저평가" if diff < 0 else "고평가"
-        comparisons.append({"label": "PER (가치)", "value": f"{stock_per}x", "avg": f"{means['per']}x", "status": status, "diff": round(diff, 1)})
+        comparisons.append({
+            "label": "PER (가치)", 
+            "value": f"{_safe_num(val_per)}x", 
+            "avg": f"{mean_per}x", 
+            "status": status, 
+            "diff": _safe_num(diff, 1)
+        })
         
     if stock_pbr is not None and means.get("pbr") is not None:
-        diff = float(stock_pbr) - float(means["pbr"])
+        val_pbr = float(stock_pbr)
+        mean_pbr = float(means["pbr"])
+        diff = val_pbr - mean_pbr
         status = "저평가" if diff < 0 else "고평가"
-        comparisons.append({"label": "PBR (자산)", "value": f"{stock_pbr}x", "avg": f"{means['pbr']}x", "status": status, "diff": round(diff, 1)})
+        comparisons.append({
+            "label": "PBR (자산)", 
+            "value": f"{_safe_num(val_pbr)}x", 
+            "avg": f"{mean_pbr}x", 
+            "status": status, 
+            "diff": _safe_num(diff, 1)
+        })
 
     sector_info = {
         "name": ctype_label,

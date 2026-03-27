@@ -4,7 +4,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') 
     ? '' 
     : 'https://todaysstock.onrender.com';
 console.log('[DEBUG] API_BASE_URL:', API_BASE_URL);
@@ -1024,10 +1024,12 @@ async function renderMacroIndicators() {
     if (!economyGrid) return;
 
     try {
-        console.log('[DEBUG] Fetching macro data from:', `${API_BASE_URL}/api/macro`);
-        const resp = await fetchWithTimeout(`${API_BASE_URL}/api/macro`, { timeout: 30000 });
-        if (!resp.ok) throw new Error('Macro data fetch failed');
+        const url = `${API_BASE_URL}/api/macro?t=${Date.now()}`;
+        console.log('[DEBUG] Fetching macro data from:', url);
+        const resp = await fetchWithTimeout(url, { timeout: 30000 });
+        if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
         const data = await resp.json();
+        if (data.error) console.warn('[DEBUG] Server reported error:', data.error);
         console.log('[DEBUG] Macro data received:', data);
 
         // Data Mapping (시장 지수 대시보드용)
@@ -1119,7 +1121,16 @@ async function renderMacroIndicators() {
 
     } catch (err) {
         console.error("renderMacroIndicators error:", err);
-        if (indexList) indexList.innerHTML = '<div class="error-msg">지표 로드 실패</div>';
+        const errorMsg = err.name === 'TimeoutError' ? '서버 응답 시간 초과 (30초)' : (err.message || '알 수 없는 오류');
+        if (indexList) {
+            indexList.innerHTML = `
+                <div class="error-msg" style="padding: 20px; text-align: center;">
+                    <div style="font-weight: bold; margin-bottom: 8px;">지표 로드 실패</div>
+                    <div style="font-size: 12px; opacity: 0.7;">${errorMsg}</div>
+                    <button onclick="renderMacroIndicators()" style="margin-top: 12px; padding: 4px 12px; font-size: 12px; cursor: pointer;">다시 시도</button>
+                </div>
+            `;
+        }
     }
 }
 
