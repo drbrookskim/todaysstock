@@ -843,10 +843,15 @@ def api_macro():
     from fundamental_analysis import get_macro
     try:
         data = get_macro(ECOS_KEY)
+        if not data:
+            return jsonify({"status": "partial", "message": "일부 지표를 불러올 수 없습니다.", "data": {}})
         return jsonify(data)
     except Exception as e:
         print(f"Macro API 오류: {e}")
-        return jsonify({"error": str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        # 서비스 중단 방지를 위해 빈 데이터라도 반환
+        return jsonify({"error": str(e), "data": {}}), 200 # 200으로 반환하여 프론트엔드 크래시 방지
 
 
 @app.route("/api/suggest")

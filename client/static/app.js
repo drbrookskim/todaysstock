@@ -1225,8 +1225,18 @@ async function renderIndexChart(symbol, name) {
 
 // ── Top Status Chips 업데이트 분리 ──
 function updateStatusChips(data) {
-    const kospiData = data.kospi ? { name: 'KOSPI', price: data.kospi.toLocaleString(), change: (data.kospi_chg >= 0 ? '+' : '') + data.kospi_chg.toFixed(2) + '%', up: data.kospi_chg >= 0 } : null;
-    const kosdaqData = data.kosdaq ? { name: 'KOSDAQ', price: data.kosdaq.toLocaleString(), change: (data.kosdaq_chg >= 0 ? '+' : '') + data.kosdaq_chg.toFixed(2) + '%', up: data.kosdaq_chg >= 0 } : null;
+    const kospiData = data.kospi ? { 
+        name: 'KOSPI', 
+        price: data.kospi.toLocaleString(), 
+        change: data.kospi_chg != null ? (data.kospi_chg >= 0 ? '+' : '') + data.kospi_chg.toFixed(2) + '%' : '-', 
+        up: data.kospi_chg >= 0 
+    } : null;
+    const kosdaqData = data.kosdaq ? { 
+        name: 'KOSDAQ', 
+        price: data.kosdaq.toLocaleString(), 
+        change: data.kosdaq_chg != null ? (data.kosdaq_chg >= 0 ? '+' : '') + data.kosdaq_chg.toFixed(2) + '%' : '-', 
+        up: data.kosdaq_chg >= 0 
+    } : null;
 
     if (kospiData) {
         const chip = document.getElementById('chipKospi');

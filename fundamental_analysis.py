@@ -333,206 +333,107 @@ def scan_disclosures(corp_code: str, dart_key: str, days: int = 30) -> list:
 # 5.  거시경제 컨텍스트 (ECOS + yfinance)
 # ════════════════════════════════════════════════════════════
 def get_macro(ecos_key: str) -> dict:
-    ck = "macro_ctx_v2" # 캐시 키를 갱신하여 새 지표 즉시 반영
+    ck = "macro_ctx_v3" # 캐시 키 갱신
     if cached := _fg(ck, TTL_MAC):
         return cached
 
     m: dict = {}
+    tickers = {
+        "usd_krw": "KRW=X",
+        "kospi":   "^KS11",
+        "kosdaq":  "^KQ11",
+        "sp500":   "^GSPC",
+        "nasdaq":  "^IXIC",
+        "us10y":   "^TNX",
+        "vix":     "^VIX",
+        "wti":     "CL=F",
+        "dxy":     "DX=F",
+        "sox":     "^SOX",
+        "btc":     "BTC-USD",
+        "eth":     "ETH-USD",
+        "usdt":    "USDT-USD"
+    }
 
-    # USD/KRW
     try:
-        hist = yf.Ticker("KRW=X").history(period="5d")
-        if not hist.empty:
-            m["usd_krw"] = round(float(hist["Close"].iloc[-1]), 2)
-            if len(hist) >= 2:
-                prv = float(hist["Close"].iloc[-2])
-                m["usd_krw_chg"] = round((m["usd_krw"] - prv) / prv * 100, 3)
-            hist52 = yf.Ticker("KRW=X").history(period="1y")
-            if not hist52.empty:
-                m["usd_krw_52h"] = round(float(hist52["High"].max()), 2)
-                m["usd_krw_52l"] = round(float(hist52["Low"].min()), 2)
-    except:
-        pass
+        # 1. yfinance Batch Download (5일치 데이터 한번에)
+        import pandas as pd
+        symbols = list(tickers.values())
+        raw = yf.download(symbols, period="5d", interval="1d", group_by='ticker', progress=False)
+        
+        for key, sym in tickers.items():
+            try:
+                if sym not in raw.columns.levels[0]: continue
+                df = raw[sym].dropna(subset=['Close'])
+                if df.empty: continue
+                
+                cur_v = float(df['Close'].iloc[-1])
+                m[key] = round(cur_v, 3 if key == "us10y" else 2)
+                
+                if len(df) >= 2:
+                    prv_v = float(df['Close'].iloc[-2])
+                    if key == "us10y":
+                        m[f"{key}_chg"] = round(cur_v - prv_v, 3)
+                    else:
+                        m[f"{key}_chg"] = round((cur_v - prv_v) / prv_v * 100, 3)
+                
+                # 52주 고가/저가는 별도 처리가 필요할 수 있으나 속도를 위해 현재가 위주로 구성
+            except: pass
 
-    # --- Korean Indices via ECOS (Primary) or yfinance (Fallback) ---
+        # 2. Fear & Greed Index (VIX 기반 추정)
+        if "vix" in m:
+            v = m["vix"]
+            if v <= 15:   m["fear_greed"] = 75
+            elif v <= 20: m["fear_greed"] = 55
+            elif v <= 30: m["fear_greed"] = 35
+            else:         m["fear_greed"] = 15
+        else:
+            m["fear_greed"] = 50
+
+    except Exception as e:
+        print(f"⚠️ yfinance batch download error: {e}")
+
+    # 3. ECOS Data (기존 로직 유지하되 안전장치 강화)
     if ecos_key:
-        try:
-            # KOSPI (ECOS: 901Y002 / 0001000)
-            url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/5/901Y002/D/20240101/20261231/0001000"
-            r = requests.get(url, timeout=5).json()
-            if "StatisticSearch" in r and r["StatisticSearch"]["list_total_count"] > 0:
-                rows = r["StatisticSearch"]["row"]
-                m["kospi"] = round(float(rows[-1]["DATA_VALUE"]), 2)
-                if len(rows) >= 2:
-                    prv = float(rows[-2]["DATA_VALUE"])
-                    m["kospi_chg"] = round((m["kospi"] - prv) / prv * 100, 3)
-            
-            # KOSDAQ (ECOS: 901Y002 / 0042000)
-            url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/5/901Y002/D/20240101/20261231/0042000"
-            r = requests.get(url, timeout=5).json()
-            if "StatisticSearch" in r and r["StatisticSearch"]["list_total_count"] > 0:
-                rows = r["StatisticSearch"]["row"]
-                m["kosdaq"] = round(float(rows[-1]["DATA_VALUE"]), 2)
-                if len(rows) >= 2:
-                    prv = float(rows[-2]["DATA_VALUE"])
-                    m["kosdaq_chg"] = round((m["kosdaq"] - prv) / prv * 100, 3)
-        except Exception as e:
-            print(f"ECOS Index Fetch Error: {e}")
+        # KOSPI/KOSDAQ (ECOS 우선순위 높음 - 실시간성)
+        for key, code in [("kospi", "0001000"), ("kosdaq", "0042000")]:
+            try:
+                url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/5/901Y002/D/20240101/20261231/{code}"
+                r = requests.get(url, timeout=5).json()
+                rows = r.get("StatisticSearch", {}).get("row", [])
+                if rows:
+                    m[key] = round(float(rows[-1]["DATA_VALUE"]), 2)
+                    if len(rows) >= 2:
+                        prv = float(rows[-2]["DATA_VALUE"])
+                        m[f"{key}_chg"] = round((m[key] - prv) / prv * 100, 3)
+            except: pass
 
-    # Fallback to yfinance if ECOS failed or not provided
-    if "kospi" not in m:
-        try:
-            ks = yf.Ticker("^KS11").history(period="5d")
-            if not ks.empty:
-                m["kospi"] = round(float(ks["Close"].iloc[-1]), 2)
-                if len(ks) >= 2:
-                    prv = float(ks["Close"].iloc[-2])
-                    m["kospi_chg"] = round((m["kospi"] - prv) / prv * 100, 3)
-        except: pass
-
-    if "kosdaq" not in m:
-        try:
-            kq = yf.Ticker("^KQ11").history(period="5d")
-            if not kq.empty:
-                m["kosdaq"] = round(float(kq["Close"].iloc[-1]), 2)
-                if len(kq) >= 2:
-                    prv = float(kq["Close"].iloc[-2])
-                    m["kosdaq_chg"] = round((m["kosdaq"] - prv) / prv * 100, 3)
-        except: pass
-
-    # S&P 500 (^GSPC)
-    try:
-        sp = yf.Ticker("^GSPC").history(period="5d")
-        if not sp.empty:
-            m["sp500"] = round(float(sp["Close"].iloc[-1]), 2)
-            if len(sp) >= 2:
-                prv = float(sp["Close"].iloc[-2])
-                m["sp500_chg"] = round((m["sp500"] - prv) / prv * 100, 3)
-    except:
-        pass
-
-    # US 10Y Treasury Yield (^TNX)
-    try:
-        tnx = yf.Ticker("^TNX").history(period="5d")
-        if not tnx.empty:
-            m["us10y"] = round(float(tnx["Close"].iloc[-1]), 3)
-            if len(tnx) >= 2:
-                prv = float(tnx["Close"].iloc[-2])
-                m["us10y_chg"] = round((m["us10y"] - prv), 3) # 단위가 %이므로 포인트 등락
-    except:
-        pass
-
-    # NASDAQ (^IXIC)
-    try:
-        ndq = yf.Ticker("^IXIC").history(period="5d")
-        if not ndq.empty:
-            m["nasdaq"] = round(float(ndq["Close"].iloc[-1]), 2)
-            if len(ndq) >= 2:
-                prv = float(ndq["Close"].iloc[-2])
-                m["nasdaq_chg"] = round((m["nasdaq"] - prv) / prv * 100, 3)
-    except:
-        pass
-
-    # VIX (^VIX) - 시장 공포지수
-    try:
-        vix = yf.Ticker("^VIX").history(period="5d")
-        if not vix.empty:
-            m["vix"] = round(float(vix["Close"].iloc[-1]), 2)
-            if len(vix) >= 2:
-                prv = float(vix["Close"].iloc[-2])
-                m["vix_chg"] = round((m["vix"] - prv) / prv * 100, 3)
-    except:
-        pass
-
-    # WTI Crude Oil (CL=F) - 국제 유가
-    try:
-        wti = yf.Ticker("CL=F").history(period="5d")
-        if not wti.empty:
-            m["wti"] = round(float(wti["Close"].iloc[-1]), 2)
-            if len(wti) >= 2:
-                prv = float(wti["Close"].iloc[-2])
-                m["wti_chg"] = round((m["wti"] - prv) / prv * 100, 3)
-    except:
-        pass
-
-    # Dollar Index (DX=F) - 달러 인덱스
-    try:
-        dxy = yf.Ticker("DX=F").history(period="5d")
-        if not dxy.empty:
-            m["dxy"] = round(float(dxy["Close"].iloc[-1]), 2)
-            if len(dxy) >= 2:
-                prv = float(dxy["Close"].iloc[-2])
-                m["dxy_chg"] = round((m["dxy"] - prv) / prv * 100, 3)
-    except:
-        pass
-
-    # Philadelphia Semiconductor Index (^SOX) - 필라델피아 반도체 지수
-    try:
-        sox = yf.Ticker("^SOX").history(period="5d")
-        if not sox.empty:
-            m["sox"] = round(float(sox["Close"].iloc[-1]), 2)
-            if len(sox) >= 2:
-                prv = float(sox["Close"].iloc[-2])
-                m["sox_chg"] = round((m["sox"] - prv) / prv * 100, 3)
-    except:
-        pass
-
-    # Cryptocurrency (BTC, ETH, USDT)
-    for coin, ticker in [("btc", "BTC-USD"), ("eth", "ETH-USD"), ("usdt", "USDT-USD")]:
-        try:
-            c_hist = yf.Ticker(ticker).history(period="5d")
-            if not c_hist.empty:
-                m[coin] = round(float(c_hist["Close"].iloc[-1]), 2)
-                if len(c_hist) >= 2:
-                    prv = float(c_hist["Close"].iloc[-2])
-                    m[f"{coin}_chg"] = round((m[coin] - prv) / prv * 100, 3)
-        except:
-            pass
-
-    # Fear & Greed Index (Simple Estimation based on VIX)
-    # VIX 15 이하: Greed (75), 15-20: Neutral (50), 20-30: Fear (25), 30+: Extreme Fear (10)
-    if "vix" in m:
-        v = m["vix"]
-        if v <= 15:   m["fear_greed"] = 75
-        elif v <= 20: m["fear_greed"] = 55
-        elif v <= 30: m["fear_greed"] = 35
-        else:         m["fear_greed"] = 15
-    else:
-        m["fear_greed"] = 50
-
-    if ecos_key:
-        # 기준금리 (ECOS 722Y001 / 0101000 / MM)
+        # 기준금리
         try:
             now = datetime.now()
-            sm  = (now - timedelta(days=90)).strftime("%Y%m")
-            em  = now.strftime("%Y%m")
-            url = (f"https://ecos.bok.or.kr/api/StatisticSearch/"
-                   f"{ecos_key}/json/kr/1/5/722Y001/MM/{sm}/{em}/0101000")
-            rows = requests.get(url, timeout=10).json() \
-                           .get("StatisticSearch", {}).get("row", [])
+            sm = (now - timedelta(days=90)).strftime("%Y%m")
+            em = now.strftime("%Y%m")
+            url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/5/722Y001/MM/{sm}/{em}/0101000"
+            r = requests.get(url, timeout=5).json()
+            rows = r.get("StatisticSearch", {}).get("row", [])
             if rows:
-                m["base_rate"]        = float(rows[-1].get("DATA_VALUE", 0))
+                m["base_rate"] = float(rows[-1].get("DATA_VALUE", 0))
                 m["base_rate_period"] = rows[-1].get("TIME", "")
-        except:
-            pass
+        except: pass
 
-        # 반도체 수출 YoY (ECOS 901Y018 — 수출입금액)
+        # 반도체 수출
         try:
-            now = datetime.now()
-            sm  = (now - timedelta(days=400)).strftime("%Y%m")
-            em  = now.strftime("%Y%m")
-            url = (f"https://ecos.bok.or.kr/api/StatisticSearch/"
-                   f"{ecos_key}/json/kr/1/24/901Y018/MM/{sm}/{em}/064")
-            rows = requests.get(url, timeout=10).json() \
-                           .get("StatisticSearch", {}).get("row", [])
+            sm = (datetime.now() - timedelta(days=400)).strftime("%Y%m")
+            em = datetime.now().strftime("%Y%m")
+            url = f"https://ecos.bok.or.kr/api/StatisticSearch/{ecos_key}/json/kr/1/24/901Y018/MM/{sm}/{em}/064"
+            r = requests.get(url, timeout=5).json()
+            rows = r.get("StatisticSearch", {}).get("row", [])
             if len(rows) >= 13:
-                cur_v  = float(rows[-1].get("DATA_VALUE", 0) or 0)
-                prv_v  = float(rows[-13].get("DATA_VALUE", 0) or 0)
+                cur_v = float(rows[-1].get("DATA_VALUE", 0) or 0)
+                prv_v = float(rows[-13].get("DATA_VALUE", 0) or 0)
                 if prv_v:
-                    m["semi_export_yoy"]    = round((cur_v - prv_v) / prv_v * 100, 2)
+                    m["semi_export_yoy"] = round((cur_v - prv_v) / prv_v * 100, 2)
                     m["semi_export_period"] = rows[-1].get("TIME", "")
-        except:
-            pass
+        except: pass
 
     _fs(ck, m)
     return m
