@@ -946,10 +946,23 @@ def api_fundamental(code: str):
         suffix = ".KS" if market == "KOSPI" else ".KQ"
         ticker_obj = yf.Ticker(code + suffix)
         finfo = ticker_obj.fast_info
-        current_price = finfo.last_price if hasattr(finfo, 'last_price') else None
-        shares = finfo.shares if hasattr(finfo, 'shares') else None
+        current_price = getattr(finfo, 'last_price', None)
+        shares = getattr(finfo, 'shares', None)
+        
+        # yfinance info를 통한 추가 보강 (Price, Shares, 펀더멘탈 Fallback)
+        y_info = ticker_obj.info
+        if current_price is None: current_price = y_info.get('currentPrice')
+        if shares is None: shares = y_info.get('sharesOutstanding')
+        
+        roe_fb = y_info.get('returnOnEquity')
+        if roe_fb is not None: roe_fb *= 100.0
+        net_inc_fb = y_info.get('netIncomeToCommon')
+        bps_fb = y_info.get('bookValue')
+        equity_fb = (bps_fb * shares) if (bps_fb and shares) else None
+
     except Exception as e:
-        print(f"⚠️ 실시간 데이터(Shares/Price) 조회 실패: {e}")
+        print(f"⚠️ 실시간 및 보강 데이터 조회 실패: {e}")
+        roe_fb, net_inc_fb, equity_fb = None, None, None
 
     result = analyze_fundamental(
         stock_code=code,
@@ -958,7 +971,10 @@ def api_fundamental(code: str):
         dart_key=DART_API_KEY,
         ecos_key=ECOS_KEY,
         current_price=current_price,
-        shares=shares
+        shares=shares,
+        roe_fallback=roe_fb,
+        net_inc_fallback=net_inc_fb,
+        equity_fallback=equity_fb
     )
     _cache_set(cache_key, result)
     return jsonify(result)

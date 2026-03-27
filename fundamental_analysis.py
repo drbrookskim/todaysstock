@@ -91,11 +91,12 @@ _SECTOR_MEANS = {
 # 2.  DART 재무제표 파싱
 # ════════════════════════════════════════════════════════════
 _ACCT = {
-    "매출액": "rev",        "영업수익": "rev",
-    "영업이익": "op",       "영업손실": "op",
-    "당기순이익": "net",    "당기순손실": "net",
+    "매출액": "rev",        "영업수익": "rev",       "수익(매출액)": "rev",
+    "영업이익": "op",       "영업손실": "op",       "영업이익(손실)": "op",
+    "당기순이익": "net",    "당기순손실": "net",    "당기순이익(손실)": "net", "분기순이익": "net", "분기순이익(손실)": "net",
     "자산총계": "assets",   "부채총계": "liab",
-    "자본총계": "equity",   "재고자산": "inv",
+    "자본총계": "equity",   "자본총계(자본금)": "equity", "총자본": "equity",
+    "재고자산": "inv",
 }
 
 def _amt(s) -> float:
@@ -104,10 +105,10 @@ def _amt(s) -> float:
     except:
         return 0.0
 
-def _dart_stmt(corp_code: str, dart_key: str, year: str, reprt_code: str) -> list:
+def _dart_stmt(corp_code: str, dart_key: str, year: str, reprt_code: str, fs_div: str = "CFS") -> list:
     url = (f"https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json"
            f"?crtfc_key={dart_key}&corp_code={corp_code}"
-           f"&bsns_year={year}&reprt_code={reprt_code}&fs_div=CFS")
+           f"&bsns_year={year}&reprt_code={reprt_code}&fs_div={fs_div}")
     try:
         r = requests.get(url, timeout=12)
         d = r.json()
@@ -139,10 +140,12 @@ def fetch_financials(corp_code: str, dart_key: str) -> dict:
     now = datetime.now()
     yr, yr1, yr2 = str(now.year), str(now.year - 1), str(now.year - 2)
 
-    # 연간: 전년도 사업보고서 우선
+    # 연간: 전년도 사업보고서 우선 (CFS 시도 후 실패 시 OFS 시도)
     ann_rows, ann_yr = [], yr1
     for y in [yr1, yr2]:
-        ann_rows = _dart_stmt(corp_code, dart_key, y, "11011")
+        for div in ["CFS", "OFS"]:
+            ann_rows = _dart_stmt(corp_code, dart_key, y, "11011", fs_div=div)
+            if ann_rows: break
         ann_yr = y
         if ann_rows:
             break
@@ -153,7 +156,9 @@ def fetch_financials(corp_code: str, dart_key: str) -> dict:
         for rcode, lbl in [("11014", f"{y}년 3분기"),
                            ("11012", f"{y}년 반기"),
                            ("11013", f"{y}년 1분기")]:
-            rows = _dart_stmt(corp_code, dart_key, y, rcode)
+            for div in ["CFS", "OFS"]:
+                rows = _dart_stmt(corp_code, dart_key, y, rcode, fs_div=div)
+                if rows: break
             if rows:
                 qtr_rows, qtr_label = rows, lbl
                 break
@@ -636,7 +641,10 @@ def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
                         dart_key: str, ecos_key: str,
                         induty_code: str = "",
                         current_price: float = None,
-                        shares: int = None) -> dict:
+                        shares: int = None,
+                        roe_fallback: float = None,
+                        net_inc_fallback: float = None,
+                        equity_fallback: float = None) -> dict:
     """
     4-Pillar 펀더멘탈 분석 실행.
     """
@@ -646,6 +654,26 @@ def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
     # ── [데이터 트리거 확인] + [핵심 축 분석] ──
     fin  = fetch_financials(corp_code, dart_key) if (corp_code and dart_key) else {}
     qnt  = compute_quant(fin) if fin else {"score": 50, "data_available": False}
+    
+    # ── [데이터 보강 (Fallback)] ──
+    if not qnt.get("roe") and roe_fallback is not None:
+        qnt["roe"] = roe_fallback
+    if not qnt.get("net_income_raw") and net_inc_fallback is not None:
+        qnt["net_income_raw"] = net_inc_fallback
+    if not qnt.get("equity_raw") and equity_fallback is not None:
+        qnt["equity_raw"] = equity_fallback
+    if roe_fallback or net_inc_fallback or equity_fallback:
+        qnt["data_available"] = True
+        
+    # ── [데이터 추론 (Inference)] ──
+    # Equity가 없지만 Net Income과 ROE가 있다면 추론 가능: Equity = Net Income / (ROE/100)
+    if not qnt.get("equity_raw") and qnt.get("net_income_raw") and qnt.get("roe"):
+        try:
+            roe_dec = qnt["roe"] / 100.0
+            if roe_dec != 0:
+                qnt["equity_raw"] = qnt["net_income_raw"] / roe_dec
+        except:
+            pass
     evts = scan_disclosures(corp_code, dart_key) if (corp_code and dart_key) else []
     mac  = get_macro(ecos_key or "")
 
