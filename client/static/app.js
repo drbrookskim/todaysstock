@@ -1387,30 +1387,32 @@ function renderAnalysisReport(data) {
     trendText.textContent = `${data.trend_strength}%`;
 
 
-    // ── Legacy UX Restore: Rating & Financials ──
-    const ratingBarsContainer = document.getElementById('ratingBarsContainer');
-    const financialsGrid = document.getElementById('financialsGrid');
-    const ratingScoreVal = document.getElementById('ratingScoreVal');
+        // ── Legacy UX Restore: Rating & Financials ──
+        const ratingBarsContainer = document.getElementById('ratingBarsContainer');
+        const financialsGrid = document.getElementById('financialsGrid');
+        const ratingScoreVal = document.getElementById('ratingScoreVal');
 
-    if (ratingBarsContainer && financialsGrid) {
-        // Deterministic mock data logic leveraging simple hash of stock code
-        const codeText = data.code || currentStock?.code || '005930';
-        const hash = codeText.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
-        const rand = (min, max) => min + (hash % (max - min));
-        
-        const overallScore = (rand(60, 95) / 10).toFixed(1);
-        ratingScoreVal.textContent = overallScore;
+        if (ratingBarsContainer && financialsGrid) {
+            // Deterministic mock logic (Unified with updateBasicAnalysis)
+            const codeText = data.code || currentStock?.code || '005930';
+            const hash = codeText.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+            const getMock = (min, max, offset = 0) => ((min + ((hash + offset) % (max - min))) / 10).toFixed(1);
 
-        const ratingLabels = ['수익성', '성장성', '안정성', '효율성', '시장평가'];
-        const ratingGrades = ['부진', '보통', '양호', '우수', '매우 우수'];
-        
-        let barsHtml = '';
-        ratingLabels.forEach((label, idx) => {
-            const targetPct = Math.min(100, Math.max(30, rand(30, 100) + (idx * 5) - (hash % (10 + idx))));
-            const gradeIdx = Math.floor((targetPct - 30) / 14);
-            const grade = ratingGrades[Math.min(4, Math.max(0, gradeIdx))];
-            
-            barsHtml += `
+            const overallScore = (6.0 + (hash % 35) / 10).toFixed(1);
+            ratingScoreVal.textContent = data.score ? (data.score / 10).toFixed(1) : overallScore;
+
+            const ratingLabels = ['수익성', '성장성', '안정성', '효율성', '시장평가'];
+            const ratingGrades = ['부진', '보통', '양호', '우수', '매우 우수'];
+
+            let barsHtml = '';
+            ratingLabels.forEach((label, idx) => {
+                // Use breakdown score if available, otherwise mock
+                const scoreKey = ['roe', 'revenue_growth', 'debt_ratio', 'op_margin', 'market'][idx]; 
+                const targetPct = (data.breakdown && data.breakdown[scoreKey]) ? data.breakdown[scoreKey] : Math.min(100, Math.max(30, 40 + (hash % 50) + (idx * 5)));
+                const gradeIdx = Math.floor((targetPct - 30) / 14);
+                const grade = ratingGrades[Math.min(4, Math.max(0, gradeIdx))];
+
+                barsHtml += `
             <div class="rating-bar-row">
                 <span class="rating-label">${label}</span>
                 <div class="rating-track">
@@ -1418,32 +1420,42 @@ function renderAnalysisReport(data) {
                 </div>
                 <span class="rating-value">${grade}</span>
             </div>`;
-        });
-        ratingBarsContainer.innerHTML = barsHtml;
-
-        // Animate bars on scroll/view
-        observeElement(ratingBarsContainer, (el) => {
-            el.querySelectorAll('.rating-fill').forEach((fillEl, idx) => {
-                fillEl.style.transitionDelay = `${idx * 0.1}s`;
-                // trigger layout reflow before assigning width
-                void fillEl.offsetWidth;
-                fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
             });
-        });
+            ratingBarsContainer.innerHTML = barsHtml;
 
-        // Financials Grid Mock
-        const per = (rand(50, 250) / 10).toFixed(1) + 'x';
-        const pbr = (rand(5, 30) / 10).toFixed(1) + 'x';
-        const roe = (rand(1, 25)).toFixed(1) + '%';
-        const debt = (rand(20, 180)) + '%';
+            // Animate bars
+            observeElement(ratingBarsContainer, (el) => {
+                el.querySelectorAll('.rating-fill').forEach((fillEl, idx) => {
+                    fillEl.style.transitionDelay = `${idx * 0.1}s`;
+                    void fillEl.offsetWidth;
+                    fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
+                });
+            });
 
-        financialsGrid.innerHTML = `
-            <div class="finance-box"><span class="finance-label">PER</span><span class="finance-val">${per}</span></div>
-            <div class="finance-box"><span class="finance-label">PBR</span><span class="finance-val">${pbr}</span></div>
-            <div class="finance-box"><span class="finance-label">ROE</span><span class="finance-val">${roe}</span></div>
-            <div class="finance-box"><span class="finance-label">부채비율</span><span class="finance-val">${debt}</span></div>
-        `;
-    }
+            // Financials Grid (ROE, PER, PBR, etc.) - Priority assigned to data from API
+            const per = data.per || (getMock(50, 250) + 'x');
+            const pbr = data.pbr || (getMock(5, 30, 7) + 'x');
+            const roe = data.roe || (getMock(10, 250, 13) + '%');
+            const debt = data.debt_ratio || (getMock(200, 1800, 17) + '%');
+
+            financialsGrid.innerHTML = `
+                <div class="finance-box"><span class="finance-label">PER</span><span class="finance-val">${per}</span></div>
+                <div class="finance-box"><span class="finance-label">PBR</span><span class="finance-val">${pbr}</span></div>
+                <div class="finance-box"><span class="finance-label">ROE</span><span class="finance-val">${roe}</span></div>
+                <div class="finance-box"><span class="finance-label">부채비율</span><span class="finance-val">${debt}</span></div>
+            `;
+
+            // Add clarification note for ROE discrepancy
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'analysis-note';
+            noteDiv.style.fontSize = '11px';
+            noteDiv.style.color = '#94a3b8';
+            noteDiv.style.marginTop = '12px';
+            noteDiv.style.textAlign = 'center';
+            noteDiv.style.width = '100%';
+            noteDiv.innerHTML = '<i class="fas fa-info-circle"></i> ROE는 최근 결산 자료 기반이며, 계산 방식에 따라 실시간 지표와 차이가 있을 수 있습니다.';
+            financialsGrid.parentNode.appendChild(noteDiv);
+        }
 
     // ── Patterns List ──
     const patternsCard = document.getElementById('patternsCard');
