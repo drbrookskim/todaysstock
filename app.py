@@ -932,12 +932,33 @@ def api_fundamental(code: str):
     if cached:
         return jsonify(cached)
 
+    # 실시간 가격 및 발행주식수 (적정주가 계산용)
+    # yfinance를 사용하여 실시간 데이터를 보강합니다.
+    current_price = None
+    shares = None
+    market = "KOSPI"
+    for s in STOCK_LIST:
+        if s.get("code") == code:
+            market = s.get("market", "KOSPI")
+            break
+
+    try:
+        suffix = ".KS" if market == "KOSPI" else ".KQ"
+        ticker_obj = yf.Ticker(code + suffix)
+        finfo = ticker_obj.fast_info
+        current_price = finfo.last_price if hasattr(finfo, 'last_price') else None
+        shares = finfo.shares if hasattr(finfo, 'shares') else None
+    except Exception as e:
+        print(f"⚠️ 실시간 데이터(Shares/Price) 조회 실패: {e}")
+
     result = analyze_fundamental(
         stock_code=code,
         corp_name=corp_name,
         corp_code=corp_code,
         dart_key=DART_API_KEY,
         ecos_key=ECOS_KEY,
+        current_price=current_price,
+        shares=shares
     )
     _cache_set(cache_key, result)
     return jsonify(result)

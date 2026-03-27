@@ -1577,7 +1577,7 @@ async function renderFundamentalReport(stockCode) {
     
     document.getElementById('fundQuantContent').innerHTML = '<div class="fund-loading">분석 중…</div>';
     document.getElementById('fundEventContent').innerHTML = '<div class="fund-loading">공시 스캔 중…</div>';
-    document.getElementById('fundMacroContent').innerHTML = '<div class="fund-loading">거시 조회 중…</div>';
+    document.getElementById('fundSectorContent').innerHTML = '<div class="fund-loading">업종 분석 중…</div>';
 
     let d;
     try {
@@ -1659,29 +1659,73 @@ async function renderFundamentalReport(stockCode) {
             </div>`;
     }
 
-    // ── Macro 축 ──
-    const m = d.macro || {};
-    const macroItems = [];
-    if (m.usd_krw) macroItems.push(['USD/KRW', `${m.usd_krw.toLocaleString()}`, m.usd_krw_chg != null ? (m.usd_krw_chg >= 0 ? '+' : '') + m.usd_krw_chg + '%' : null]);
-    if (m.nasdaq) macroItems.push(['나스닥 지수', `${m.nasdaq.toLocaleString()}`, m.nasdaq_chg != null ? (m.nasdaq_chg >= 0 ? '+' : '') + m.nasdaq_chg + '%' : null]);
-    if (m.us10y) macroItems.push(['미 국채 10년물', `${m.us10y}%`, m.us10y_chg != null ? (m.us10y_chg >= 0 ? '+' : '') + m.us10y_chg + 'p' : null]);
-    if (m.vix) macroItems.push(['VIX 공포지수', `${m.vix}`, m.vix_chg != null ? (m.vix_chg >= 0 ? '+' : '') + m.vix_chg + '%' : null]);
+    // ── Sector Analysis 축 (교체됨) ──
+    const s = d.sector || {};
+    const comps = s.comparisons || [];
 
-    if (macroItems.length === 0) {
-        document.getElementById('fundMacroContent').innerHTML = '<div class="fund-no-data">데이터 로드 실패</div>';
+    if (comps.length === 0) {
+        document.getElementById('fundSectorContent').innerHTML =
+            '<div class="fund-no-data">업종 비교 데이터 없음</div>';
     } else {
-        document.getElementById('fundMacroContent').innerHTML = `
+        document.getElementById('fundSectorContent').innerHTML = `
             <div class="prob-two-col" style="background:transparent; padding:0; gap:20px;">
                 <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
-                    <div style="font-size:2.5rem; margin-bottom:8px;">🌐</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">거시 경제</div>
+                    <div style="font-size:2.5rem; margin-bottom:8px;">🏢</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">업종 분석</div>
                 </div>
                 <div class="prob-right-col" style="display:flex; flex-direction:column; gap:6px; width:100%;">
-                    ${macroItems.map(([k, v, chg]) => {
-                        const chgHtml = chg ? `<span class="fund-macro-chg ${parseFloat(chg) >= 0 ? 'fund-pos' : 'fund-neg'}" style="font-size:0.75rem; margin-left:6px;">${chg}</span>` : '';
-                        return `<div class="fund-macro-row" style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;"><span class="fund-macro-key" style="font-size:0.85rem;">${k}</span><span class="fund-macro-val" style="font-weight:600; font-size:0.9rem;">${v}${chgHtml}</span></div>`;
-                    }).join('')}
+                    <div style="font-size:0.88rem; font-weight:600; color:var(--primary); margin-bottom:4px;">
+                        ${s.name || '종합'} 업종 평균 비교
+                    </div>
+                    ${comps.map(c => `
+                    <div class="fund-event-item" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border-soft); padding:8px 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">${c.label}</span>
+                            <span style="font-size:0.7rem; font-weight:700; color:${c.status === '우위' || c.status === '저평가' ? '#10b981' : '#ef4444'};">
+                                ${c.status}
+                            </span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <span style="font-size:0.95rem; font-weight:700;">${c.value}</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">평균 ${c.avg}</span>
+                        </div>
+                    </div>`).join('')}
                 </div>
+            </div>`;
+    }
+    // ── Target ──
+    const target = d.target;
+    document.getElementById('fundTargetContent').innerHTML = '';
+    if (target) {
+        const color = target.status === '저평가' || target.status === '매력' ? '#10b981' : (target.status === '고평가' ? '#ef4444' : '#6366f1');
+        document.getElementById('fundTargetContent').innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="text-align:center; padding:12px; background:rgba(255,255,255,0.03); border:1px solid var(--border-soft); border-radius:8px;">
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">예상 적정 주가</div>
+                    <div style="font-size:1.4rem; font-weight:800; color:${color};">${Number(target.value).toLocaleString()}원</div>
+                    <div style="font-size:0.85rem; margin-top:4px;">
+                        <span style="color:${color}; font-weight:700;">${target.status}</span>
+                        <span style="color:var(--text-muted); margin-left:4px;">(기대수익: ${target.upside > 0 ? '+' : ''}${target.upside}%)</span>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div style="padding:8px; background:rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius:6px; font-size:0.7rem;">
+                        <div style="color:var(--text-muted); margin-bottom:2px;">S-RIM (보수)</div>
+                        <div style="font-weight:600;">${Number(target.srim).toLocaleString()}원</div>
+                    </div>
+                    <div style="padding:8px; background:rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius:6px; font-size:0.7rem;">
+                        <div style="color:var(--text-muted); margin-bottom:2px;">EPS*ROE (성장)</div>
+                        <div style="font-weight:600;">${Number(target.basic).toLocaleString()}원</div>
+                    </div>
+                </div>
+                <div style="font-size:0.65rem; color:var(--text-muted); text-align:center; opacity:0.7;">
+                    * ${target.method} (할인율 8% 적용)
+                </div>
+            </div>`;
+    } else {
+        document.getElementById('fundTargetContent').innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-muted); font-size:0.8rem; text-align:center; padding:20px;">
+                재무 데이터 부족으로<br>산출이 불가능합니다.
             </div>`;
     }
 

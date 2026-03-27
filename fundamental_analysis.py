@@ -67,6 +67,24 @@ def classify_company(corp_name: str, induty_code: str = "") -> Tuple[str, str]:
         if induty_code.startswith(pfx):
             return ct, _LABELS.get(ct, ct)
     return "GENERAL", _LABELS["GENERAL"]
+    
+# ── 업종별 벤치마크 (Benchmarks) ──────────────────────────────
+_SECTOR_MEANS = {
+    # ROE 15% / PER 10 / PBR 1.2 기준 (종합반도체)
+    "IDM":       {"roe": 15.0, "per": 12.0, "pbr": 1.5},
+    # 장비주는 PER가 높음
+    "EQUIPMENT": {"roe": 12.0, "per": 18.0, "pbr": 2.5},
+    # 이차전지는 성장성 반영하여 고PER 고PBR
+    "BATTERY":   {"roe": 10.0, "per": 35.0, "pbr": 4.5},
+    # 바이오는 PER 무의미한 경우 많으나 PBR 높음
+    "BIO":       {"roe": 5.0,  "per": 50.0, "pbr": 6.0},
+    "EV":        {"roe": 12.0, "per": 8.0,  "pbr": 0.8},
+    "INTERNET":  {"roe": 14.0, "per": 25.0, "pbr": 3.0},
+    "FINANCE":   {"roe": 9.0,  "per": 5.0,  "pbr": 0.4},
+    "TELECOM":   {"roe": 10.0, "per": 10.0, "pbr": 0.8},
+    "ENERGY":    {"roe": 8.0,  "per": 12.0, "pbr": 1.0},
+    "GENERAL":   {"roe": 10.0, "per": 12.0, "pbr": 1.1},
+}
 
 
 # ════════════════════════════════════════════════════════════
@@ -176,11 +194,11 @@ def compute_quant(financials: dict) -> dict:
     def sd(a, b):
         return a / b if b else None
 
-    roe        = sd(net_c, eq_c) and sd(net_c, eq_c) * 100
-    op_margin  = sd(op_c, rev_c) and sd(op_c, rev_c) * 100
-    rev_growth = sd(rev_c - rev_p, rev_p) * 100 if rev_p else None
-    qtr_growth = sd(qtr_c - qtr_p, qtr_p) * 100 if qtr_p else None
-    debt_ratio = sd(liab_c, eq_c) * 100 if eq_c else None
+    roe        = sd(net_c, eq_c) * 100 if (net_c is not None and eq_c) else None
+    op_margin  = sd(op_c, rev_c) * 100 if (op_c is not None and rev_c) else None
+    rev_growth = (rev_c - rev_p) / rev_p * 100 if (rev_p and rev_c is not None) else None
+    qtr_growth = (qtr_c - qtr_p) / qtr_p * 100 if (qtr_p and qtr_c is not None) else None
+    debt_ratio = liab_c / eq_c * 100 if (eq_c and liab_c is not None) else None
     inv_turn   = sd(rev_c, inv_c) if inv_c else None
 
     def sc_roe(v):
@@ -251,6 +269,8 @@ def compute_quant(financials: dict) -> dict:
         "period":        financials.get("annual", {}).get("period", ""),
         "qtr_period":    financials.get("quarterly", {}).get("period", ""),
         "data_available": financials.get("has_annual", False),
+        "equity_raw":    eq_c,
+        "net_income_raw": net_c,
     }
 
 
@@ -563,16 +583,62 @@ def _build_signal(quant: dict, events: list,
             "signal_reason": " | ".join(reasons) if reasons else "데이터 분석 완료"}
 
 
+def _calculate_target(qnt, current_price, shares):
+    """적정 주가 산출 (S-RIM 및 EPS*ROE 모델)"""
+    if not shares or not current_price:
+        return None
+
+    roe_val = qnt.get("roe")
+    equity  = qnt.get("equity_raw")
+    net_inc = qnt.get("net_income_raw")
+
+    if roe_val is None or not equity or not shares:
+        return None
+
+    roe = roe_val / 100.0
+    r = 0.08 # 할인율 (요구수익률 8%)
+
+    # 1. S-RIM 모델 (잔여이익모델)
+    # 공식: BPS + (BPS * (ROE - r) / r)
+    bps = equity / shares
+    srim_price = bps + (bps * (roe - r) / r)
+
+    # 2. EPS * ROE 모델 (Rule of Thumb)
+    # 공식: EPS * ROE (ROE를 PER 멀티플로 환산)
+    eps = net_inc / shares
+    basic_price = eps * (roe * 100) # ROE가 15%면 멀티플 15배
+
+    # 최종 적정주가는 두 모델의 평균 또는 업종별 가중치 (여기서는 평균)
+    target_p = (srim_price + basic_price) / 2
+    
+    upside = ((target_p - current_price) / current_price) * 100 if current_price else 0
+    
+    status = "적정"
+    if upside > 20:   status = "저평가"
+    elif upside > 5:  status = "매력"
+    elif upside < -10: status = "고평가"
+
+    return {
+        "value":       round(target_p),
+        "upside":      round(upside, 1),
+        "status":      status,
+        "srim":        round(srim_price),
+        "basic":       round(basic_price),
+        "method":      "S-RIM & ROE 모델 혼합",
+        "shares":      shares
+    }
+
+
 # ════════════════════════════════════════════════════════════
 # 7.  메인 API
 # ════════════════════════════════════════════════════════════
 def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
                         dart_key: str, ecos_key: str,
-                        induty_code: str = "") -> dict:
+                        induty_code: str = "",
+                        current_price: float = None,
+                        shares: int = None) -> dict:
     """
     4-Pillar 펀더멘탈 분석 실행.
-    출력 포맷:
-      [대상 식별] → [데이터 트리거 확인] → [핵심 축 분석] → [실행 가능한 신호]
     """
     # ── [대상 식별] ──
     ctype, ctype_label = classify_company(corp_name, induty_code)
@@ -589,24 +655,54 @@ def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
     axes = []
     if qnt.get("data_available"):      axes.append("Quant")
     if evts:                           axes.append("Event-Driven")
-    if mac:                            axes.append("Macro")
+    axes.append("Sector")
+    
+    # ── [적정 주가 산출 (Target Price Architecture)] ──
+    target = _calculate_target(qnt, current_price, shares)
+    if target:
+        axes.append("Target")
+
+    # ── [업종 비교 분석 (Sector Comparison)] ──
+    means = _SECTOR_MEANS.get(ctype, _SECTOR_MEANS["GENERAL"])
+    stock_roe = qnt.get("roe")
+    stock_per = qnt.get("per")
+    stock_pbr = qnt.get("pbr")
+    
+    comparisons = []
+    if stock_roe is not None and means.get("roe") is not None:
+        diff = float(stock_roe) - float(means["roe"])
+        status = "우위" if diff > 0 else "열위"
+        comparisons.append({"label": "ROE (수익성)", "value": f"{stock_roe}%", "avg": f"{means['roe']}%", "status": status, "diff": round(diff, 1)})
+    
+    if stock_per is not None and means.get("per") is not None:
+        diff = float(stock_per) - float(means["per"])
+        # PER는 낮을수록 저평가(우위)
+        status = "저평가" if diff < 0 else "고평가"
+        comparisons.append({"label": "PER (가치)", "value": f"{stock_per}x", "avg": f"{means['per']}x", "status": status, "diff": round(diff, 1)})
+        
+    if stock_pbr is not None and means.get("pbr") is not None:
+        diff = float(stock_pbr) - float(means["pbr"])
+        status = "저평가" if diff < 0 else "고평가"
+        comparisons.append({"label": "PBR (자산)", "value": f"{stock_pbr}x", "avg": f"{means['pbr']}x", "status": status, "diff": round(diff, 1)})
+
+    sector_info = {
+        "name": ctype_label,
+        "benchmarks": means,
+        "comparisons": comparisons[:3],
+        "summary": sig["signal_reason"]
+    }
 
     return {
-        # 대상 식별
         "company_type":       ctype,
         "company_type_label": ctype_label,
-        # Quant
         "quant":              qnt,
-        # Event-Driven
         "events":             evts[:5],
         "event_score":        sum(e["weight"] for e in evts),
-        # Macro
-        "macro":              mac,
-        # 신호
+        "sector":             sector_info,
+        "target":             target,
         "signal":             sig["signal"],
         "signal_label":       sig["signal_label"],
         "signal_reason":      sig["signal_reason"],
-        # 메타
         "axes_used":          axes,
         "generated_at":       datetime.now().isoformat(),
     }
