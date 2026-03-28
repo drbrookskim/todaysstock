@@ -3020,7 +3020,7 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
                 const a = nodes[i], b = nodes[j];
                 const dx = b.x - a.x, dy = b.y - a.y;
                 const dist = Math.max(Math.hypot(dx, dy), 1);
-                const charge = (a.type === 'root' || b.type === 'root') ? -3000 : (a.type === 'topic' || b.type === 'topic') ? -800 : -300;
+                const charge = (a.type === 'root' || b.type === 'root') ? -1500 : (a.type === 'topic' || b.type === 'topic') ? -600 : -300;
                 const force = charge / (dist * dist);
                 a.vx -= force * dx / dist * alpha * 0.1;
                 a.vy -= force * dy / dist * alpha * 0.1;
@@ -3143,9 +3143,12 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
         transform.x += mx / transform.scale;
         transform.y += my / transform.scale;
     };
+    // Track mousedown position to distinguish click vs drag
+    let mouseDownPos = { x: 0, y: 0 };
     canvas.onmousedown = (e) => {
         const r = rect();
         const n = getNodeAt(e.clientX - r.left, e.clientY - r.top);
+        mouseDownPos = { x: e.clientX, y: e.clientY };
         if (n) { dragNode = n; isDragging = true; }
         else { isDragging = true; }
         lastMouse = { x: e.clientX, y: e.clientY };
@@ -3153,7 +3156,7 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
     canvas.onmousemove = (e) => {
         const r = rect();
         hoveredNode = getNodeAt(e.clientX - r.left, e.clientY - r.top);
-        canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+        canvas.style.cursor = hoveredNode ? 'pointer' : (isDragging ? 'grabbing' : 'grab');
         if (!isDragging) return;
         const dx = e.clientX - lastMouse.x, dy = e.clientY - lastMouse.y;
         if (dragNode) {
@@ -3167,17 +3170,19 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
         lastMouse = { x: e.clientX, y: e.clientY };
     };
     canvas.onmouseup = (e) => {
-        if (dragNode) {
-            // Check if it was a click (not a drag)
-            const r = rect();
+        const r = rect();
+        const movedX = Math.abs(e.clientX - mouseDownPos.x);
+        const movedY = Math.abs(e.clientY - mouseDownPos.y);
+        const isClick = movedX < 5 && movedY < 5; // threshold: 5px
+
+        if (isClick) {
+            // Treat as click – find node under cursor
             const n = getNodeAt(e.clientX - r.left, e.clientY - r.top);
             if (n && n.type === 'stock') {
                 _vcSearchStock(n.label);
-            } else if (n && n.type === 'topic') {
-                // Highlight effect
             }
-            dragNode = null;
         }
+        dragNode = null;
         isDragging = false;
     };
     canvas.onmouseleave = () => { isDragging = false; dragNode = null; hoveredNode = null; };
