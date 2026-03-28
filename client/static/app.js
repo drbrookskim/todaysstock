@@ -1456,7 +1456,7 @@ function renderAnalysisReport(data) {
     const trendContainer = document.getElementById('trendContainer');
     if (data.trend) {
         if (aiTrendBlock) aiTrendBlock.classList.remove('hidden');
-        if (trendContainer) trendContainer.style.display = 'flex';
+        if (trendContainer) trendContainer.classList.remove('hidden');
     }
 
 
@@ -1571,12 +1571,14 @@ function renderAnalysisReport(data) {
     const noPatternsMsg = document.getElementById('noPatternsMsg');
 
     if (!data.patterns || data.patterns.length === 0) {
-        if (aiPatternsBlock) aiPatternsBlock.classList.add('hidden');
-        patternsList.innerHTML = '';
-        noPatternsMsg.classList.remove('hidden');
+        if (aiPatternsBlock) aiPatternsBlock.classList.remove('hidden'); // Always show the block header
+        if (patternsCard) patternsCard.classList.remove('hidden');
+        if (patternsList) patternsList.innerHTML = '';
+        if (noPatternsMsg) noPatternsMsg.classList.remove('hidden');
     } else {
         if (aiPatternsBlock) aiPatternsBlock.classList.remove('hidden');
-        noPatternsMsg.classList.add('hidden');
+        if (patternsCard) patternsCard.classList.remove('hidden');
+        if (noPatternsMsg) noPatternsMsg.classList.add('hidden');
         patternsList.innerHTML = data.patterns.map(p => {
             const signalCls = p.signal === 'bullish' ? 'pattern-bullish' : 'pattern-bearish';
             const signalLabel = p.signal === 'bullish' ? '상승' : '하락';
