@@ -241,7 +241,10 @@ function restoreStockContext(type) {
             const patternReportSection = document.getElementById('patternReportSection');
             const triggerContainer = document.getElementById('analysisTriggerContainer');
             if (patternReportSection) patternReportSection.classList.add('hidden');
-            if (triggerContainer) triggerContainer.style.display = 'block';
+            if (triggerContainer) {
+                const isLogged = authUser && authUser.logged_in;
+                triggerContainer.style.display = isLogged ? 'block' : 'none';
+            }
         }
 
         if (context.item && context.item.code) {
@@ -732,9 +735,12 @@ async function selectStock(item, origin = 'search') {
             if (resSec) resSec.classList.remove('hidden');
             renderResult(data);
             
-            // Ensure Trigger button is visible in Home
+            // Ensure Trigger button is visible in Home (Authenticated only)
             const triggerContainer = document.getElementById('analysisTriggerContainer');
-            if (triggerContainer) triggerContainer.style.display = 'block';
+            if (triggerContainer) {
+                const isLogged = authUser && authUser.logged_in;
+                triggerContainer.style.display = isLogged ? 'block' : 'none';
+            }
             
             // Hide pattern report if it was open from previous analysis
             const patternReportSection = document.getElementById('patternReportSection');
@@ -920,7 +926,10 @@ function renderResult(data) {
     const showAnalysisBtn = document.getElementById('btnShowAnalysis');
 
     if (patternReportSection) patternReportSection.classList.add('hidden');
-    if (triggerContainer) triggerContainer.style.display = 'block';
+    if (triggerContainer) {
+        const isLogged = authUser && authUser.logged_in;
+        triggerContainer.style.display = isLogged ? 'block' : 'none';
+    }
 
     if (showAnalysisBtn) {
         showAnalysisBtn.onclick = () => {
@@ -2766,6 +2775,7 @@ async function initAuth() {
         const navValueChain = document.getElementById('navValueChain');
         const addWatchlistBtnContainer = document.getElementById('addWatchlistBtnContainer');
         const pageGreeting = document.getElementById('pageGreeting');
+        const analysisTriggerContainer = document.getElementById('analysisTriggerContainer');
 
         console.log('[DEBUG] updateAuthUI - logged_in:', authUser?.logged_in);
         if (authUser && authUser.logged_in) {
@@ -2784,6 +2794,7 @@ async function initAuth() {
             if (navWatchlist) navWatchlist.style.display = 'flex';
             if (navAnalysis) navAnalysis.style.display = 'flex';
             if (navValueChain) navValueChain.style.display = 'flex';
+            if (analysisTriggerContainer) analysisTriggerContainer.style.display = 'block';
 
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
             updateWatchlistCount();
@@ -2803,6 +2814,7 @@ async function initAuth() {
             if (navWatchlist) navWatchlist.style.display = 'none';
             if (navAnalysis) navAnalysis.style.display = 'none';
             if (navValueChain) navValueChain.style.display = 'none';
+            if (analysisTriggerContainer) analysisTriggerContainer.style.display = 'none';
 
             // Auto-redirect if in restricted section
             const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
