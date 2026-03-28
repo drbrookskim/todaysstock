@@ -140,7 +140,7 @@ function renderRecentSearches() {
                 name: chip.dataset.name,
             };
             searchInput.value = item.name;
-            selectStock(item);
+            selectStock(item, 'search');
         });
     });
 }
@@ -183,15 +183,10 @@ function initNavigation() {
                     } else {
                         emptyState?.classList.add('hidden');
                         contentWrapper?.classList.remove('hidden');
-                        if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker})`;
+                        if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
                         
-                        // Force refresh metrics
-                        if (_lastAnalysisData) {
-                            renderAiInsights(_lastAnalysisData);
-                        }
-                        if (localStorage.getItem('stockfinder-fund-enabled') !== 'false') {
-                            renderFundamentalReport(currentStock.code || currentStock.ticker);
-                        }
+                        // Force refresh combined reports
+                        triggerFullDeepAnalysis(currentStock.code || currentStock.ticker);
                     }
                 }
 
@@ -231,42 +226,30 @@ function restoreStockContext(type) {
         return;
     }
 
-    // Move resultSection back to the correct placeholder
-    const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
-    const placeholder = document.getElementById(placeholderId);
-    if (placeholder && resSec) {
-        const triggerContainer = document.getElementById('analysisTriggerContainer');
-        const patternReportSection = document.getElementById('patternReportSection');
+        // Home and Watchlist still use resultSection for basic charts
+        const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
+        const placeholder = document.getElementById(placeholderId);
+        if (placeholder && resSec) {
+            placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+            resSec.classList.remove('hidden');
 
-        placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-        resSec.classList.remove('hidden');
-
-        // Restore State
-        currentStock = context.item;
-        renderResult(context.data);
-        
-        if (context.analysis) {
-            if (triggerContainer) triggerContainer.style.display = 'none';
-            if (patternReportSection) patternReportSection.classList.remove('hidden');
-            renderAnalysisReport(context.analysis);
-        } else {
-            if (triggerContainer) triggerContainer.style.display = 'block';
+            // Restore State
+            currentStock = context.item;
+            renderResult(context.data);
+            
+            // On Home/Watchlist result views, we hide the pattern section (reserved for Deep Analysis link)
+            const patternReportSection = document.getElementById('patternReportSection');
+            const triggerContainer = document.getElementById('analysisTriggerContainer');
             if (patternReportSection) patternReportSection.classList.add('hidden');
+            if (triggerContainer) triggerContainer.style.display = 'block';
         }
 
-        if (context.fundamental) {
-            // Call renderFundamentalReport logic or just use cached d
-            // Since Fundamental report is a bit long, if we don't want to re-fetch, we can just call it with the cached data
-            // But currently renderFundamentalReport does its own fetch. 
-            // Let's just re-fetch for simplicity or check if we can pass data.
-            renderFundamentalReport(context.item.code); 
-        } else {
-            renderFundamentalReport(context.item.code);
+        if (context.item && context.item.code) {
+             renderFundamentalReport(context.item.code);
         }
-        
+    
         // Final sanity check for result visibility
-        resSec.classList.remove('hidden');
-    }
+        if (resSec) resSec.classList.remove('hidden');
 }
 
 function showSection(id) {
@@ -499,10 +482,10 @@ function isInWatchlist(code) {
 }
 
 function renderWatchlist() {
+    const list = getWatchlist();
     const container = document.getElementById('watchlistContainer');
     if (!container) return;
-    
-    const list = getWatchlist();
+
     if (list.length === 0) {
         container.innerHTML = `
             <div class="empty-watchlist" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
@@ -513,8 +496,9 @@ function renderWatchlist() {
         return;
     }
 
+    // "관심종목에는 타일 형태만 표시" - Simplified tile layout
     container.innerHTML = list.map(item => `
-        <div class="watchlist-tile" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}" onclick="selectStock({code:'${escapeHtml(item.code)}', market:'${escapeHtml(item.market)}', name:'${escapeHtml(item.name)}'})">
+        <div class="watchlist-tile animate-in" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
             <div class="watchlist-tile-header">
                 <span class="watchlist-tile-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</span>
                 <button class="watchlist-tile-remove" onclick="event.stopPropagation(); removeFromWatchlist('${escapeHtml(item.code)}')">
@@ -526,15 +510,22 @@ function renderWatchlist() {
                 <span class="watchlist-tile-code">${escapeHtml(item.code)}</span>
             </div>
             <div class="watchlist-tile-footer">
-                <div class="watchlist-tile-stats" id="tileStats-${escapeHtml(item.code)}">
-                    <span class="loading-dots">•••</span>
-                </div>
+                <span class="tile-analysis-hint">심층 분석 데이터 보기 &rarr;</span>
             </div>
         </div>
     `).join('');
-    
-    // Proactively fetch mini data for tiles
-    list.forEach(item => updateTileData(item.code));
+
+    // Click behavior for tiles: Redirect to Deep Analysis
+    container.querySelectorAll('.watchlist-tile').forEach(tile => {
+        tile.addEventListener('click', () => {
+            const item = {
+                code: tile.dataset.code,
+                market: tile.dataset.market,
+                name: tile.dataset.name
+            };
+            selectStock(item, 'watchlist');
+        });
+    });
 }
 
 function updateWatchlistBtn() {
@@ -695,64 +686,113 @@ window.setActiveIndex = (idx) => { activeIndex = idx; updateActiveHighlight(); }
 window.selectStockByIndex = (idx) => { selectStock(suggestItems[idx]); };
 
 // ── Select & Fetch Stock Detail ──
-async function selectStock(item) {
+async function selectStock(item, origin = 'search') {
     hideSuggestions();
+    
+    // Add to recent
     saveRecentSearch(item);
-    searchInput.value = item.name;
+    
+    if (searchInput) searchInput.value = item.name;
     currentStock = item;
 
     // Update watchlist button & sidebar highlight
     updateWatchlistBtn();
-    renderWatchlist();
+    
+    console.log(`[DEBUG] selectStock - origin: ${origin}, stock: ${item.name}`);
 
-    // Show loading
-    resultSection.classList.add('hidden');
-    errorMessage.classList.add('hidden');
-    loadingSpinner.classList.remove('hidden');
-
+    // Fetch basic stock data (Always needed for chart/summary)
+    const url = `${API_BASE_URL}/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
     try {
-        const url = `${API_BASE_URL}/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
-        console.log('[DEBUG] Fetching stock data from:', url);
-        // 15초 타임아웃 적용하여 무한 로딩 방지
+        if (loadingSpinner) loadingSpinner.classList.remove('hidden');
+        if (resultSection) resultSection.classList.add('hidden');
+        
         const response = await fetchWithTimeout(url, { timeout: 30000 });
         if (!response.ok) throw new Error('데이터를 불러오는데 실패했습니다.');
-        
         const data = await response.json();
         
-        currentStock = item; // Store current stock
+        if (loadingSpinner) loadingSpinner.classList.add('hidden');
 
-        // --- Handle Result Placement (Always in Home) ---
-        const resSec = document.getElementById('resultSection');
-        const placeholder = document.getElementById('mainResultPlaceholder');
-        
-        // Save to home context
-        homeStockContext = {
-            item: item,
-            data: data,
-            analysis: null
-        };
+        // Logic branching based on origin
+        if (origin === 'search') {
+            // Home View: Basic Analysis Only
+            homeStockContext = { item, data, analysis: null };
+            
+            // Ensure we are on Home
+            if (currentActiveSectionId !== 'dashboardHome') {
+                navigateToSection('navHome');
+            }
+            
+            // Show Result Section (in Home placeholder)
+            const resSec = document.getElementById('resultSection');
+            const placeholder = document.getElementById('mainResultPlaceholder');
+            if (placeholder && resSec) {
+                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+            }
+            
+            if (resSec) resSec.classList.remove('hidden');
+            renderResult(data);
+            
+            // Ensure Trigger button is visible in Home
+            const triggerContainer = document.getElementById('analysisTriggerContainer');
+            if (triggerContainer) triggerContainer.style.display = 'block';
+            
+            // Hide pattern report if it was open from previous analysis
+            const patternReportSection = document.getElementById('patternReportSection');
+            if (patternReportSection) patternReportSection.classList.add('hidden');
+        } 
+        else if (origin === 'watchlist') {
+            // Analysis View: Deep Analysis (AI + Fundamental)
+            watchlistStockContext = { item, data, analysis: null };
+            
+            // Navigate to Analysis section
+            navigateToSection('navAnalysis');
+            
+            const emptyState = document.getElementById('analysisEmptyState');
+            const contentWrapper = document.getElementById('analysisContentWrapper');
+            const currentLabel = document.getElementById('analysisCurrentStock');
+            
+            if (emptyState) emptyState.classList.add('hidden');
+            if (contentWrapper) contentWrapper.classList.remove('hidden');
+            if (currentLabel) currentLabel.textContent = `${item.name} (${item.code})`;
 
-        if (placeholder && resSec) {
-            placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+            // Trigger Automatic Deep Analysis
+            triggerFullDeepAnalysis(item.code);
         }
-        
-        // Always navigate to Home when viewing a stock
-        navigateToSection('navHome');
-        resSec.classList.remove('hidden'); 
-
-
-        renderResult(data);
-        
-        // Ensure fundamental report is also called if we were in analysis mode
-        if (currentStock) {
-            renderFundamentalReport(currentStock.code || currentStock.ticker || '');
-        }
-        // AI Analysis now triggered by button, no automatic fetch here
     } catch (err) {
-        console.error('selectStock error:', err);
-        showError(err.name === 'AbortError' ? '요청 시간이 초과되었습니다. 다시 시도해주세요.' : err.message);
-    } finally {
-        loadingSpinner.classList.add('hidden');
+        console.error('Stock selection failed:', err);
+        if (loadingSpinner) loadingSpinner.classList.add('hidden');
+        showToast('데이터 로딩에 실패했습니다.', 'error');
+    }
+}
+
+async function triggerFullDeepAnalysis(code) {
+    const analysisLoading = document.getElementById('analysisLoading');
+    const patternReportSection = document.getElementById('patternReportSection');
+    const fundamentalCard = document.getElementById('fundamentalCard');
+
+    if (analysisLoading) analysisLoading.classList.remove('hidden');
+    if (patternReportSection) patternReportSection.classList.add('hidden');
+    // fundamentalCard is managed by renderFundamentalReport internally
+
+    try {
+        // Fetch AI Analysis report
+        const analysisData = await fetchAnalysisReport(code);
+        
+        if (analysisLoading) analysisLoading.classList.add('hidden');
+        
+        if (analysisData) {
+            _lastAnalysisData = analysisData;
+            if (patternReportSection) patternReportSection.classList.remove('hidden');
+            renderAnalysisReport(analysisData);
+        }
+        
+        // Fetch and Render Fundamental Report (this handles its own UI)
+        renderFundamentalReport(code);
+        
+    } catch (err) {
+        console.error('Deep Analysis failed:', err);
+        if (analysisLoading) analysisLoading.classList.add('hidden');
+        showToast('심층 분석 데이터를 불러오지 못했습니다.', 'error');
     }
 }
 
@@ -883,12 +923,12 @@ function renderResult(data) {
     if (triggerContainer) triggerContainer.style.display = 'block';
 
     if (showAnalysisBtn) {
-        // Remove previous listeners to avoid duplicates
-        const newBtn = showAnalysisBtn.cloneNode(true);
-        showAnalysisBtn.parentNode.replaceChild(newBtn, showAnalysisBtn);
-        newBtn.addEventListener('click', () => {
-            fetchAnalysis(currentStock);
-        });
+        showAnalysisBtn.onclick = () => {
+            if (currentStock) {
+                // Redirect to Deep Analysis for the current stock
+                selectStock(currentStock, 'watchlist');
+            }
+        };
     }
 }
 
@@ -2721,6 +2761,8 @@ async function initAuth() {
         const userNameEl = document.getElementById('sidebarUserName');
         const userStatusEl = document.getElementById('sidebarUserStatus');
         const navWatchlist = document.getElementById('navWatchlist');
+        const navAnalysis = document.getElementById('navAnalysis');
+        const navValueChain = document.getElementById('navValueChain');
         const addWatchlistBtnContainer = document.getElementById('addWatchlistBtnContainer');
         const pageGreeting = document.getElementById('pageGreeting');
 
@@ -2737,13 +2779,12 @@ async function initAuth() {
                 sidebarUserSection.title = "사용자 정보";
             }
 
-            // Watchlist is always visible
-            if (navWatchlist) {
-                navWatchlist.classList.remove('hidden');
-            }
+            // Show restricted menus for authenticated users
+            if (navWatchlist) navWatchlist.style.display = 'flex';
+            if (navAnalysis) navAnalysis.style.display = 'flex';
+            if (navValueChain) navValueChain.style.display = 'flex';
+
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
-            
-            // Update UI count
             updateWatchlistCount();
         } else {
             console.log('[DEBUG] updateAuthUI - Updating UI for Guest');
@@ -2757,11 +2798,18 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // Watchlist is always visible
-            if (navWatchlist) navWatchlist.classList.remove('hidden');
-            if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('hidden');
+            // Hide restricted menus for guests
+            if (navWatchlist) navWatchlist.style.display = 'none';
+            if (navAnalysis) navAnalysis.style.display = 'none';
+            if (navValueChain) navValueChain.style.display = 'none';
+
+            // Auto-redirect if in restricted section
+            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
+            if (restricted.includes(currentActiveSectionId)) {
+                navigateToSection('navHome');
+            }
             
-            // For Guest users, reset currentWatchlist to empty as requested
+            // Clear or hide watchlist for guest if needed
             currentWatchlist = [];
             renderWatchlist();
             updateWatchlistCount();

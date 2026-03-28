@@ -93,16 +93,16 @@
                     <i class="ph ph-house"></i>
                     <span>홈</span>
                 </a>
-                <a href="#" class="nav-item" id="navWatchlist">
+                <a href="#" class="nav-item" id="navWatchlist" style="display: none;">
                     <i class="ph ph-star"></i>
                     <span>관심종목</span>
                     <span id="navWatchlistCount" class="nav-badge">0</span>
                 </a>
-                <a href="#" class="nav-item" id="navAnalysis">
+                <a href="#" class="nav-item" id="navAnalysis" style="display: none;">
                     <i class="ph ph-chart-line-up"></i>
                     <span>심층분석</span>
                 </a>
-                <a href="#" class="nav-item" id="navValueChain">
+                <a href="#" class="nav-item" id="navValueChain" style="display: none;">
                     <i class="ph ph-tree-structure"></i>
                     <span>밸류체인</span>
                 </a>
@@ -497,7 +497,7 @@
                     </div>
                 </div>
 
-                <!-- AI Analysis Trigger Button (New) -->
+                <!-- AI Analysis Trigger Button -->
                 <div id="analysisTriggerContainer" class="analysis-trigger-container">
                     <button id="btnShowAnalysis" class="btn-analysis-trigger">
                         <i class="ph ph-magic-wand"></i>
@@ -505,201 +505,10 @@
                     </button>
                 </div>
 
-                <!-- AI Candle Pattern Analysis Report -->
-                <div id="patternReportSection" class="analysis-section hidden">
-                    <!-- Analysis Header -->
-                    <div class="workout-style analysis-header-card">
-                        <div class="workout-stripe"></div>
-                        <div class="workout-content">
-                            <div class="workout-header">
-                                <h3 class="workout-title">AI 캔들 패턴 분석 리포트</h3>
-                                <div class="workout-subtitle">데이터 기반 정밀 차트 해석</div>
-                            </div>
-                            <div class="workout-body" style="padding: 0;">
-                                <div class="analysis-loading hidden" id="analysisLoading">
-                                    <div class="spinner"></div>
-                                    <span>패턴 분석 중...</span>
-                                </div>
-
-                                <!-- Trend Badge -->
-                                <div class="trend-container" id="trendContainer">
-                                    <div id="trendBadge" class="trend-pill">
-                                        <span id="trendIcon" class="trend-icon"></span>
-                                        <span id="trendLabel" class="trend-label"></span>
-                                    </div>
-                                    <div class="trend-strength-layout">
-                                        <div class="trend-strength-bar">
-                                            <div id="trendStrengthFill" class="trend-strength-fill"></div>
-                                        </div>
-                                        <span id="trendStrengthText" class="trend-strength-text"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Detected Patterns -->
-                    <div class="workout-style patterns-card" id="patternsCard">
-                        <div class="workout-stripe"></div>
-                        <div class="workout-content">
-                            <div class="workout-header">
-                                <h3 class="workout-title">감지된 캔들 패턴</h3>
-                                <div class="workout-subtitle">유의미한 기술적 반등/하락 패턴 수집</div>
-                            </div>
-                            <div class="workout-body">
-                                <div id="patternsList" class="patterns-list"></div>
-                                <div id="noPatternsMsg" class="no-patterns hidden">
-                                    현재 뚜렷한 캔들 패턴이 감지되지 않았습니다.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Candlestick Mini Chart -->
-                    <div class="workout-style candle-chart-card" id="candleChartCard">
-                        <div class="workout-stripe"></div>
-                        <div class="workout-content">
-                            <div class="workout-header">
-                                <h3 class="workout-title">최근 3개월 간 캔들 차트</h3>
-                                <div class="workout-subtitle">주요 지지/저항선 및 이평선 추세</div>
-                            </div>
-                            <div class="workout-body">
-                                <!-- Phase 2 Chart Legend -->
-                                <div class="chart-legend">
-                                    <div class="legend-group">
-                                        <span class="legend-dot ma5"></span>5일
-                                        <span class="legend-dot ma20"></span>20일
-                                        <span class="legend-dot ma60"></span>60일
-                                        <span class="legend-dot ma120"></span>120일
-                                    </div>
-                                    <div class="legend-group right">
-                                        <span class="legend-line resist"></span>저항선
-                                        <span class="legend-line support"></span>지지선
-                                    </div>
-                                </div>
-
-                                <div id="candleChart" class="candle-chart"></div>
-
-                                <!-- Recent Week Analysis -->
-                                <div id="recentWeekAnalysis" class="recent-week-analysis hidden"
-                                    style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-soft);">
-                                    <h5
-                                        style="font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                                        <i class="ph ph-calendar-check" style="color: var(--primary);"></i> 최근 1주일 캔들 상세 분석
-                                    </h5>
-                                    <ul id="recentWeekList"
-                                        style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-                                        <!-- JS injected -->
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Insights & Cycle Estimation moved to Deep Analysis section -->
-
-                    <!-- Buy / Sell Reports Grid -->
-                    <div class="report-grid" id="reportGrid">
-                        <!-- Buy Report -->
-                        <div id="buyReport" class="workout-style report-card buy hidden">
-                            <div class="workout-stripe"></div>
-                            <div class="workout-content">
-                                <div class="workout-header">
-                                    <div class="workout-time" id="buyReportTime">AI 분석 리포트</div>
-                                    <h3 class="workout-title">매수 권장 패턴 포착</h3>
-                                    <div class="workout-subtitle" id="buyPattern"></div>
-                                </div>
-                                <div class="workout-body">
-                                    <div class="workout-desc" id="buyDesc"></div>
-                                    <div class="workout-stats-grid">
-                                        <div class="w-stat">
-                                            <span class="w-label">신호 강도</span>
-                                            <span class="w-val" id="buySignalBadge"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">적극 매수가</span>
-                                            <span class="w-val buy-color" id="buyAggressive"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">보수 매수가</span>
-                                            <span class="w-val buy-color" id="buyConservative"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">목표가</span>
-                                            <span class="w-val target-color" id="buyTarget"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">손절가</span>
-                                            <span class="w-val sell-color" id="buyStopLoss"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">손익비</span>
-                                            <span class="w-val" id="buyRiskReward"></span>
-                                        </div>
-                                    </div>
-                                    <div class="workout-footer">
-                                        <div class="w-footer-item" id="buyVolume"></div>
-                                        <div class="w-footer-item tip" id="buyTip"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sell Report -->
-                        <div id="sellReport" class="workout-style report-card sell hidden">
-                            <div class="workout-stripe"></div>
-                            <div class="workout-content">
-                                <div class="workout-header">
-                                    <div class="workout-time" id="sellReportTime">AI 분석 리포트</div>
-                                    <h3 class="workout-title">매도 유의 패턴 포착</h3>
-                                    <div class="workout-subtitle" id="sellPattern"></div>
-                                </div>
-                                <div class="workout-body">
-                                    <div class="workout-desc" id="sellDesc"></div>
-                                    <div class="workout-stats-grid">
-                                        <div class="w-stat">
-                                            <span class="w-label">신호 강도</span>
-                                            <span class="w-val" id="sellSignalBadge"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">즉시 매도가</span>
-                                            <span class="w-val sell-color" id="sellPrice"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">보수 매도가</span>
-                                            <span class="w-val sell-color" id="sellConservative"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">예상 하락가</span>
-                                            <span class="w-val target-color" id="sellTarget"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">최대 손절가</span>
-                                            <span class="w-val buy-color" id="sellStopLoss"></span>
-                                        </div>
-                                        <div class="w-stat">
-                                            <span class="w-label">손익비</span>
-                                            <span class="w-val" id="sellRiskReward"></span>
-                                        </div>
-                                    </div>
-                                    <div class="workout-footer">
-                                        <div class="w-footer-item" id="sellVolume"></div>
-                                        <div class="w-footer-item tip" id="sellTip"></div>
-                                        <div id="sellAtrNote" class="sell-atr-note" style="display:none;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Disclaimer (TECHNICAL ONLY - Moved Fundamental/Rating to analysisSection) -->
-                    <div class="disclaimer">
-                        ⚠️ 본 분석은 캔들 패턴을 활용한 기술적 참고자료로서, 시장 심리(센티먼트)와 투자 환경에 따라 달라질 수 있습니다.<br>
-                        <strong>최종적인 투자 판단과 책임은 온전히 투자자 본인에게 있습니다.</strong>
-                    </div>
-
-
-                </div> <!-- End .container -->
+                <!-- Disclaimer (Basic Info Only) -->
+                <div class="disclaimer">
+                    ⚠️ 본 데이터는 투자 참고용이며 실제 거래와 차이가 있을 수 있습니다. 모든 투자 책임은 본인에게 있습니다.
+                </div>
             </section> <!-- End resultSection -->
 
             <!-- Deep Analysis Section (Relocated) -->
@@ -707,72 +516,60 @@
                 <div class="container animate-in">
                     <div class="section-header">
                         <h3 style="display: flex; align-items: center; gap: 10px;">
-                            심층 분석 (펀더멘탈 & 사이클 타임)
-                            <button class="favorite-btn analysis-fav-btn" title="관심종목 토글" style="font-size: 1.2rem;">
-                                <i class="ph ph-star"></i>
-                            </button>
+                            심층 분석 (AI 캔들 & 펀더멘탈)
                         </h3>
                         <p class="section-desc" id="analysisCurrentStock"></p>
                     </div>
 
                     <div id="analysisEmptyState" class="empty-state">
                         <i class="ph ph-chart-line-up"></i>
-                        <p>종목을 먼저 검색해주세요.<br>검색된 종목의 상세 펀더멘탈 분석이 이곳에 표시됩니다.</p>
+                        <p>관심종목에서 분석할 종목을 선택해주세요.</p>
                     </div>
 
                     <div id="analysisContentWrapper" class="hidden">
-                        <!-- AI Insights & Cycle Estimation -->
-                        <div id="aiInsightsCard" class="workout-style ai-insights hidden">
-                            <div class="workout-stripe"></div>
-                            <div class="workout-content">
-                                <div class="workout-header">
-                                    <div class="workout-title">AI 매수 적합성 분석</div>
-                                    <div class="workout-subtitle">기술적 지표 및 모멘텀 기반 확률</div>
-                                </div>
-                                <div class="workout-body" id="aiInsightsBody"></div>
+                        <!-- AI Candle & Pattern Analysis Report (Integrated) -->
+                        <div id="patternReportSection" class="pattern-report-section hidden">
+                            <!-- All current patternReportSection content goes here -->
+                            <div id="analysisLoading" class="analysis-loading hidden">
+                                <div class="loading-spinner"></div>
+                                <p>AI 인지형 리포트 생성 중...</p>
                             </div>
-                        </div>
-
-                        <div id="cycleWidgetContainer" class="workout-style cycle hidden">
-                            <div class="workout-stripe"></div>
-                            <div class="workout-content">
-                                <div class="workout-header">
-                                    <div class="workout-title">사이클 타임 분석</div>
-                                    <div class="workout-subtitle">피보나치 타임존 및 과거 고점 기반 예측</div>
+                            
+                            <div id="trendContainer" class="trend-container hidden">
+                                <div id="trendBadge" class="trend-pill">
+                                    <span id="trendIcon"></span>
+                                    <span id="trendLabel"></span>
                                 </div>
-                                <div class="workout-body" id="cycleWidgetBody"></div>
-                            </div>
-                        </div>
-
-                        <!-- 🌟 Rating Check & Financials -->
-                        <div class="legacy-analysis-grid">
-                            <div class="workout-style rating">
-                                <div class="workout-stripe"></div>
-                                <div class="workout-content">
-                                    <div class="workout-header">
-                                        <div class="workout-title">투자 매력도 (Rating Check)</div>
-                                        <div class="workout-subtitle">재무 및 시장 지표 5단계 평가</div>
+                                <div class="trend-strength-wrap">
+                                    <div class="trend-strength-bar">
+                                        <div id="trendStrengthFill" class="trend-strength-fill"></div>
                                     </div>
-                                    <div class="workout-body">
-                                        <div class="rating-overall">
-                                            <span class="rating-score" id="ratingScoreVal">0.0</span> <span class="rating-max">/ 10</span>
-                                        </div>
-                                        <div id="ratingBarsContainer"></div>
-                                    </div>
+                                    <span id="trendStrengthText" class="trend-strength-pct">0%</span>
                                 </div>
                             </div>
-
-                            <div class="workout-style rating">
-                                <div class="workout-stripe"></div>
-                                <div class="workout-content">
-                                    <div class="workout-header">
-                                        <div class="workout-title">주요 재무 지표</div>
-                                        <div class="workout-subtitle">최근 결산 및 분기 실적 요약</div>
-                                    </div>
-                                    <div class="workout-body">
-                                        <div id="financialsGrid" class="financials-grid"></div>
-                                    </div>
-                                </div>
+                            
+                            <!-- Patterns Grid -->
+                            <div id="patternsCard" class="patterns-card hidden">
+                                <div class="patterns-header">매수/매도 시그널 감지</div>
+                                <div id="patternsList" class="patterns-list"></div>
+                                <div id="noPatternsMsg" class="no-patterns hidden">감지된 특이 캔들 패턴이 없습니다.</div>
+                            </div>
+                            
+                            <!-- Candle Chart -->
+                            <div id="candleChartCard" class="candle-chart-card hidden">
+                                <div id="chartTitle" class="chart-title">최근 캔들 분석</div>
+                                <div id="candleChart" class="candle-chart"></div>
+                            </div>
+                            
+                            <!-- Report Cards Grid (Buy/Sell) -->
+                            <div id="reportGrid" class="report-grid hidden">
+                                <div id="buyReportCard" class="report-card buy"></div>
+                                <div id="sellReportCard" class="report-card sell"></div>
+                            </div>
+                            
+                            <div id="recentWeekAnalysis" class="recent-week-card hidden" style="margin-top: 20px;">
+                                <div class="card-title">주간 캔들 요약</div>
+                                <ul id="recentWeekList" class="recent-list"></ul>
                             </div>
                         </div>
 
