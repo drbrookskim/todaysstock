@@ -1075,7 +1075,7 @@ ALL_DETECTORS = [
 
 
 def analyze_recent_week(df):
-    """최근 5거래일(1주일) 동안의 일별 캔들 분석 코멘트 생성"""
+    """최근 5거래일(1주일) 동안의 일별 캔들 분석 코멘트 생성 (포맷: 03/23 양봉 (전일 고점 돌파))"""
     if len(df) < 5:
         return []
 
@@ -1107,33 +1107,35 @@ def analyze_recent_week(df):
         upper_wick = high_p - max(open_p, close_p)
         lower_wick = min(open_p, close_p) - low_p
         
-        desc = ""
         is_bullish = close_p > open_p
         is_bearish = close_p < open_p
         
+        desc = ""
         if is_bullish:
-            desc += "양봉"
+            desc = "양봉"
+            reasons = []
             if high_p > prev_high_p:
-                desc += " (전일 고점 돌파)"
+                reasons.append("전일 고점 돌파")
+            if lower_wick > body * 1.5 and body > 0:
+                reasons.append("저점 매수세 유입")
+            
+            if reasons:
+                desc += f" ({', '.join(reasons)})"
         elif is_bearish:
-            desc += "음봉"
+            desc = "음봉"
+            reasons = []
             prev_mid = (prev_open_p + prev_close_p) / 2
             if prev_close_p > prev_open_p and close_p < prev_mid:
-                desc += " (전일 양봉의 절반 이탈)"
+                reasons.append("전일 양봉의 절반 이탈")
+            if upper_wick > body * 1.5 and body > 0:
+                reasons.append("단기 매도 압력")
+                
+            if reasons:
+                desc += f" ({', '.join(reasons)})"
         else:
-            desc += "십자도지(보합)"
-            
-        # 꼬리 분석
-        if body > 0:
-            if upper_wick > body * 1.5:
-                desc += ", 긴 윗꼬리 (단기 매도 압력)"
-            if lower_wick > body * 1.5:
-                desc += ", 긴 아랫꼬리 (저점 매수세 유입)"
-        else:
-            if upper_wick > (high_p - low_p) * 0.4:
-                desc += ", 윗꼬리 도지"
-            elif lower_wick > (high_p - low_p) * 0.4:
-                desc += ", 아랫꼬리 도지"
+            desc = "보합 (십자도지)"
+            if high_p > prev_high_p:
+                desc += " (고점 갱신 시도)"
 
         analysis_list.append({
             "date": date_str,

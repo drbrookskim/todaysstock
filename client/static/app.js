@@ -502,32 +502,48 @@ function renderWatchlist() {
     // "관심종목에는 타일 형태만 표시" - Simplified tile layout
     container.innerHTML = list.map(item => `
         <div class="watchlist-tile animate-in" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
-            <div class="watchlist-tile-header">
-                <span class="watchlist-tile-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</span>
-                <button class="watchlist-tile-remove" onclick="event.stopPropagation(); removeFromWatchlist('${escapeHtml(item.code)}')">
-                    <i class="ph ph-x"></i>
-                </button>
+            <div class="watchlist-tile-clickable-area">
+                <div class="watchlist-tile-header">
+                    <span class="watchlist-tile-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</span>
+                    <button class="watchlist-tile-remove" onclick="event.stopPropagation(); removeFromWatchlist('${escapeHtml(item.code)}')">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+                <div class="watchlist-tile-body">
+                    <span class="watchlist-tile-name">${escapeHtml(item.name)}</span>
+                    <span class="watchlist-tile-code">${escapeHtml(item.code)}</span>
+                </div>
             </div>
-            <div class="watchlist-tile-body">
-                <span class="watchlist-tile-name">${escapeHtml(item.name)}</span>
-                <span class="watchlist-tile-code">${escapeHtml(item.code)}</span>
-            </div>
-            <div class="watchlist-tile-footer">
+            <div class="watchlist-tile-footer" data-action="deep-analysis">
                 <span class="tile-analysis-hint">심층 분석 데이터 보기 &rarr;</span>
             </div>
         </div>
     `).join('');
 
-    // Click behavior for tiles: Redirect to Deep Analysis
+    // Click behavior for tiles
     container.querySelectorAll('.watchlist-tile').forEach(tile => {
-        tile.addEventListener('click', () => {
-            const item = {
-                code: tile.dataset.code,
-                market: tile.dataset.market,
-                name: tile.dataset.name
-            };
-            selectStock(item, 'watchlist');
-        });
+        const item = {
+            code: tile.dataset.code,
+            market: tile.dataset.market,
+            name: tile.dataset.name
+        };
+
+        // 1. Click on body/header: Basic Analysis
+        const clickableArea = tile.querySelector('.watchlist-tile-clickable-area');
+        if (clickableArea) {
+            clickableArea.addEventListener('click', () => {
+                selectStock(item, 'search'); // Use 'search' origin to show basic analysis
+            });
+        }
+
+        // 2. Click on footer: Deep Analysis
+        const footer = tile.querySelector('.watchlist-tile-footer');
+        if (footer) {
+            footer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectStock(item, 'watchlist'); // Use 'watchlist' origin to go to Deep Analysis
+            });
+        }
     });
 }
 
@@ -717,25 +733,30 @@ async function selectStock(item, origin = 'search') {
 
         // Logic branching based on origin
         if (origin === 'search') {
-            // Home View: Basic Analysis Only
+            // Home or Watchlist View: Basic Analysis Only
             homeStockContext = { item, data, analysis: null };
             
-            // Ensure we are on Home
-            if (currentActiveSectionId !== 'dashboardHome') {
+            // Determine where to show results
+            const resSec = document.getElementById('resultSection');
+            let placeholderId = 'mainResultPlaceholder';
+            
+            if (currentActiveSectionId === 'dashboardWatchlist') {
+                placeholderId = 'watchlistResultPlaceholder';
+            } else if (currentActiveSectionId !== 'dashboardHome') {
+                // If not in Watchlist and not in Home (e.g. History), go to Home
                 navigateToSection('navHome');
+                placeholderId = 'mainResultPlaceholder';
             }
             
-            // Show Result Section (in Home placeholder)
-            const resSec = document.getElementById('resultSection');
-            const placeholder = document.getElementById('mainResultPlaceholder');
+            const placeholder = document.getElementById(placeholderId);
             if (placeholder && resSec) {
                 placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+                resSec.classList.remove('hidden');
             }
             
-            if (resSec) resSec.classList.remove('hidden');
             renderResult(data);
             
-            // Ensure Trigger button is visible in Home (Authenticated only)
+            // Ensure Trigger button is visible (Authenticated only)
             const triggerContainer = document.getElementById('analysisTriggerContainer');
             if (triggerContainer) {
                 const isLogged = authUser && authUser.logged_in;
@@ -747,7 +768,7 @@ async function selectStock(item, origin = 'search') {
             if (patternReportSection) patternReportSection.classList.add('hidden');
         } 
         else if (origin === 'watchlist') {
-            // Analysis View: Deep Analysis (AI + Fundamental)
+            // Deep Analysis View: Navigate to Full AI & Fundamental Analysis
             watchlistStockContext = { item, data, analysis: null };
             
             // Navigate to Analysis section
@@ -1359,13 +1380,15 @@ async function fetchAnalysisReport(item) {
     if (patternReportSection) patternReportSection.classList.remove('hidden');
     
     if (analysisLoading) analysisLoading.classList.remove('hidden');
-    // Important: Center and show only loading first
+    // Important: Reset and hide all technical blocks before loading
+    const blocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
+    blocks.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+
     const trendContainer = document.getElementById('trendContainer');
     if (trendContainer) trendContainer.style.display = 'none';
-    
-    document.getElementById('patternsCard').classList.add('hidden');
-    document.getElementById('candleChartCard').classList.add('hidden');
-    document.getElementById('reportGrid').classList.add('hidden');
 
     try {
         const market = item.market || (currentStock && currentStock.code === item.code ? currentStock.market : 'KOSPI');
@@ -1420,9 +1443,21 @@ async function updateTileData(code) {
 
 function renderAnalysisReport(data) {
     _lastAnalysisData = data;
-    // ── Trend Badge ──
+    
+    // Reset all blocks to hidden first
+    const blocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
+    blocks.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+
+    // ── 1. Trend Block ──
+    const aiTrendBlock = document.getElementById('aiTrendBlock');
     const trendContainer = document.getElementById('trendContainer');
-    if (trendContainer) trendContainer.style.display = 'flex';
+    if (data.trend) {
+        if (aiTrendBlock) aiTrendBlock.classList.remove('hidden');
+        if (trendContainer) trendContainer.style.display = 'flex';
+    }
 
 
     const trendBadge = document.getElementById('trendBadge');
@@ -1529,17 +1564,18 @@ function renderAnalysisReport(data) {
             financialsGrid.parentNode.appendChild(noteDiv);
         }
 
-    // ── Patterns List ──
+    // ── 3. Patterns Block ──
+    const aiPatternsBlock = document.getElementById('aiPatternsBlock');
     const patternsCard = document.getElementById('patternsCard');
     const patternsList = document.getElementById('patternsList');
     const noPatternsMsg = document.getElementById('noPatternsMsg');
 
-    patternsCard.classList.remove('hidden');
-
-    if (data.patterns.length === 0) {
+    if (!data.patterns || data.patterns.length === 0) {
+        if (aiPatternsBlock) aiPatternsBlock.classList.add('hidden');
         patternsList.innerHTML = '';
         noPatternsMsg.classList.remove('hidden');
     } else {
+        if (aiPatternsBlock) aiPatternsBlock.classList.remove('hidden');
         noPatternsMsg.classList.add('hidden');
         patternsList.innerHTML = data.patterns.map(p => {
             const signalCls = p.signal === 'bullish' ? 'pattern-bullish' : 'pattern-bearish';
@@ -1575,32 +1611,43 @@ function renderAnalysisReport(data) {
         });
     });
 
-    // ── Mini Candlestick Chart ──
+    // ── 4. Candle Chart Block ──
+    const aiChartBlock = document.getElementById('aiChartBlock');
     const candleChartCard = document.getElementById('candleChartCard');
-    candleChartCard.classList.remove('hidden');
-    renderCandleChart(data.recent_candles);
+    if (data.recent_candles && data.recent_candles.length > 0) {
+        if (aiChartBlock) aiChartBlock.classList.remove('hidden');
+        if (candleChartCard) candleChartCard.classList.remove('hidden');
+        renderCandleChart(data.recent_candles);
+    } else {
+        if (aiChartBlock) aiChartBlock.classList.add('hidden');
+    }
 
-    // ── Recent Week Analysis ──
+    // ── 5. Recent Week Analysis / Summary Block ──
+    const aiSummaryBlock = document.getElementById('aiSummaryBlock');
     const recentWeekAnalysis = document.getElementById('recentWeekAnalysis');
     const recentWeekList = document.getElementById('recentWeekList');
 
     if (data.recent_week_analysis && data.recent_week_analysis.length > 0) {
+        if (aiSummaryBlock) aiSummaryBlock.classList.remove('hidden');
         if (recentWeekAnalysis) recentWeekAnalysis.classList.remove('hidden');
         if (recentWeekList) {
             recentWeekList.innerHTML = '';
             data.recent_week_analysis.forEach(item => {
                 const li = document.createElement('li');
-                li.style.fontSize = "0.85rem";
+                li.style.fontSize = "0.9rem";
                 li.style.color = "var(--text-muted)";
-                li.style.display = "flex";
-                li.style.alignItems = "baseline";
-                li.style.gap = "8px";
+                li.style.padding = "4px 0";
+                li.style.listStyle = "none";
+                li.style.borderBottom = "1px solid var(--border-soft)";
+                if (data.recent_week_analysis.indexOf(item) === data.recent_week_analysis.length - 1) {
+                    li.style.borderBottom = "none";
+                }
 
                 let colorStr = "var(--text-muted)";
-                if (item.desc.includes('양봉')) colorStr = "#ef4444";
-                else if (item.desc.includes('음봉')) colorStr = "#3b82f6";
+                if (item.desc.includes('양봉')) colorStr = "var(--color-up)";
+                else if (item.desc.includes('음봉')) colorStr = "var(--color-down)";
 
-                li.innerHTML = `<span style="font-weight: 600; color: var(--text-color); font-size: 0.8rem; background: var(--hover-bg); padding: 2px 6px; border-radius: 4px; min-width: 45px; text-align: center;">${item.date}</span> <span style="color: ${colorStr}; line-height: 1.4;">${item.desc}</span>`;
+                li.innerHTML = `<span style="font-family: 'Space Grotesk', monospace; font-weight: 600; color: var(--text-main); margin-right: 12px;">${item.date}</span><span style="color: ${colorStr}; font-weight: 500;">${item.desc}</span>`;
                 recentWeekList.appendChild(li);
             });
         }
@@ -1616,14 +1663,17 @@ function renderAnalysisReport(data) {
         renderFundamentalReport(data.code || data.ticker || '');
     }
 
-    // ── Buy/Sell Reports ──
+    // ── 2. Buy/Sell Reports & Signals Block ──
+    const aiSignalsBlock = document.getElementById('aiSignalsBlock');
     const reportGrid = document.getElementById('reportGrid');
     const hasBuyReport = renderBuyReport(data.buy_report);
     const hasSellReport = renderSellReport(data.sell_report, data.atr_targets);
+    
     if (hasBuyReport || hasSellReport) {
+        if (aiSignalsBlock) aiSignalsBlock.classList.remove('hidden');
         if (reportGrid) reportGrid.classList.remove('hidden');
     } else {
-        if (reportGrid) reportGrid.classList.add('hidden');
+        if (aiSignalsBlock) aiSignalsBlock.classList.add('hidden');
     }
 }
 

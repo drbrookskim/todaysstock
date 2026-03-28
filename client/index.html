@@ -501,7 +501,7 @@
                 <div id="analysisTriggerContainer" class="analysis-trigger-container">
                     <button id="btnShowAnalysis" class="btn-analysis-trigger">
                         <i class="ph ph-magic-wand"></i>
-                        <span>AI 캔들 분석결과 보기</span>
+                        <span>심층 분석 (AI 캔들 & 펀더멘탈)</span>
                     </button>
                 </div>
 
@@ -530,54 +530,116 @@
                         <!-- AI Candle & Pattern Analysis Report (Integrated) -->
                         <div id="patternReportSection" class="pattern-report-section hidden">
                             <!-- Section Title for Technical Analysis -->
-                            <div class="workout-header" style="margin-bottom: 16px;">
-                                <div class="workout-title" style="display: flex; align-items: center; gap: 8px; font-size: 1.15rem;">
-                                    <i class="ph ph-magic-wand" style="color: var(--accent-indigo);"></i>
-                                    AI 캔들 분석결과 보기
+                            <div class="workout-header" style="margin-bottom: 24px;">
+                                <div class="workout-title" style="display: flex; align-items: center; gap: 12px; font-size: 1.4rem; color: var(--text-main);">
+                                    <div style="background: var(--primary-soft); color: var(--primary); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="ph ph-magic-wand" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    AI 캔들 패턴 심층 분석 리포트
+                                </div>
+                                <div class="workout-subtitle" style="margin-left: 52px; font-size: 0.85rem; color: var(--text-muted);">
+                                    인공지능 소포트웨어가 실시간으로 인지한 최근 기술적 분석 지표입니다.
+                                </div>
+                            </div>
+                            
+                            <!-- 1. Trend Analysis Block -->
+                            <div id="aiTrendBlock" class="workout-style ai-trend hidden">
+                                <div class="workout-stripe"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-trend-up"></i> AI 주가 추세 분석
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 24px;">
+                                        <div id="analysisLoading" class="analysis-loading hidden">
+                                            <div class="loading-spinner"></div>
+                                            <p>AI 인지형 리포트 생성 중...</p>
+                                        </div>
+                                        <div id="trendContainer" class="trend-container hidden">
+                                            <div id="trendBadge" class="trend-pill">
+                                                <span id="trendIcon"></span>
+                                                <span id="trendLabel"></span>
+                                            </div>
+                                            <div class="trend-strength-wrap">
+                                                <div class="trend-strength-bar">
+                                                    <div id="trendStrengthFill" class="trend-strength-fill"></div>
+                                                </div>
+                                                <span id="trendStrengthText" class="trend-strength-pct">0%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 2. Action Insights / Signals Block -->
+                            <div id="aiSignalsBlock" class="workout-style ai-signals hidden">
+                                <div class="workout-stripe"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-lightning"></i> AI 매수/매도 시그널
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 24px;">
+                                        <div id="reportGrid" class="report-grid hidden">
+                                            <div id="buyReportCard" class="report-card buy"></div>
+                                            <div id="sellReportCard" class="report-card sell"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- All current patternReportSection content goes here -->
-                            <div id="analysisLoading" class="analysis-loading hidden">
-                                <div class="loading-spinner"></div>
-                                <p>AI 인지형 리포트 생성 중...</p>
-                            </div>
-                            
-                            <div id="trendContainer" class="trend-container hidden">
-                                <div id="trendBadge" class="trend-pill">
-                                    <span id="trendIcon"></span>
-                                    <span id="trendLabel"></span>
-                                </div>
-                                <div class="trend-strength-wrap">
-                                    <div class="trend-strength-bar">
-                                        <div id="trendStrengthFill" class="trend-strength-fill"></div>
+                            <!-- 3. Pattern Detection Block -->
+                            <div id="aiPatternsBlock" class="workout-style ai-patterns hidden">
+                                <div class="workout-stripe"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-magic-wand"></i> 캔들 패턴 감지
+                                        </div>
                                     </div>
-                                    <span id="trendStrengthText" class="trend-strength-pct">0%</span>
+                                    <div class="workout-body" style="padding: 24px;">
+                                        <div id="patternsCard" class="patterns-card hidden" style="border: none; box-shadow: none; padding: 0; margin-bottom: 0;">
+                                            <div id="patternsList" class="patterns-list"></div>
+                                            <div id="noPatternsMsg" class="no-patterns hidden">감지된 특이 캔들 패턴이 없습니다.</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- Patterns Grid -->
-                            <div id="patternsCard" class="patterns-card hidden">
-                                <div class="patterns-header">매수/매도 시그널 감지</div>
-                                <div id="patternsList" class="patterns-list"></div>
-                                <div id="noPatternsMsg" class="no-patterns hidden">감지된 특이 캔들 패턴이 없습니다.</div>
+                            <!-- 4. Candle Chart Block -->
+                            <div id="aiChartBlock" class="workout-style ai-chart hidden">
+                                <div class="workout-stripe"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-chart-line-up"></i> 시각적 패턴 매핑
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 24px;">
+                                        <div id="candleChartCard" class="candle-chart-card hidden" style="border: none; box-shadow: none; padding: 0; margin-bottom: 0;">
+                                            <div id="candleChart" class="candle-chart"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <!-- Candle Chart -->
-                            <div id="candleChartCard" class="candle-chart-card hidden">
-                                <div id="chartTitle" class="chart-title">최근 캔들 분석</div>
-                                <div id="candleChart" class="candle-chart"></div>
-                            </div>
-                            
-                            <!-- Report Cards Grid (Buy/Sell) -->
-                            <div id="reportGrid" class="report-grid hidden">
-                                <div id="buyReportCard" class="report-card buy"></div>
-                                <div id="sellReportCard" class="report-card sell"></div>
-                            </div>
-                            
-                            <div id="recentWeekAnalysis" class="recent-week-card hidden" style="margin-top: 20px;">
-                                <div class="card-title">주간 캔들 요약</div>
-                                <ul id="recentWeekList" class="recent-list"></ul>
+
+                            <!-- 5. Weekly Summary Block -->
+                            <div id="aiSummaryBlock" class="workout-style ai-summary hidden">
+                                <div class="workout-stripe"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-clipboard-text"></i> 주간 캔들 인사이트 요약
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 24px;">
+                                        <div id="recentWeekAnalysis" class="recent-week-card hidden" style="border: none; box-shadow: none; padding: 0; margin-top: 0;">
+                                            <ul id="recentWeekList" class="recent-list"></ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

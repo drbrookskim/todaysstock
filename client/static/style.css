@@ -2975,6 +2975,86 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     color: var(--primary);
 }
 
+/* Workout Style Design System */
+.workout-style {
+    display: flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    animation: blockFadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes blockFadeIn {
+    from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.workout-style:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--primary-soft);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+.workout-stripe {
+    width: 6px;
+    flex-shrink: 0;
+}
+
+/* Vivid Gradients for Technical Blocks */
+.ai-trend .workout-stripe {
+    background: linear-gradient(to bottom, #818cf8, #6366f1, #4f46e5);
+}
+.ai-signals .workout-stripe {
+    background: linear-gradient(to bottom, #fbbf24, #f59e0b, #d97706);
+}
+.ai-patterns .workout-stripe {
+    background: linear-gradient(to bottom, #34d399, #10b981, #059669);
+}
+.ai-chart .workout-stripe {
+    background: linear-gradient(to bottom, #f472b6, #ec4899, #db2777);
+}
+.ai-summary .workout-stripe {
+    background: linear-gradient(to bottom, #94a3b8, #64748b, #475569);
+}
+
+.workout-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.workout-header {
+    padding: 18px 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.workout-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.01em;
+}
+
+.workout-title i {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.workout-body {
+    padding: 24px;
+}
+
 /* 사이클 타임 상세 설명 컨테이너 */
 .cyc-desc-box {
     margin-top: 20px;
@@ -5412,6 +5492,22 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 /* ── Deep Analysis (Neutral/Slate) ── */
+.workout-style.ai-trend .workout-stripe {
+    background: linear-gradient(180deg, var(--color-up), #f87171);
+}
+.workout-style.ai-patterns .workout-stripe {
+    background: linear-gradient(180deg, var(--accent-indigo), #818cf8);
+}
+.workout-style.ai-chart .workout-stripe {
+    background: linear-gradient(180deg, #60a5fa, #3b82f6);
+}
+.workout-style.ai-signals .workout-stripe {
+    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+}
+.workout-style.ai-summary .workout-stripe {
+    background: linear-gradient(180deg, #94a3b8, #64748b);
+}
+
 .workout-style.ai-insights .workout-stripe {
     background: linear-gradient(180deg, #64748b, #334155);
 }
