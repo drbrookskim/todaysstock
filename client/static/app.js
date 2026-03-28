@@ -288,6 +288,7 @@ function showSection(id) {
         requestAnimationFrame(() => {
             console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
             if (id === 'dashboardHome') renderMacroIndicators();
+            if (id === 'valueChainSection') initValueChain();
         });
     }
 }
@@ -2795,4 +2796,462 @@ async function initAuth() {
 
     // 로드 시 초기 세션 확인
     await fetchUserSession();
+}
+
+// ──────────────────────────────────────────────────────────────────
+// ──  밸류체인 탐색기 (Value Chain Explorer)
+// ──────────────────────────────────────────────────────────────────
+
+let _vcData = { categories: [], sectors: {} };
+let _vcCurrentCategory = null;
+let _vcCurrentView = 'list';
+let _vcGraph = null;
+let _vcSearchTimeout = null;
+
+async function initValueChain() {
+    // 이미 로드됐으면 스킵
+    if (_vcData.categories.length > 0) {
+        _vcRenderCategories();
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/valuechain/categories`);
+        const cats = await res.json();
+        _vcData.categories = cats;
+        _vcRenderCategories();
+        // 첫 번째 카테고리 자동 선택
+        if (cats.length > 0) {
+            await _vcSelectCategory(cats[0]);
+        }
+    } catch (e) {
+        console.error('[VC] Failed to load categories', e);
+        const list = document.getElementById('vcCategoryList');
+        if (list) list.innerHTML = '<p style="color:var(--text-muted);padding:12px;">데이터를 불러올 수 없습니다.</p>';
+    }
+
+    // 검색 이벤트
+    const searchInput = document.getElementById('vcSearchInput');
+    if (searchInput && !searchInput.dataset.vcInitialized) {
+        searchInput.dataset.vcInitialized = '1';
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(_vcSearchTimeout);
+            _vcSearchTimeout = setTimeout(() => _vcHandleSearch(e.target.value), 300);
+        });
+    }
+}
+
+function _vcRenderCategories() {
+    const list = document.getElementById('vcCategoryList');
+    if (!list) return;
+    list.innerHTML = '';
+    const icons = ['ph-cpu', 'ph-car', 'ph-battery-charging', 'ph-lightning', 'ph-wifi-high', 'ph-shield-check', 'ph-flask', 'ph-shopping-bag'];
+    _vcData.categories.forEach((cat, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'vc-cat-btn' + (cat === _vcCurrentCategory ? ' active' : '');
+        const shortName = cat.replace(/^\d+\.\s*/, '').split(',')[0].split(' ')[0];
+        btn.innerHTML = `<i class="ph ${icons[i % icons.length]}"></i><span>${shortName}</span>`;
+        btn.title = cat;
+        btn.onclick = () => _vcSelectCategory(cat);
+        list.appendChild(btn);
+    });
+}
+
+async function _vcSelectCategory(cat) {
+    _vcCurrentCategory = cat;
+    _vcRenderCategories();
+    const label = document.getElementById('vcCategoryLabel');
+    if (label) label.textContent = cat.replace(/^\d+\.\s*/, '');
+
+    // 캐시 확인
+    if (!_vcData.sectors[cat]) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/valuechain/detail?category=${encodeURIComponent(cat)}`);
+            _vcData.sectors[cat] = await res.json();
+        } catch (e) {
+            console.error('[VC] Failed to load sectors', e);
+            return;
+        }
+    }
+
+    // Render based on current view
+    if (_vcCurrentView === 'list') {
+        _vcRenderSectorList(_vcData.sectors[cat]);
+    } else {
+        _vcRenderForceGraph(_vcData.sectors[cat], cat);
+    }
+}
+
+function _vcRenderSectorList(sectors) {
+    const grid = document.getElementById('vcSectorGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    sectors.forEach(sec => {
+        const card = document.createElement('div');
+        card.className = 'vc-sector-card';
+        const stockChips = sec.stocks.map(s =>
+            `<button class="vc-stock-chip" onclick="_vcSearchStock('${s.replace(/'/g, "\\'")}')">` +
+            `<i class="ph ph-trend-up"></i>${s}</button>`
+        ).join('');
+        card.innerHTML = `
+            <div class="vc-sector-header">
+                <i class="ph ph-tag"></i>
+                <span class="vc-sector-name">${sec.sector}</span>
+                <span class="vc-stock-count">${sec.stocks.length}개</span>
+            </div>
+            <div class="vc-stock-chips">${stockChips}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function setVcView(view) {
+    _vcCurrentView = view;
+    const listView = document.getElementById('vcListView');
+    const graphView = document.getElementById('vcGraphView');
+    const btnList = document.getElementById('vcBtnList');
+    const btnGraph = document.getElementById('vcBtnGraph');
+
+    if (view === 'list') {
+        listView?.classList.remove('hidden');
+        graphView?.classList.add('hidden');
+        btnList?.classList.add('active');
+        btnGraph?.classList.remove('active');
+        if (_vcCurrentCategory && _vcData.sectors[_vcCurrentCategory]) {
+            _vcRenderSectorList(_vcData.sectors[_vcCurrentCategory]);
+        }
+    } else {
+        listView?.classList.add('hidden');
+        graphView?.classList.remove('hidden');
+        btnList?.classList.remove('active');
+        btnGraph?.classList.add('active');
+        if (_vcCurrentCategory && _vcData.sectors[_vcCurrentCategory]) {
+            _vcRenderForceGraph(_vcData.sectors[_vcCurrentCategory], _vcCurrentCategory);
+        }
+    }
+}
+
+// ── Force Graph (Canvas 2D) ──
+function _vcRenderForceGraph(sectors, categoryLabel) {
+    const canvas = document.getElementById('vcForceCanvas');
+    if (!canvas) return;
+
+    const container = document.getElementById('vcGraphContainer');
+    // Use actual pixel dimensions from container
+    const W = Math.max(container.clientWidth, 600);
+    const H = Math.max(container.clientHeight, 520);
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.width = '100%';
+    canvas.style.height = H + 'px';
+
+    // Build graph data
+    const nodes = [];
+    const links = [];
+    const nodeMap = {};
+
+    // Root node
+    const rootLabel = categoryLabel.replace(/^\d+\.\s*/, '').split(',')[0];
+    const rootNode = { id: 'root', label: rootLabel, type: 'root', x: W / 2, y: H / 2, vx: 0, vy: 0 };
+    nodes.push(rootNode);
+    nodeMap['root'] = rootNode;
+
+    sectors.forEach((sec, si) => {
+        const topicId = `topic_${si}`;
+        const topicNode = { id: topicId, label: sec.sector, type: 'topic',
+            x: W / 2 + Math.cos(si * 2 * Math.PI / sectors.length) * (W * 0.25),
+            y: H / 2 + Math.sin(si * 2 * Math.PI / sectors.length) * (H * 0.25),
+            vx: 0, vy: 0 };
+        nodes.push(topicNode);
+        nodeMap[topicId] = topicNode;
+        links.push({ source: 'root', target: topicId });
+
+        sec.stocks.forEach((stock, ki) => {
+            const stockId = `stock_${si}_${ki}`;
+            const angle = (ki * 2 * Math.PI / sec.stocks.length);
+            const stockNode = { id: stockId, label: stock, type: 'stock',
+                x: topicNode.x + Math.cos(angle) * 60 + (Math.random() - 0.5) * 30,
+                y: topicNode.y + Math.sin(angle) * 60 + (Math.random() - 0.5) * 30,
+                vx: 0, vy: 0 };
+            nodes.push(stockNode);
+            nodeMap[stockId] = stockNode;
+            links.push({ source: topicId, target: stockId });
+        });
+    });
+
+    // Resolve links
+    const resolvedLinks = links.map(l => ({
+        source: nodeMap[l.source],
+        target: nodeMap[l.target]
+    }));
+
+    let linkDistance = parseInt(document.getElementById('vcLinkDistance')?.value || 80);
+    let transform = { x: 0, y: 0, scale: 1 };
+    let isDragging = false;
+    let dragNode = null;
+    let lastMouse = { x: 0, y: 0 };
+    let hoveredNode = null;
+    let animId = null;
+
+    const getNodeRadius = (n) => n.type === 'root' ? 10 : n.type === 'topic' ? 6 : 3.5;
+    const getNodeColor = (n) => n.type === 'root' ? '#5c85ff' : n.type === 'topic' ? '#818cf8' : '#94a3b8';
+
+    function worldToScreen(wx, wy) {
+        return { x: (wx + transform.x) * transform.scale, y: (wy + transform.y) * transform.scale };
+    }
+    function screenToWorld(sx, sy) {
+        return { x: sx / transform.scale - transform.x, y: sy / transform.scale - transform.y };
+    }
+    function getNodeAt(sx, sy) {
+        const { x: wx, y: wy } = screenToWorld(sx, sy);
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            const n = nodes[i];
+            const r = getNodeRadius(n) * 2.5;
+            if (Math.hypot(n.x - wx, n.y - wy) < r) return n;
+        }
+        return null;
+    }
+
+    function tick() {
+        // Force simulation
+        const alpha = 0.3;
+        // Repulsion
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const a = nodes[i], b = nodes[j];
+                const dx = b.x - a.x, dy = b.y - a.y;
+                const dist = Math.max(Math.hypot(dx, dy), 1);
+                const charge = (a.type === 'root' || b.type === 'root') ? -3000 : (a.type === 'topic' || b.type === 'topic') ? -800 : -300;
+                const force = charge / (dist * dist);
+                a.vx -= force * dx / dist * alpha * 0.1;
+                a.vy -= force * dy / dist * alpha * 0.1;
+                b.vx += force * dx / dist * alpha * 0.1;
+                b.vy += force * dy / dist * alpha * 0.1;
+            }
+        }
+        // Attraction (links)
+        resolvedLinks.forEach(l => {
+            const dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
+            const dist = Math.max(Math.hypot(dx, dy), 1);
+            const force = (dist - linkDistance) * 0.05 * alpha;
+            const fx = force * dx / dist, fy = force * dy / dist;
+            l.source.vx += fx; l.source.vy += fy;
+            l.target.vx -= fx; l.target.vy -= fy;
+        });
+        // Center gravity
+        nodes.forEach(n => {
+            if (dragNode === n) return;
+            n.vx += (W / 2 - n.x) * 0.002 * alpha;
+            n.vy += (H / 2 - n.y) * 0.002 * alpha;
+            n.vx *= 0.85;
+            n.vy *= 0.85;
+            n.x += n.vx;
+            n.y += n.vy;
+            // Bounds
+            n.x = Math.max(20, Math.min(W - 20, n.x));
+            n.y = Math.max(20, Math.min(H - 20, n.y));
+        });
+    }
+
+    function draw() {
+        const ctx = canvas.getContext('2d');
+        const isDark = !document.documentElement.getAttribute('data-theme') || document.documentElement.getAttribute('data-theme') === 'dark';
+        const bgColor = isDark ? '#0f172a' : '#f8fafc';
+        const linkColor = isDark ? 'rgba(148,163,184,0.18)' : 'rgba(71,85,105,0.2)';
+        const stockLabelColor = isDark ? 'rgba(200,210,255,0.85)' : 'rgba(30,41,59,0.85)';
+        const topicLabelColor = isDark ? 'rgba(255,255,255,0.95)' : 'rgba(15,23,42,0.95)';
+        const shadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)';
+
+        // Fill background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.save();
+        ctx.translate(transform.x * transform.scale, transform.y * transform.scale);
+        ctx.scale(transform.scale, transform.scale);
+
+        // Links
+        resolvedLinks.forEach(l => {
+            ctx.beginPath();
+            ctx.moveTo(l.source.x, l.source.y);
+            ctx.lineTo(l.target.x, l.target.y);
+            ctx.strokeStyle = linkColor;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        });
+
+        // Nodes
+        nodes.forEach(n => {
+            const r = getNodeRadius(n);
+            const color = getNodeColor(n);
+            if (n.type === 'root') {
+                ctx.shadowColor = '#5c85ff';
+                ctx.shadowBlur = 20;
+            } else if (n.type === 'topic') {
+                ctx.shadowColor = '#818cf8';
+                ctx.shadowBlur = 8;
+            } else {
+                ctx.shadowBlur = 0;
+            }
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = n === hoveredNode ? '#ffffff' : color;
+            ctx.fill();
+            // Stroke for contrast
+            ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Label
+            const isRoot = n.type === 'root';
+            const isTopic = n.type === 'topic';
+            if (!isRoot && transform.scale < 0.5 && !isTopic) return; // hide stock labels when zoomed out
+            const fontSize = Math.max(8, (isRoot ? 14 : isTopic ? 11 : 9) / transform.scale);
+            ctx.font = `${isRoot ? '700' : isTopic ? '600' : '400'} ${fontSize}px Inter, 'Noto Sans KR', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = 5;
+            ctx.fillStyle = isRoot ? (isDark ? '#fff' : '#0f172a') : isTopic ? topicLabelColor : stockLabelColor;
+            ctx.fillText(n.label, n.x, n.y + r + 3);
+            ctx.shadowBlur = 0;
+        });
+
+        ctx.restore();
+    }
+
+    function loop() {
+        tick();
+        draw();
+        window._vcAnimId = requestAnimationFrame(loop);
+    }
+
+    // Stop previous animation
+    if (window._vcAnimId) cancelAnimationFrame(window._vcAnimId);
+    loop();
+
+    // Mouse Events
+    const rect = () => canvas.getBoundingClientRect();
+    canvas.onwheel = (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.1 : 0.9;
+        const r = rect();
+        const mx = e.clientX - r.left, my = e.clientY - r.top;
+        transform.x -= mx / transform.scale;
+        transform.y -= my / transform.scale;
+        transform.scale = Math.max(0.2, Math.min(5, transform.scale * factor));
+        transform.x += mx / transform.scale;
+        transform.y += my / transform.scale;
+    };
+    canvas.onmousedown = (e) => {
+        const r = rect();
+        const n = getNodeAt(e.clientX - r.left, e.clientY - r.top);
+        if (n) { dragNode = n; isDragging = true; }
+        else { isDragging = true; }
+        lastMouse = { x: e.clientX, y: e.clientY };
+    };
+    canvas.onmousemove = (e) => {
+        const r = rect();
+        hoveredNode = getNodeAt(e.clientX - r.left, e.clientY - r.top);
+        canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+        if (!isDragging) return;
+        const dx = e.clientX - lastMouse.x, dy = e.clientY - lastMouse.y;
+        if (dragNode) {
+            const w = screenToWorld(e.clientX - r.left, e.clientY - r.top);
+            dragNode.x = w.x; dragNode.y = w.y;
+            dragNode.vx = 0; dragNode.vy = 0;
+        } else {
+            transform.x += dx / transform.scale;
+            transform.y += dy / transform.scale;
+        }
+        lastMouse = { x: e.clientX, y: e.clientY };
+    };
+    canvas.onmouseup = (e) => {
+        if (dragNode) {
+            // Check if it was a click (not a drag)
+            const r = rect();
+            const n = getNodeAt(e.clientX - r.left, e.clientY - r.top);
+            if (n && n.type === 'stock') {
+                _vcSearchStock(n.label);
+            } else if (n && n.type === 'topic') {
+                // Highlight effect
+            }
+            dragNode = null;
+        }
+        isDragging = false;
+    };
+    canvas.onmouseleave = () => { isDragging = false; dragNode = null; hoveredNode = null; };
+
+    // Link distance slider
+    const slider = document.getElementById('vcLinkDistance');
+    if (slider) {
+        slider.oninput = (e) => { linkDistance = parseInt(e.target.value); };
+    }
+}
+
+async function _vcHandleSearch(query) {
+    const grid = document.getElementById('vcSectorGrid');
+    const listView = document.getElementById('vcListView');
+    if (!grid) return;
+
+    if (!query.trim()) {
+        // Restore current category
+        if (_vcCurrentCategory && _vcData.sectors[_vcCurrentCategory]) {
+            setVcView('list');
+            _vcRenderSectorList(_vcData.sectors[_vcCurrentCategory]);
+        }
+        return;
+    }
+
+    // Switch to list view
+    setVcView('list');
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/valuechain/search?q=${encodeURIComponent(query)}`);
+        const results = await res.json();
+        grid.innerHTML = '';
+        if (results.length === 0) {
+            grid.innerHTML = `<div class="vc-empty"><i class="ph ph-magnifying-glass"></i><p>검색 결과가 없습니다.</p></div>`;
+            return;
+        }
+        results.forEach(sec => {
+            const card = document.createElement('div');
+            card.className = 'vc-sector-card';
+            const chips = sec.stocks.map(s =>
+                `<button class="vc-stock-chip" onclick="_vcSearchStock('${s.replace(/'/g, "\\'")}')">` +
+                `<i class="ph ph-trend-up"></i>${s}</button>`
+            ).join('');
+            card.innerHTML = `
+                <div class="vc-sector-header">
+                    <i class="ph ph-tag"></i>
+                    <span class="vc-sector-name">${sec.sector}</span>
+                    <span class="vc-cat-badge">${sec.category.replace(/^\d+\.\s*/, '').split(',')[0]}</span>
+                </div>
+                <div class="vc-stock-chips">${chips}</div>
+            `;
+            grid.appendChild(card);
+        });
+    } catch (e) {
+        console.error('[VC] Search failed', e);
+    }
+}
+
+function _vcSearchStock(stockName) {
+    // Navigate to home and search the stock
+    const navHome = document.getElementById('navHome');
+    if (navHome) navHome.click();
+    const input = document.getElementById('searchInput');
+    if (input) {
+        input.value = stockName;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        // Small delay to let autocomplete populate, then click first result or submit
+        setTimeout(() => {
+            const first = document.querySelector('#suggestDropdown .suggest-item');
+            if (first) {
+                first.click();
+            } else {
+                document.getElementById('searchBtn')?.click();
+            }
+        }, 400);
+    }
 }

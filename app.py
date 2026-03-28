@@ -9,6 +9,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from supabase import create_client, Client
 import os
+import json
 import html
 import time
 import re
@@ -1011,6 +1012,69 @@ def api_fundamental(code: str):
 load_dart_corp_codes()
 load_all_stocks()
 print(f"🕯️  캔들 패턴 분석 엔진 활성화")
+
+
+# ── 밸류체인 API ──────────────────────────────────────────────────
+_VALUE_CHAIN_DATA = None
+
+def _load_valuechain_data():
+    global _VALUE_CHAIN_DATA
+    if _VALUE_CHAIN_DATA is None:
+        try:
+            kb_path = os.path.join(os.path.dirname(__file__), "knowledge_base.json")
+            with open(kb_path, 'r', encoding='utf-8') as f:
+                _VALUE_CHAIN_DATA = json.load(f)
+        except Exception as e:
+            print(f"⚠️ knowledge_base.json 로드 실패: {e}")
+            _VALUE_CHAIN_DATA = []
+    return _VALUE_CHAIN_DATA
+
+
+@app.route("/api/valuechain/categories")
+def api_valuechain_categories():
+    """밸류체인 대분류 카테고리 목록 반환"""
+    data = _load_valuechain_data()
+    categories = []
+    seen = set()
+    for item in data:
+        cat = item.get("대분류 (산업군)", "")
+        if cat and cat not in seen:
+            seen.add(cat)
+            categories.append(cat)
+    return jsonify(categories)
+
+
+@app.route("/api/valuechain/detail")
+def api_valuechain_detail():
+    """특정 대분류의 섹터 + 종목 목록 반환"""
+    category = request.args.get("category", "").strip()
+    data = _load_valuechain_data()
+    sectors = []
+    for item in data:
+        cat = item.get("대분류 (산업군)", "")
+        if not category or cat == category:
+            sector_name = item.get("중분류 (섹터/테마)", "")
+            stocks_raw = item.get("관련 종목", "")
+            stocks = [s.strip() for s in stocks_raw.split(",") if s.strip()]
+            sectors.append({"sector": sector_name, "stocks": stocks, "category": cat})
+    return jsonify(sectors)
+
+
+@app.route("/api/valuechain/search")
+def api_valuechain_search():
+    """밸류체인 전체 종목에서 키워드 검색"""
+    query = request.args.get("q", "").strip().lower()
+    data = _load_valuechain_data()
+    results = []
+    for item in data:
+        cat = item.get("대분류 (산업군)", "")
+        sector = item.get("중분류 (섹터/테마)", "")
+        stocks_raw = item.get("관련 종목", "")
+        stocks = [s.strip() for s in stocks_raw.split(",") if s.strip()]
+        matched = [s for s in stocks if not query or query in s.lower()]
+        if matched:
+            results.append({"category": cat, "sector": sector, "stocks": matched})
+    return jsonify(results)
 
 @app.route("/")
 def serve_index():

@@ -144,20 +144,67 @@
 
             <!-- ── 밸류체인 섹션 (Value Chain Section) ── -->
             <section id="valueChainSection" class="value-chain-section hidden">
-                <div class="container animate-in">
-                    <div class="section-header">
+                <div class="vc-container animate-in">
+                    <!-- Header -->
+                    <div class="section-header" style="margin-bottom: 0;">
                         <div class="section-title-wrap">
                             <i class="ph ph-tree-structure"></i>
-                            <h2 class="section-title">밸류체인</h2>
+                            <h2 class="section-title">밸류체인 탐색기</h2>
                         </div>
+                        <p class="section-desc">산업군별 종목 관계망을 탐색하세요. 종목을 클릭하면 상세 분석으로 이동합니다.</p>
                     </div>
-                    <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-muted); background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border-soft);">
-                        <i class="ph ph-layout" style="font-size: 3.5rem; opacity: 0.2; margin-bottom: 16px; display: block;"></i>
-                        <h3 style="color: var(--text-main); margin-bottom: 8px;">밸류체인 서비스 준비 중</h3>
-                        <p>곧 멋진 기능을 선보일 예정입니다. 잠시만 기다려 주세요!</p>
+
+                    <!-- 2-Panel Layout -->
+                    <div class="vc-layout">
+                        <!-- Left Panel: Category Tabs + Search -->
+                        <aside class="vc-sidebar">
+                            <div class="vc-search-wrap">
+                                <i class="ph ph-magnifying-glass vc-search-icon"></i>
+                                <input type="text" id="vcSearchInput" class="vc-search-input" placeholder="종목 검색...">
+                            </div>
+                            <div id="vcCategoryList" class="vc-category-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </aside>
+
+                        <!-- Right Panel: Sector cards + Force Graph toggle -->
+                        <main class="vc-main">
+                            <!-- View Toggle -->
+                            <div class="vc-view-toggle">
+                                <button id="vcBtnList" class="vc-toggle-btn active" onclick="setVcView('list')">
+                                    <i class="ph ph-rows"></i> 목록 보기
+                                </button>
+                                <button id="vcBtnGraph" class="vc-toggle-btn" onclick="setVcView('graph')">
+                                    <i class="ph ph-graph"></i> 그래프 보기
+                                </button>
+                                <span id="vcCategoryLabel" class="vc-category-label"></span>
+                            </div>
+
+                            <!-- List View -->
+                            <div id="vcListView">
+                                <div id="vcSectorGrid" class="vc-sector-grid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- Graph View -->
+                            <div id="vcGraphView" class="vc-graph-view hidden">
+                                <div id="vcGraphContainer" class="vc-graph-container">
+                                    <div class="vc-graph-toolbar">
+                                        <span class="vc-graph-hint"><i class="ph ph-info"></i> 노드 클릭 시 종목 검색 / 스크롤로 확대·축소</span>
+                                        <div class="vc-graph-controls">
+                                            <label class="vc-slider-label">간격</label>
+                                            <input type="range" id="vcLinkDistance" min="20" max="150" value="60" class="vc-slider">
+                                        </div>
+                                    </div>
+                                    <canvas id="vcForceCanvas"></canvas>
+                                </div>
+                            </div>
+                        </main>
                     </div>
                 </div>
             </section>
+
 
 
             <!-- Status Alerts (Spinner/Error) -->
