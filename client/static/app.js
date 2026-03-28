@@ -775,8 +775,8 @@ async function triggerFullDeepAnalysis(code) {
     // fundamentalCard is managed by renderFundamentalReport internally
 
     try {
-        // Fetch AI Analysis report
-        const analysisData = await fetchAnalysisReport(code);
+        // Fetch AI Analysis report (Using global currentStock if available)
+        const analysisData = await fetchAnalysisReport(currentStock || { code });
         
         if (analysisLoading) analysisLoading.classList.add('hidden');
         
@@ -1339,11 +1339,9 @@ function updateFearGreed(value) {
     }
 }
 
-// ═══════════════════════════════════════════════════
-// AI 캔들 패턴 분석 리포트
-// ═══════════════════════════════════════════════════
-
-async function fetchAnalysis(item) {
+// ── AI 캔들 패턴 분석 리포트 통합 페치 유틸리티 ──
+async function fetchAnalysisReport(item) {
+    if (!item || !item.code) return null;
     const patternReportSection = document.getElementById('patternReportSection');
     const triggerContainer = document.getElementById('analysisTriggerContainer');
     const analysisLoading = document.getElementById('analysisLoading');
@@ -1361,7 +1359,10 @@ async function fetchAnalysis(item) {
     document.getElementById('reportGrid').classList.add('hidden');
 
     try {
-        const url = `${API_BASE_URL}/api/analysis?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
+        const market = item.market || (currentStock && currentStock.code === item.code ? currentStock.market : 'KOSPI');
+        const name = item.name || (currentStock && currentStock.code === item.code ? currentStock.name : '');
+        
+        const url = `${API_BASE_URL}/api/analysis?code=${item.code}&market=${market}&name=${encodeURIComponent(name)}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('분석 데이터를 불러오는데 실패했습니다.');
         
