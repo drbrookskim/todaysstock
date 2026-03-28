@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>캐시 초기화 중...</title>
+    <script>
+        console.log("캐시 초기화 시작...");
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let registration of registrations) {
+                    registration.unregister();
+                }
+                console.log("서비스 워커 해제 완료");
+                window.location.href = '/';
+            });
+        } else {
+            window.location.href = '/';
+        }
+    </script>
+</head>
+<body>
+    <p>캐시를 초기화하고 최신 버전으로 접속 중입니다...</p>
+</body>
+</html>
