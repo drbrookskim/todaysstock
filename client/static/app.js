@@ -2984,7 +2984,7 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
         target: nodeMap[l.target]
     }));
 
-    let linkDistance = parseInt(document.getElementById('vcLinkDistance')?.value || 80);
+    let linkDistance = parseInt(document.getElementById('vcLinkDistance')?.value || 120);
     let transform = { x: 0, y: 0, scale: 1 };
     let isDragging = false;
     let dragNode = null;
@@ -3020,30 +3020,50 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
                 const a = nodes[i], b = nodes[j];
                 const dx = b.x - a.x, dy = b.y - a.y;
                 const dist = Math.max(Math.hypot(dx, dy), 1);
-                const charge = (a.type === 'root' || b.type === 'root') ? -1500 : (a.type === 'topic' || b.type === 'topic') ? -600 : -300;
+                
+                // Strength by node types
+                let charge = 1000; 
+                if (a.type === 'root' || b.type === 'root') charge = 6000;
+                else if (a.type === 'topic' || b.type === 'topic') charge = 3000;
+                
                 const force = charge / (dist * dist);
-                a.vx -= force * dx / dist * alpha * 0.1;
-                a.vy -= force * dy / dist * alpha * 0.1;
-                b.vx += force * dx / dist * alpha * 0.1;
-                b.vy += force * dy / dist * alpha * 0.1;
+                const fx = force * dx / dist * alpha;
+                const fy = force * dy / dist * alpha;
+                
+                a.vx -= fx;
+                a.vy -= fy;
+                b.vx += fx;
+                b.vy += fy;
+
+                // Simple collision avoidance
+                const minChildDist = 45;
+                const minParentDist = 80;
+                const minDist = (a.type === 'stock' && b.type === 'stock') ? minChildDist : minParentDist;
+                if (dist < minDist) {
+                    const push = (minDist - dist) * 0.5 * alpha;
+                    const px = push * dx / dist, py = push * dy / dist;
+                    a.vx -= px; a.vy -= py;
+                    b.vx += px; b.vy += py;
+                }
             }
         }
         // Attraction (links)
+        const currentLinkDist = parseInt(document.getElementById('vcLinkDistance')?.value || linkDistance);
         resolvedLinks.forEach(l => {
             const dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
             const dist = Math.max(Math.hypot(dx, dy), 1);
-            const force = (dist - linkDistance) * 0.05 * alpha;
+            const force = (dist - currentLinkDist) * 0.08 * alpha;
             const fx = force * dx / dist, fy = force * dy / dist;
             l.source.vx += fx; l.source.vy += fy;
             l.target.vx -= fx; l.target.vy -= fy;
         });
-        // Center gravity
+        // Center gravity (Slightly pull towards center to keep graph from floating away)
         nodes.forEach(n => {
             if (dragNode === n) return;
-            n.vx += (W / 2 - n.x) * 0.002 * alpha;
-            n.vy += (H / 2 - n.y) * 0.002 * alpha;
-            n.vx *= 0.85;
-            n.vy *= 0.85;
+            n.vx += (W / 2 - n.x) * 0.0008 * alpha;
+            n.vy += (H / 2 - n.y) * 0.0008 * alpha;
+            n.vx *= 0.82;
+            n.vy *= 0.82;
             n.x += n.vx;
             n.y += n.vy;
             // Bounds
