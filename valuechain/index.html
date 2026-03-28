@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industry Explorer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.12/babel.min.js"></script>
+    <script src="https://unpkg.com/react-force-graph-2d/dist/react-force-graph-2d.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-color: #0b0b0e; 
+            --text-color: #ffffff; 
+            --text-dim: #9ca3af; 
+            --glass-bg: rgba(22, 22, 26, 0.82); 
+            --border-color: rgba(255, 255, 255, 0.1); 
+            --input-bg: rgba(40, 40, 45, 0.9);
+            --accent: #5c85ff;
+        }
+        .light { 
+            --bg-color: #f8f9fb; 
+            --text-color: #1a1a1b; 
+            --text-dim: #64748b; 
+            --glass-bg: rgba(255, 255, 255, 0.85); 
+            --border-color: rgba(0, 0, 0, 0.08); 
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --accent: #3b82f6;
+        }
+        body { margin: 0; background-color: var(--bg-color); color: var(--text-color); font-family: 'Inter', sans-serif; overflow: hidden; transition: background-color 0.3s ease; }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(8px); border: 1px solid var(--border-color); }
+        .sidebar { position: absolute; top: 20px; right: 20px; width: 320px; max-height: calc(100vh - 40px); z-index: 100; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .sidebar.hidden { transform: translateX(380px); }
+        .theme-toggle { cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .theme-toggle:hover { background-color: var(--input-bg); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+        const App = () => {
+            const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+            const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+            const [selectedNode, setSelectedNode] = useState(null);
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+            const [keyword, setKeyword] = useState('');
+            const [suggestions, setSuggestions] = useState([]);
+            const [linkDistance, setLinkDistance] = useState(30); // Default link distance
+            const [viewMode, setViewMode] = useState('public'); // 'public' or 'private'
+            const [privateInput, setPrivateInput] = useState('');
+            const [privateGraph, setPrivateGraph] = useState({ nodes: [], links: [] });
+            const [addStatus, setAddStatus] = useState(null);
+            const [recommendedKeywords, setRecommendedKeywords] = useState(['반도체', '자율주행', '배터리', '로봇', '우주항공', '방산', 'AI', '바이오']);
+            const fgRef = useRef();
+            const popupRef = useRef(null);
+
+            useEffect(() => { document.body.className = theme; localStorage.setItem('theme', theme); }, [theme]);
+            
+            // Fetch recommended keywords on mount
+            useEffect(() => {
+                fetch('/api/recommended-keywords')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.length > 0) setRecommendedKeywords(data);
+                    })
+                    .catch(err => console.error("Failed to load recommended keywords", err));
+            }, []);
+            
+            useEffect(() => {
+                if (!selectedNode || !fgRef.current || !popupRef.current) return;
+                let animationFrameId;
+                const updatePopupPos = () => {
+                    if (selectedNode && fgRef.current && popupRef.current && viewMode === 'public') {
+                        const coords = fgRef.current.graph2ScreenCoords(selectedNode.x, selectedNode.y);
+                        popupRef.current.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+                    }
+                    animationFrameId = requestAnimationFrame(updatePopupPos);
+                };
+                updatePopupPos();
+                return () => cancelAnimationFrame(animationFrameId);
+            }, [selectedNode, viewMode]);
+            
+            const updateForces = useCallback(() => {
+              if (fgRef.current) {
+                fgRef.current.d3Force('link')
+                    .distance(link => {
+                        const isRootConnection = link.source.type === 'root' || link.target.type === 'root' || link.source.id === 'root' || link.target.id === 'root';
+                        return isRootConnection ? linkDistance * 0.8 : linkDistance;
+                    })
+                    .strength(link => 1.2); // 연결력 강화 (기본값보다 높임)
+                const chargeStrength = viewMode.startsWith('private') ? -50 : -100; // 반발력 추가 약화
+                fgRef.current.d3Force('charge').strength(chargeStrength);
+                fgRef.current.d3Force('collide', d3.forceCollide(node => 22));
+                fgRef.current.d3ReheatSimulation();
+              }
+            }, [linkDistance, viewMode]);
+
+            useEffect(() => { updateForces(); }, [graphData, privateGraph, updateForces]);
+
+            useEffect(() => { loadInitialGraph(); }, []);
+
+            const handlePrivateGenerate = () => {
+                const lines = privateInput.split('\n').filter(l => l.includes('->'));
+                const nodes = new Map();
+                const links = [];
+                
+                lines.forEach((line, i) => {
+                    const [src, tgt] = line.split('->').map(s => s.trim());
+                    if (!src || !tgt) return;
+                    
+                    if (!nodes.has(src)) nodes.set(src, { id: src, label: src, type: i === 0 ? 'root' : 'topic', val: i === 0 ? 10 : 6 });
+                    if (!nodes.has(tgt)) nodes.set(tgt, { id: tgt, label: tgt, type: 'stock', val: 4 });
+                    
+                    links.push({ source: src, target: tgt });
+                });
+
+                setPrivateGraph({ nodes: Array.from(nodes.values()), links });
+                setViewMode('private-graph');
+            };
+
+            const loadInitialGraph = async (term = 'Obsidian Graph View Style 기반 추가') => {
+                try {
+                    const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keyword: term }) });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error);
+                    setGraphData(data);
+                    
+                    // Auto zoom-to-fit for better initial readability
+                    setTimeout(() => {
+                        if (fgRef.current) fgRef.current.zoomToFit(800, 60);
+                    }, 600);
+                } catch (e) { console.error("Load failed", e); }
+            };
+
+            const handleKeywordChange = async (e) => {
+                const val = e.target.value;
+                setKeyword(val);
+                if (val.length >= 1) {
+                    try {
+                        const res = await fetch(`/api/suggestions?q=${encodeURIComponent(val)}`);
+                        setSuggestions(await res.json());
+                    } catch (err) { }
+                } else {
+                    setSuggestions([]);
+                }
+            };
+
+            const selectSuggestion = (suggestion) => {
+                setKeyword(suggestion);
+                setSuggestions([]);
+                loadInitialGraph(suggestion);
+            };
+
+            const handleSearch = (e) => {
+                e.preventDefault();
+                setSuggestions([]);
+                const term = keyword.trim() || 'Obsidian Graph View Style 기반 추가';
+                loadInitialGraph(term);
+                setKeyword('');
+            };
+
+            const handleGenerate = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keyword }) });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error);
+                    setGraphData(data);
+                    setKeyword('');
+                } catch (e) {
+                    console.error("Generate failed", e);
+                }
+            };
+
+            const handleNodeClick = useCallback(node => {
+                setSelectedNode(node);
+            }, []);
+
+            const handleAddToPrivate = async () => {
+                if (!selectedNode) return;
+                
+                const childrenLinks = graphData.links.filter(l => 
+                    (l.source.id === selectedNode.id || l.source === selectedNode.id)
+                );
+                
+                const nodeLabel = selectedNode.label.split(' | ')[0];
+                const existingNodesList = privateGraph.nodes.map(n => n.label);
+
+                setAddStatus('loading');
+                try {
+                    const res = await fetch('/api/smart-add-private', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ keyword: nodeLabel, existingNodes: existingNodesList })
+                    });
+                    const data = await res.json();
+                    
+                    let newLinesArr = [];
+                    
+                    // 1. Maintain local public graph cluster
+                    if (childrenLinks.length > 0) {
+                        childrenLinks.forEach(l => {
+                            const targetLabel = typeof l.target === 'object' ? l.target.label : l.target;
+                            newLinesArr.push(`${nodeLabel} -> ${targetLabel.split(' | ')[0]}`);
+                        });
+                    }
+                    
+                    // 2. Add Smart Auto-Connect lines (KB, Wiki, or Bridge)
+                    if (data.newLines && data.newLines.length > 0) {
+                        newLinesArr.push(...data.newLines);
+                    } else if (childrenLinks.length === 0) {
+                        newLinesArr.push(`${nodeLabel} -> `);
+                    }
+                    
+                    // Deduplicate lines
+                    const uniqueLines = Array.from(new Set(newLinesArr));
+                    const finalLines = uniqueLines.join('\n');
+                    
+                    setPrivateInput(prev => {
+                        const trimmed = prev.trimEnd();
+                        return trimmed ? trimmed + '\n' + finalLines : finalLines;
+                    });
+                } catch (e) {
+                    console.error("Smart Add to private error", e);
+                    const newText = `${nodeLabel} -> `;
+                    setPrivateInput(prev => {
+                        const trimmed = prev.trimEnd();
+                        return trimmed ? trimmed + '\n' + newText : newText;
+                    });
+                } finally {
+                    setAddStatus(selectedNode.id);
+                }
+            };
+            const handleAutoConnect = async () => {
+                if (!privateInput.trim()) return;
+                try {
+                    const res = await fetch('/api/auto-connect', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ inputText: privateInput })
+                    });
+                    const data = await res.json();
+                    if (data.newText !== privateInput) {
+                        setPrivateInput(data.newText);
+                    }
+                } catch (e) {
+                    console.error("Auto-connect failed", e);
+                }
+            };
+
+            return (
+                <div className="relative w-screen h-screen">
+                    {/* Top Center Search Bar */}
+                    {viewMode === 'public' && (
+                        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-[500px] flex flex-col items-center gap-3">
+                            <form onSubmit={handleSearch} className="relative group w-full">
+                                <input 
+                                    value={keyword} 
+                                    onChange={handleKeywordChange} 
+                                    className="w-full bg-[var(--input-bg)] backdrop-blur-md border border-[var(--border-color)] rounded-full px-6 py-2.5 text-sm outline-none text-[var(--text-color)] focus:border-[var(--accent)] transition-all shadow-xl placeholder:text-[var(--text-dim)]" 
+                                    placeholder="Search industries, sectors, themes..." 
+                                />
+                                {suggestions.length > 0 && (
+                                    <ul className="absolute z-[100] w-full bg-[var(--input-bg)] border border-[var(--border-color)] mt-2 rounded-xl overflow-hidden py-2 shadow-2xl max-h-[300px] overflow-y-auto">
+                                        {suggestions.map(s => (
+                                            <li key={s} onClick={() => selectSuggestion(s)} className="px-5 py-2 text-sm cursor-pointer hover:bg-[var(--accent)] hover:text-white text-[var(--text-dim)] transition-colors truncate">{s}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </form>
+                            
+                            {/* Recommended Keywords */}
+                            <div className="flex flex-wrap justify-center gap-2 px-4 transition-all duration-500">
+                                {recommendedKeywords.map(tag => (
+                                    <button 
+                                        key={tag}
+                                        onClick={() => selectSuggestion(tag)}
+                                        className="px-3 py-1 rounded-full text-[11px] font-medium bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-dim)] hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/50 hover:text-[var(--accent)] transition-all hover:scale-105 active:scale-95"
+                                    >
+                                        #{tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Top Right Actions */}
+                    <div className="absolute top-6 right-6 z-50 flex items-center gap-3">
+                        <div className="flex bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full p-1 shadow-lg">
+                            <button 
+                                onClick={() => setViewMode('public')}
+                                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'public' ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--text-dim)] hover:text-[var(--text-color)]'}`}
+                            >Public</button>
+                            <button 
+                                onClick={() => viewMode === 'public' ? handlePrivateGenerate() : null}
+                                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode.startsWith('private') ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--text-dim)] hover:text-[var(--text-color)]'}`}
+                            >Private</button>
+                        </div>
+                        <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-10 h-10 flex items-center justify-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full hover:bg-[var(--accent)] hover:text-white transition-all shadow-lg text-lg">
+                            {theme === 'dark' ? '☀️' : '🌙'}
+                        </button>
+                    </div>
+
+                    {/* Link Distance Control */}
+                    {viewMode !== 'private' && (
+                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 bg-[#1e1e1e]/80 backdrop-blur-md border border-[#333] px-6 py-3 rounded-full shadow-2xl flex items-center gap-4">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#9ca3af]">Distance</span>
+                            <input 
+                                type="range" 
+                                min="10" max="150" 
+                                value={linkDistance} 
+                                onChange={(e) => setLinkDistance(Number(e.target.value))}
+                                className="w-32 accent-[#5c85ff]"
+                            />
+                            <span className="text-[10px] font-mono text-[#5c85ff] w-6">{linkDistance}</span>
+                        </div>
+                    )}
+
+                    {/* Top Left Logo/Title or Back Button */}
+                    <div className="absolute top-6 left-6 z-50">
+                        {viewMode === 'private-graph' ? (
+                            <h1 className="text-lg font-semibold tracking-tight text-[#fff] opacity-90 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-[#indigo-500] rounded-full animate-pulse"></span>
+                                Private <span className="text-[#9ca3af] font-light italic">Graph</span>
+                            </h1>
+                        ) : (
+                            <h1 className="text-lg font-bold tracking-tight text-[var(--text-color)] transition-colors flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 bg-[var(--accent)] rounded-full shadow-[0_0_10px_0_var(--accent)]"></span>
+                                Graph <span className="text-[var(--text-dim)] font-normal italic">View</span>
+                            </h1>
+                        )}
+                    </div>
+
+                    <ForceGraph2D
+                        ref={fgRef}
+                        graphData={viewMode === 'private-graph' ? privateGraph : graphData}
+                        backgroundColor={theme === 'dark' ? '#111111' : '#ffffff'}
+                        nodeCanvasObject={(node, ctx, globalScale) => {
+                            try {
+                                const isRoot = node.type === 'root';
+                                const isTopic = node.type === 'topic';
+                                
+                                // Obsidian-style colors
+                                let color = '#4b4b4b'; // Default node
+                                if (isRoot) color = '#5c85ff'; // Root node (blue)
+                                if (isTopic) color = theme === 'dark' ? '#999' : '#555'; // Topic node
+
+                                const radius = isRoot ? 5 : isTopic ? 3.5 : 2;
+                                
+                                // Glowing effect for root
+                                if (isRoot) {
+                                    ctx.shadowColor = '#5c85ff';
+                                    ctx.shadowBlur = 15 / globalScale;
+                                } else {
+                                    ctx.shadowBlur = 0;
+                                }
+
+                                // Node Circle
+                                ctx.beginPath();
+                                ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
+                                ctx.fillStyle = color;
+                                ctx.fill();
+                                
+                                // Clear shadow for next nodes
+                                ctx.shadowBlur = 0;
+
+                                // Label Visibility based on Scale
+                                if (!isRoot && globalScale < 0.8) return; 
+
+                                // Bilingual Labels
+                                const label = node.label || String(node.id) || '';
+                                const fontSize = isRoot ? 14 / globalScale : 11 / globalScale;
+                                ctx.font = `${isRoot ? 'bold' : 'normal'} ${fontSize}px "Inter", sans-serif`;
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'top';
+                                
+                                const labelColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.92)' : 'rgba(0, 0, 0, 0.92)';
+                                const haloColor = theme === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+                                
+                                // Label Halo for maximum readability
+                                ctx.shadowColor = haloColor;
+                                ctx.shadowBlur = 4 / globalScale;
+                                ctx.fillStyle = labelColor;
+
+                                // Simplified bilingual logic: show English if missing, or just both if possible
+                                // For this task, we'll simulate it by checking if it contains KR and adding a generic EN or vice-versa
+                                // In a real app we'd have a map. Here I'll just append a localized suffix where appropriate.
+                                let extendedLabel = label;
+                                if (isRoot && label === 'Obsidian Graph View Style 기반 추가') {
+                                    extendedLabel = "Obsidian Graph Style / 초기 허브";
+                                } else if (label && typeof label === 'string' && label.match(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/)) {
+                                    // Add a dummy English if it's only Korean for demo
+                                    const dummyEn = {
+                                        '반도체': 'Semiconductor',
+                                        '자율주행': 'Autonomous',
+                                        '배터리': 'Battery',
+                                        '전력': 'Power',
+                                        '방산': 'Defense',
+                                        '바이오': 'Bio',
+                                        '소비재': 'Consumer'
+                                    }[label];
+                                    if (dummyEn && (isRoot || isTopic)) extendedLabel = `${label} | ${dummyEn}`;
+                                }
+
+                                ctx.fillText(extendedLabel, node.x, node.y + radius + 2);
+                            } catch (e) {
+                                console.error("Node render error", e, node);
+                            }
+                        }}
+                        nodePointerAreaPaint={(node, color, ctx) => {
+                            const radius = (node.type === 'root' ? 5 : node.type === 'topic' ? 3.5 : 2) * 2;
+                            ctx.fillStyle = color;
+                            ctx.beginPath(); ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false); ctx.fill();
+                        }}
+                        onNodeClick={handleNodeClick}
+                        onBackgroundClick={() => setSelectedNode(null)}
+                        linkColor={() => theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(100, 116, 139, 0.18)'}
+                        linkWidth={0.5}
+                        d3AlphaDecay={0.02}
+                        d3VelocityDecay={0.3}
+                    />
+
+
+
+                    {/* Node Popup Overlay */}
+                    {selectedNode && viewMode === 'public' && (
+                        <div 
+                            ref={popupRef}
+                            className="absolute top-0 left-0 pointer-events-none z-[100]"
+                            style={{ transform: 'translate(-9999px, -9999px)' }}
+                        >
+                            <div className="pointer-events-auto -translate-x-1/2 -translate-y-[135%] flex flex-col items-center">
+                                <div className="bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] p-2.5 rounded-2xl shadow-2xl flex flex-col gap-2 min-w-[160px] animate-in fade-in zoom-in duration-200">
+                                    <span className="text-[var(--text-color)] font-bold text-xs truncate text-center">{selectedNode.label.split(' | ')[0]}</span>
+                                    <div className="flex gap-2 justify-center w-full">
+                                        <button 
+                                            onClick={handleAddToPrivate}
+                                            disabled={addStatus === 'loading'}
+                                            className={`flex-1 py-1.5 rounded-lg font-bold text-[10px] text-white transition-colors whitespace-nowrap shadow-lg ${addStatus === 'loading' ? 'bg-[#4a72ff]/50 cursor-wait' : 'bg-[#5c85ff] hover:bg-[#4a72ff] shadow-[#5c85ff]/20'}`}
+                                        >
+                                            {addStatus === 'loading' ? '⏳ Searching...' : addStatus === selectedNode.id ? "✓ Added" : "+ Add to Private"}
+                                        </button>
+                                        {addStatus === selectedNode.id && (
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedNode(null);
+                                                    handlePrivateGenerate();
+                                                }}
+                                                className="px-3 py-1.5 rounded-lg bg-indigo-600 font-bold text-[10px] text-white hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/20"
+                                            >
+                                                Go ↗
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                 {/* Triangle pointer */}
+                                 <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[var(--border-color)] mt-[-1px]"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    <aside className={`sidebar bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--border-color)] p-6 rounded-2xl shadow-2xl ${isSidebarOpen ? '' : 'hidden'}`}>
+                        {selectedNode && (
+                            <>
+                                <div className="flex justify-between mb-4">
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded bg-indigo-500/20 text-indigo-400">{selectedNode.type}</span>
+                                    <button onClick={() => setIsSidebarOpen(false)}>✕</button>
+                                </div>
+                                <h2 className="text-2xl font-bold mb-4">{selectedNode.label}</h2>
+                                <div className="text-sm opacity-80 leading-relaxed mb-6">
+                                    {selectedNode.content || 'Detailed industry data is being processed from local sources.'}
+                                </div>
+                            </>
+                        )}
+                    </aside>
+                </div>
+            );
+        };
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

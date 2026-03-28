@@ -1,0 +1,12 @@
+[
+  {"text": "I want to build a mobile app. What technology stack do you recommend?"},
+  {"text": "I suggest using React Native for a cross-platform mobile app development."},
+  {"text": "Is React Native good for performance and security?"},
+  {"text": "Yes, React Native offers good performance for most apps and has strong community support for security."},
+  {"text": "What about deployment and hosting?"},
+  {"text": "You can deploy to App Store and Play Store, and use cloud services like AWS or Firebase for hosting."},
+  {"text": "How should I start the development roadmap?"},
+  {"text": "Start by setting up the environment and implementing the core features first."},
+  {"text": "Thank you for the advice on the technology stack and roadmap."},
+  {"text": "You're welcome! Let me know if you need more help with implementation."}
+]

@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "label": "nvdia",
+      "type": "root",
+      "val": 4
+    },
+    {
+      "id": "topic_0",
+      "label": "nvdia Impact",
+      "type": "topic",
+      "val": 3,
+      "description": "This topic represents 33.3% of the analysis."
+    },
+    {
+      "id": "kw_0_0",
+      "label": "nvdia Advanced",
+      "type": "keyword",
+      "val": 2.9499326182993393,
+      "content": "### Nvdia advanced\n\nThis keyword was identified with a relevance score of 0.3900.\n\nIn the current context, **nvdia Advanced** is a key theme. It relates closely to the topic 'nvdia Impact'.\n\n#### Key Insights:\n- Relevant to thematic clusters.\n- Strong correlation with neighboring nodes.\n- Actionable item: Explore more about this specific area."
+    },
+    {
+      "id": "kw_0_1",
+      "label": "nvdia System",
+      "type": "keyword",
+      "val": 2.9227496444518866,
+      "content": "### Nvdia system\n\nThis keyword was identified with a relevance score of 0.3845.\n\nIn the current context, **nvdia System** is a key theme. It relates closely to the topic 'nvdia Impact'.\n\n#### Key Insights:\n- Relevant to thematic clusters.\n- Strong correlation with neighboring nodes.\n- Actionable item: Explore more about this specific area."
+    },
+    {
+      "id": "kw_0_2",
+      "label": "nvdia Core",
+      "type": "keyword",
+      "val": 2.1533764474178336,
+      "content": "### Nvdia core\n\nThis keyword was identified with a relevance score of 0.2307.\n\nIn the current context, **nvdia Core** is a key theme. It relates closely to the topic 'nvdia Impact'.\n\n#### Key Insights:\n- Relevant to thematic clusters.\n- Strong correlation with neighboring nodes.\n- Actionable item: Explore more about this specific area."
+    },
+    {
+      "id": "topic_1",
+      "label": "nvdia Future",
+      "type": "topic",
+      "val": 3,
+      "description": "This topic represents 33.3% of the analysis."
+    },
+    {
+      "id": "kw_1_0",
+      "label": "nvdia Advanced",
+      "type": "keyword",
+      "val": 2.8839374971106606,
+      "content": "### Nvdia advanced\n\nThis keyword was identified with a relevance score of 0.3768.\n\nIn the current context, **nvdia Advanced** is a key theme. It relates closely to the topic 'nvdia Future'.\n\n#### Key Insights:\n- Relevant to thematic clusters.\n- Strong correlation with neighboring nodes.\n- Actionable item: Explore more about this specific area."
+    },
+    {
+      "id": "kw_1_1",
+      "label": "nvdia Best Practice",
+      "type": "keyword",
+      "val": 2.850699688569799,
+      "content": "### Nvdia best practice\n\nThis keyword was identified with a relevance score of 0.3701.\n\nIn the current context, **nvdia Best Practice** is a key theme. It relates closely to the topic 'nvdia Future'.\n\n#### Key Insights:\n- Relevant to thematic clusters.\n- Strong correlation with neighboring nodes.\n- Actionable item: Explore more about this specific area."
+    },
+    {
+      "id": "kw_1_2",
+      "label": "nvdia Framework",
+      "type": "keyword",
+      "val": 2.0045497003289245,
+      "content": "### Nvdia framework\n\nThis keyword was identified with a relevance score of 0.2009.\n\nIn the current context, **nvdia Framework** is a key theme. It relates closely to the topic 'nvdia Future'.\n\n#### Key Insights:\n- Relevant to thematic clusters.\n- Strong correlation with neighboring nodes.\n- Actionable item: Explore more about this specific area."
+    },
+    {
+      "id": "topic_2",
+      "label": "nvdia Tools",
+      "type": "topic",
+      "val": 3,
+      "description": "This topic represents 33.3% of the analysis."
+    }
+  ],
+  "links": [
+    {
+      "source": "root",
+      "target": "topic_0"
+    },
+    {
+      "source": "topic_0",
+      "target": "kw_0_0"
+    },
+    {
+      "source": "topic_0",
+      "target": "kw_0_1"
+    },
+    {
+      "source": "topic_0",
+      "target": "kw_0_2"
+    },
+    {
+      "source": "root",
+      "target": "topic_1"
+    },
+    {
+      "source": "topic_1",
+      "target": "kw_1_0"
+    },
+    {
+      "source": "topic_1",
+      "target": "kw_1_1"
+    },
+    {
+      "source": "topic_1",
+      "target": "kw_1_2"
+    },
+    {
+      "source": "root",
+      "target": "topic_2"
+    }
+  ]
+}
