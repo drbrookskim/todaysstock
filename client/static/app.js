@@ -249,14 +249,9 @@ function restoreStockContext(type) {
             currentStock = context.item;
             renderResult(context.data);
             
-            // On Home/Watchlist result views, we hide the pattern section (reserved for Deep Analysis link)
+            // On Home/Watchlist result views, we hide the pattern section (reserved for Deep Analysis)
             const patternReportSection = document.getElementById('patternReportSection');
-            const triggerContainer = document.getElementById('analysisTriggerContainer');
             if (patternReportSection) patternReportSection.classList.add('hidden');
-            if (triggerContainer) {
-                const isLogged = authUser && authUser.logged_in;
-                triggerContainer.style.display = isLogged ? 'block' : 'none';
-            }
         }
 
         if (context.item && context.item.code) {
@@ -535,9 +530,6 @@ function renderWatchlist() {
                     <span class="watchlist-tile-code">${escapeHtml(item.code)}</span>
                 </div>
             </div>
-            <div class="watchlist-tile-footer" data-action="deep-analysis">
-                <span class="tile-analysis-hint">심층 분석 데이터 보기 &rarr;</span>
-            </div>
         </div>
     `).join('');
 
@@ -557,14 +549,6 @@ function renderWatchlist() {
             });
         }
 
-        // 2. Click on footer: Deep Analysis
-        const footer = tile.querySelector('.watchlist-tile-footer');
-        if (footer) {
-            footer.addEventListener('click', (e) => {
-                e.stopPropagation();
-                selectStock(item, 'watchlist'); // Use 'watchlist' origin to go to Deep Analysis
-            });
-        }
     });
 }
 
@@ -770,13 +754,6 @@ async function selectStock(item, origin = 'search') {
             
             renderResult(data);
             
-            // Ensure Trigger button is visible (Authenticated only)
-            const triggerContainer = document.getElementById('analysisTriggerContainer');
-            if (triggerContainer) {
-                const isLogged = authUser && authUser.logged_in;
-                triggerContainer.style.display = isLogged ? 'block' : 'none';
-            }
-            
             // Hide pattern report if it was open from previous analysis
             const patternReportSection = document.getElementById('patternReportSection');
             if (patternReportSection) patternReportSection.classList.add('hidden');
@@ -796,8 +773,7 @@ async function selectStock(item, origin = 'search') {
             if (contentWrapper) contentWrapper.classList.remove('hidden');
             if (currentLabel) currentLabel.textContent = `${item.name} (${item.code})`;
 
-            // Trigger Automatic Deep Analysis
-            triggerFullDeepAnalysis(item.code);
+            // triggerFullDeepAnalysis is now handled by navigateToSection -> initNavigation
         }
     } catch (err) {
         console.error('Stock selection failed:', err);
@@ -955,25 +931,9 @@ function renderResult(data) {
     // Show result
     resultSection.classList.remove('hidden');
 
-    // Reset analysis section & trigger button
+    // Reset analysis section
     const patternReportSection = document.getElementById('patternReportSection');
-    const triggerContainer = document.getElementById('analysisTriggerContainer');
-    const showAnalysisBtn = document.getElementById('btnShowAnalysis');
-
     if (patternReportSection) patternReportSection.classList.add('hidden');
-    if (triggerContainer) {
-        const isLogged = authUser && authUser.logged_in;
-        triggerContainer.style.display = isLogged ? 'block' : 'none';
-    }
-
-    if (showAnalysisBtn) {
-        showAnalysisBtn.onclick = () => {
-            if (currentStock) {
-                // Redirect to Deep Analysis for the current stock
-                selectStock(currentStock, 'watchlist');
-            }
-        };
-    }
 }
 
 function renderNxtCard(nxt) {
@@ -1390,7 +1350,6 @@ async function fetchAnalysisReport(item) {
     const triggerContainer = document.getElementById('analysisTriggerContainer');
     const analysisLoading = document.getElementById('analysisLoading');
 
-    if (triggerContainer) triggerContainer.style.display = 'none';
     if (patternReportSection) patternReportSection.classList.remove('hidden');
     
     if (analysisLoading) analysisLoading.classList.remove('hidden');
@@ -2841,7 +2800,6 @@ async function initAuth() {
         const navValueChain = document.getElementById('navValueChain');
         const addWatchlistBtnContainer = document.getElementById('addWatchlistBtnContainer');
         const pageGreeting = document.getElementById('pageGreeting');
-        const analysisTriggerContainer = document.getElementById('analysisTriggerContainer');
 
         console.log('[DEBUG] updateAuthUI - logged_in:', authUser?.logged_in);
         if (authUser && authUser.logged_in) {
@@ -2860,7 +2818,6 @@ async function initAuth() {
             if (navWatchlist) navWatchlist.style.display = 'flex';
             if (navAnalysis) navAnalysis.style.display = 'flex';
             if (navValueChain) navValueChain.style.display = 'flex';
-            if (analysisTriggerContainer) analysisTriggerContainer.style.display = 'block';
 
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
             updateWatchlistCount();
@@ -2881,7 +2838,6 @@ async function initAuth() {
             if (navAnalysis) navAnalysis.style.display = 'none';
             // [MOD] Value Chain is restricted for guests
             if (navValueChain) navValueChain.style.display = 'none';
-            if (analysisTriggerContainer) analysisTriggerContainer.style.display = 'none';
 
             // Auto-redirect if in restricted section
             const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
