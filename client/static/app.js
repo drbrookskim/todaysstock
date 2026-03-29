@@ -2879,12 +2879,12 @@ async function initAuth() {
             // Hide restricted menus for guests
             if (navWatchlist) navWatchlist.style.display = 'none';
             if (navAnalysis) navAnalysis.style.display = 'none';
-            // [MOD] Value Chain is now a public feature
-            if (navValueChain) navValueChain.style.display = 'flex';
+            // [MOD] Value Chain is restricted for guests
+            if (navValueChain) navValueChain.style.display = 'none';
             if (analysisTriggerContainer) analysisTriggerContainer.style.display = 'none';
 
             // Auto-redirect if in restricted section
-            const restricted = ['watchlistSection', 'analysisSection'];
+            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
             }
