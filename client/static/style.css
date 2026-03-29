@@ -1184,8 +1184,22 @@ html[data-theme="light"] .theme-icon-btn i {
 .workout-style.analysis-header-card,
 .workout-style.patterns-card,
 .workout-style.candle-chart-card,
-.workout-style.report-card {
+.workout-style.report-card,
+.workout-style.fundamental-axis {
     padding: 0;
+}
+
+.fund-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+@media (max-width: 992px) {
+    .fund-tiles-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .stock-header-card:hover,

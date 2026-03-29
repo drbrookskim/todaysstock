@@ -627,10 +627,11 @@
                         </div>
 
                         <!-- 🧠 Fundamental Analysis Panel -->
-                        <div id="fundamentalCard" class="workout-style fundamental reveal-fade hidden">
+                        <!-- 🧠 Fundamental Analysis Highlights (Signal & Summary) -->
+                        <div id="fundSummaryBlock" class="workout-style fundamental reveal-fade hidden">
                             <div class="workout-stripe"></div>
                             <div class="workout-content" style="padding: 0;">
-                                <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 24px; margin-bottom: 0; border-bottom: 1px solid var(--border-soft);">
+                                <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 18px 24px; border-bottom: 1px solid var(--border-soft);">
                                     <div class="fund-header" style="padding: 0; background: transparent; border: none;">
                                         <div class="fund-header-left">
                                             <span class="fund-brain-icon">🧠</span>
@@ -643,29 +644,71 @@
                                     </div>
                                 </div>
                                 <div class="workout-body" style="padding: 24px;">
-                                    <div id="fundSignalReason" class="fund-signal-reason"></div>
-                                    <div id="fundBody" class="fund-body" style="padding: 0;">
-                                        <div class="fund-axis-grid">
-                                            <div class="fund-axis-card">
-                                                <div class="fund-axis-title">📊 Quant</div>
-                                                <div id="fundQuantContent" class="fund-axis-content"></div>
-                                            </div>
-                                            <div class="fund-axis-card">
-                                                <div class="fund-axis-title">📰 Event</div>
-                                                <div id="fundEventContent" class="fund-axis-content"></div>
-                                            </div>
-                                            <div class="fund-axis-card">
-                                                <div class="fund-axis-title">🏢 Sector</div>
-                                                <div id="fundSectorContent" class="fund-axis-content"></div>
-                                            </div>
-                                            <div class="fund-axis-card">
-                                                <div class="fund-axis-title">🎯 Target</div>
-                                                <div id="fundTargetContent" class="fund-axis-content"></div>
-                                            </div>
+                                    <div id="fundSignalReason" class="fund-signal-reason" style="margin-bottom: 0; border: none; padding: 0;">데이터 분석 중…</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fund-tiles-grid">
+                            <!-- 📊 Axis 1: Quant Analysis Tile -->
+                            <div id="fundQuantBlock" class="workout-style fundamental-axis reveal-fade hidden">
+                                <div class="workout-stripe" style="background: var(--accent-indigo);"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-chart-bar"></i> 퀀트 분석 (Quant Axis)
                                         </div>
-                                        <div id="fundAxesUsed" class="fund-axes-used"></div>
-                                        <div class="fund-desc" style="margin-top: 16px;">
-                                            DART 공시·재무제표와 한국은행 ECOS 거시경제 데이터를 알고리즘적으로 분석합니다.
+                                    </div>
+                                    <div class="workout-body" style="padding: 20px;">
+                                        <div id="fundQuantContent" class="fund-axis-content"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 📰 Axis 2: Event-Driven Tile -->
+                            <div id="fundEventBlock" class="workout-style fundamental-axis reveal-fade hidden">
+                                <div class="workout-stripe" style="background: var(--accent-emerald);"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-newspaper"></i> 이벤트 기반 (Event Axis)
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 20px;">
+                                        <div id="fundEventContent" class="fund-axis-content"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 🏢 Axis 3: Sector Analysis Tile -->
+                            <div id="fundSectorBlock" class="workout-style fundamental-axis reveal-fade hidden">
+                                <div class="workout-stripe" style="background: #a78bfa;"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-factory"></i> 섹터 컨텍스트 (Sector Axis)
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 20px;">
+                                        <div id="fundSectorContent" class="fund-axis-content"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 🎯 Axis 4: Target Analysis Tile -->
+                            <div id="fundTargetBlock" class="workout-style fundamental-axis reveal-fade hidden">
+                                <div class="workout-stripe" style="background: #fbbf24;"></div>
+                                <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-target"></i> 목표 분석 (Target Axis)
+                                        </div>
+                                    </div>
+                                    <div class="workout-body" style="padding: 20px;">
+                                        <div id="fundTargetContent" class="fund-axis-content"></div>
+                                        <div id="fundAxesUsed" class="fund-axes-used" style="margin-top: 15px; font-size: 0.75rem; color: var(--text-muted);"></div>
+                                        <div class="fund-desc" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-sub);">
+                                            DART 공시·재무제표와 한국은행 ECOS 지표를 기반으로 분석합니다.
                                         </div>
                                     </div>
                                 </div>

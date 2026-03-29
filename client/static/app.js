@@ -784,7 +784,9 @@ async function triggerFullDeepAnalysis(code) {
     const globalLoading = document.getElementById('analysisGlobalLoading');
     const loadingText = document.getElementById('analysisLoadingText');
     const patternReportSection = document.getElementById('patternReportSection');
-    const fundamentalCard = document.getElementById('fundamentalCard');
+    const fundBlocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock']
+        .map(id => document.getElementById(id))
+        .filter(el => !!el);
     const emptyState = document.getElementById('analysisEmptyState');
     const contentWrapper = document.getElementById('analysisContentWrapper');
 
@@ -797,7 +799,8 @@ async function triggerFullDeepAnalysis(code) {
     }
     
     // Hide all blocks initially to prepare for sequential reveal
-    const allBlocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock', 'fundamentalCard'];
+    const aiBlocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
+    const allBlocks = [...aiBlocks, 'fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
     allBlocks.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -807,25 +810,31 @@ async function triggerFullDeepAnalysis(code) {
     });
 
     try {
+        console.log(`[DEBUG] triggerFullDeepAnalysis for ${code}`);
+        
         // Step 1: Fetch AI Analysis
         const analysisData = await fetchAnalysisReport(currentStock || { code });
         
         // Step 2: Show Fundamental loading status
         if (loadingText) loadingText.textContent = '기업 펀더멘탈 및 공시 데이터 분석 중...';
         
-        // Step 3: Start Fundamental Analysis (Don't await yet if we want to show AI first)
+        // Step 3: Start Fundamental Analysis
         const fundamentalPromise = renderFundamentalReport(code);
         
-        // Hide global loading once both started or AI ready
+        // Hide global loading early if we have AI data to show
         if (analysisData) {
+            console.log('[DEBUG] AI Analysis data received. Hiding global loading.');
             if (globalLoading) globalLoading.classList.add('hidden');
             _lastAnalysisData = analysisData;
             if (patternReportSection) patternReportSection.classList.remove('hidden');
-            // renderAnalysisReport will handle the staggered reveal
             renderAnalysisReport(analysisData);
         }
 
         await fundamentalPromise;
+        console.log('[DEBUG] Fundamental analysis rendering complete.');
+
+        // Final safety hide for global loading
+        if (globalLoading) globalLoading.classList.add('hidden');
         
     } catch (err) {
         console.error('Deep Analysis failed:', err);
@@ -1663,10 +1672,8 @@ function renderAnalysisReport(data) {
     // ── AI Insights: 확률점수 / ATR 목표가 / 거래량 이상 ──
     renderAiInsights(data);
 
-    // ── Fundamental Analysis (async, 별도 API 호출) ──
-    if (localStorage.getItem('stockfinder-fund-enabled') !== 'false') {
-        renderFundamentalReport(data.code || data.ticker || '');
-    }
+    // ── Fundamental Analysis (Handled by triggerFullDeepAnalysis) ──
+    // renderFundamentalReport(data.code || data.ticker || ''); 
 
     // ── 2. Buy/Sell Reports & Signals Block ──
     const aiSignalsBlock = document.getElementById('aiSignalsBlock');
@@ -1686,8 +1693,11 @@ function renderAnalysisReport(data) {
 // 🧠  Fundamental Analysis Panel
 // ══════════════════════════════════════════════════════════
 async function renderFundamentalReport(stockCode) {
-    const card = document.getElementById('fundamentalCard');
-    if (!card || !stockCode) return;
+    const blocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock']
+        .map(id => document.getElementById(id))
+        .filter(el => !!el);
+
+    if (blocks.length === 0 || !stockCode) return;
 
     // Reset visibility if in analysisSection
     const emptyState = document.getElementById('analysisEmptyState');
@@ -1696,8 +1706,10 @@ async function renderFundamentalReport(stockCode) {
     if (contentWrapper) contentWrapper.classList.remove('hidden');
 
     // Pre-hide with reveal-fade class for sequential entrance
-    card.classList.add('hidden');
-    card.classList.remove('visible');
+    blocks.forEach(b => {
+        b.classList.add('hidden');
+        b.classList.remove('visible');
+    });
 
     // 스켈레톤 상태 텍스트
     document.getElementById('fundSignalReason').textContent = '데이터 분석 중…';
@@ -1877,10 +1889,16 @@ async function renderFundamentalReport(stockCode) {
         }
     }
 
-    // Final reveal
-    card.classList.remove('hidden');
+    // Final reveal with staggered entrance
     requestAnimationFrame(() => {
-        card.classList.add('visible');
+        blocks.forEach((b, i) => {
+            setTimeout(() => {
+                b.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    b.classList.add('visible');
+                });
+            }, i * 100); // 100ms stagger between tiles
+        });
     });
 }
 
