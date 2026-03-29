@@ -626,9 +626,17 @@ def login():
     username = data.get("username")
     password = data.get("password")
     
+    print(f"🔑 Login attempt for: {username}")
+    
     try:
         email = username if "@" in username else f"{username}@stockfinder.local"
         res = supabase_global.auth.sign_in_with_password({"email": email, "password": password})
+        
+        if not res.session:
+            print(f"❌ Login failed for {username}: No session returned")
+            return jsonify({"success": False, "message": "로그인 세션을 생성할 수 없습니다."}), 401
+            
+        print(f"✅ Login success for: {username}")
         # token과 user 정보를 반환하여 클라이언트에서 JWT를 보관하도록 함
         return jsonify({
             "success": True, 
@@ -637,7 +645,9 @@ def login():
             "access_token": res.session.access_token
         })
     except Exception as e:
+        print(f"❌ Login error for {username}: {str(e)}")
         return jsonify({"success": False, "message": "아이디 또는 비밀번호가 올바르지 않습니다."}), 401
+
 
 @app.route("/api/auth/google", methods=["GET"])
 def auth_google():

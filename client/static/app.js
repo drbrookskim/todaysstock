@@ -1,8 +1,3 @@
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let registration of registrations) { registration.unregister(); }
-    });
-}
 
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') 
     ? '' 
@@ -226,6 +221,7 @@ function restoreStockContext(type) {
         return;
     }
 
+    try {
         // [MOD] Basic resultSection is ONLY visible in Home
         const placeholderId = 'mainResultPlaceholder';
         const placeholder = document.getElementById(placeholderId);
@@ -255,41 +251,51 @@ function restoreStockContext(type) {
         }
 
         if (context.item && context.item.code) {
+             // Avoid double loading if possible
              renderFundamentalReport(context.item.code);
         }
     
         // Final sanity check for result visibility
         if (resSec) resSec.classList.remove('hidden');
+    } catch(err) {
+        console.error('restoreStockContext error:', err);
+    }
 }
 
 function showSection(id) {
+    console.log(`[DEBUG] showSection: ${id}`);
     const sections = ['dashboardHome', 'analysisSection', 'historySection', 'watchlistSection', 'valueChainSection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
             el.classList.add('hidden');
-            el.style.display = ''; // Reset inline style to let CSS handle it
+            el.style.display = ''; 
         }
     });
 
     const target = document.getElementById(id);
     if (target) {
         target.classList.remove('hidden');
-        target.style.display = ''; // Let CSS handle visibility
-        currentActiveSectionId = id; // Sync current active section for scroll persistence
-        
-        // [MOD] Hide result section explicitly in Value Chain menu
-        if (id === 'valueChainSection') {
-            const resSec = document.getElementById('resultSection');
-            if (resSec) resSec.classList.add('hidden');
-        }
-
-        requestAnimationFrame(() => {
-            console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
-            if (id === 'dashboardHome') renderMacroIndicators();
-            if (id === 'valueChainSection') initValueChain();
-        });
+        target.style.display = '';
+        currentActiveSectionId = id;
     }
+
+    // resultSection should ONLY be hidden if we move to a section that doesn't support it
+    const resSec = document.getElementById('resultSection');
+    if (resSec && id !== 'dashboardHome' && id !== 'watchlistSection' && id !== 'resultSection') {
+        resSec.classList.add('hidden');
+    }
+    
+    // [MOD] Hide result section explicitly in Value Chain menu
+    if (id === 'valueChainSection') {
+        if (resSec) resSec.classList.add('hidden');
+    }
+
+    requestAnimationFrame(() => {
+        console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
+        if (id === 'dashboardHome') renderMacroIndicators();
+        // if (id === 'valueChainSection') initValueChain(); // Handled by its own listener
+    });
 }
 
 // ── Sidebar Pin & Toggle ──
@@ -736,27 +742,19 @@ async function selectStock(item, origin = 'search') {
         
         if (loadingSpinner) loadingSpinner.classList.add('hidden');
 
-        // Logic branching based on origin
         if (origin === 'search') {
-            // Home or Watchlist View: Basic Analysis Only
             homeStockContext = { item, data, analysis: null };
             
-            // [MOD] Basic resultSection always goes to Home
+            // Navigate to Home section
             navigateToSection('navHome');
-            const resSec = document.getElementById('resultSection');
-            const placeholderId = 'mainResultPlaceholder';
             
-            const placeholder = document.getElementById(placeholderId);
-            if (placeholder && resSec) {
-                placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-                resSec.classList.remove('hidden');
-            }
-            
-            renderResult(data);
-            
-            // Hide pattern report if it was open from previous analysis
-            const patternReportSection = document.getElementById('patternReportSection');
-            if (patternReportSection) patternReportSection.classList.add('hidden');
+            // Smoothly scroll to the result if on mobile or if it's a new search
+            requestAnimationFrame(() => {
+                const resSec = document.getElementById('resultSection');
+                if (resSec && !resSec.classList.contains('hidden')) {
+                    resSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
         } 
         else if (origin === 'watchlist') {
             // Deep Analysis View: Navigate to Full AI & Fundamental Analysis
@@ -783,35 +781,59 @@ async function selectStock(item, origin = 'search') {
 }
 
 async function triggerFullDeepAnalysis(code) {
-    const analysisLoading = document.getElementById('analysisLoading');
+    const globalLoading = document.getElementById('analysisGlobalLoading');
+    const loadingText = document.getElementById('analysisLoadingText');
     const patternReportSection = document.getElementById('patternReportSection');
     const fundamentalCard = document.getElementById('fundamentalCard');
+    const emptyState = document.getElementById('analysisEmptyState');
+    const contentWrapper = document.getElementById('analysisContentWrapper');
 
-    if (analysisLoading) analysisLoading.classList.remove('hidden');
-    if (patternReportSection) patternReportSection.classList.add('hidden');
-    // fundamentalCard is managed by renderFundamentalReport internally
+    // Reset UI state
+    if (emptyState) emptyState.classList.add('hidden');
+    if (contentWrapper) contentWrapper.classList.remove('hidden');
+    if (globalLoading) {
+        globalLoading.classList.remove('hidden');
+        if (loadingText) loadingText.textContent = 'AI 캔들 패턴 및 추세 분석 중...';
+    }
+    
+    // Hide all blocks initially to prepare for sequential reveal
+    const allBlocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock', 'fundamentalCard'];
+    allBlocks.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('hidden');
+            el.classList.remove('visible');
+        }
+    });
 
     try {
-        // Fetch AI Analysis report (Using global currentStock if available)
+        // Step 1: Fetch AI Analysis
         const analysisData = await fetchAnalysisReport(currentStock || { code });
         
-        if (analysisLoading) analysisLoading.classList.add('hidden');
+        // Step 2: Show Fundamental loading status
+        if (loadingText) loadingText.textContent = '기업 펀더멘탈 및 공시 데이터 분석 중...';
         
+        // Step 3: Start Fundamental Analysis (Don't await yet if we want to show AI first)
+        const fundamentalPromise = renderFundamentalReport(code);
+        
+        // Hide global loading once both started or AI ready
         if (analysisData) {
+            if (globalLoading) globalLoading.classList.add('hidden');
             _lastAnalysisData = analysisData;
             if (patternReportSection) patternReportSection.classList.remove('hidden');
+            // renderAnalysisReport will handle the staggered reveal
             renderAnalysisReport(analysisData);
         }
-        
-        // Fetch and Render Fundamental Report (this handles its own UI)
-        renderFundamentalReport(code);
+
+        await fundamentalPromise;
         
     } catch (err) {
         console.error('Deep Analysis failed:', err);
-        if (analysisLoading) analysisLoading.classList.add('hidden');
+        if (globalLoading) globalLoading.classList.add('hidden');
         showToast('심층 분석 데이터를 불러오지 못했습니다.', 'error');
     }
 }
+
 
 function showError(msg) {
     errorMessage.textContent = msg;
@@ -1357,21 +1379,7 @@ function updateFearGreed(value) {
 // ── AI 캔들 패턴 분석 리포트 통합 페치 유틸리티 ──
 async function fetchAnalysisReport(item) {
     if (!item || !item.code) return null;
-    const patternReportSection = document.getElementById('patternReportSection');
-    const analysisLoading = document.getElementById('analysisLoading');
-
-    if (patternReportSection) patternReportSection.classList.remove('hidden');
-    
-    if (analysisLoading) analysisLoading.classList.remove('hidden');
-    // Important: Reset and hide all technical blocks before loading
-    const blocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
-    blocks.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
-
-    const trendContainer = document.getElementById('trendContainer');
-    if (trendContainer) trendContainer.classList.add('hidden');
+    const globalLoading = document.getElementById('analysisGlobalLoading');
 
     try {
         const market = item.market || (currentStock && currentStock.code === item.code ? currentStock.market : 'KOSPI');
@@ -1394,13 +1402,13 @@ async function fetchAnalysisReport(item) {
             }
         }
 
-        if (analysisLoading) analysisLoading.classList.add('hidden');
-        renderAnalysisReport(data);
+        return data; 
     } catch (err) {
         console.error('fetchAnalysis error:', err);
-        if (analysisLoading) analysisLoading.classList.add('hidden');
+        return null;
     }
 }
+
 
 async function updateTileData(code) {
     const statEl = document.getElementById(`tileStats-${code}`);
@@ -1427,20 +1435,32 @@ async function updateTileData(code) {
 function renderAnalysisReport(data) {
     _lastAnalysisData = data;
     
-    // Reset all blocks to hidden first
+    // Sequential Reveal Logic
     const blocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
-    blocks.forEach(id => {
+    
+    blocks.forEach((id, index) => {
         const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
+        if (el) {
+            el.classList.add('hidden');
+            el.classList.remove('visible');
+            
+            // Staggered reveal
+            setTimeout(() => {
+                el.classList.remove('hidden');
+                // Small delay to trigger CSS transition
+                requestAnimationFrame(() => {
+                    el.classList.add('visible');
+                });
+            }, index * 120);
+        }
     });
 
     // ── 1. Trend Block ──
-    const aiTrendBlock = document.getElementById('aiTrendBlock');
     const trendContainer = document.getElementById('trendContainer');
     if (data.trend) {
-        if (aiTrendBlock) aiTrendBlock.classList.remove('hidden');
         if (trendContainer) trendContainer.classList.remove('hidden');
     }
+
 
 
     const trendBadge = document.getElementById('trendBadge');
@@ -1675,16 +1695,21 @@ async function renderFundamentalReport(stockCode) {
     if (emptyState) emptyState.classList.add('hidden');
     if (contentWrapper) contentWrapper.classList.remove('hidden');
 
-    // 스켈레톤 로딩 표시
-    document.getElementById('fundSignalReason').textContent = '데이터 로딩 중…';
+    // Pre-hide with reveal-fade class for sequential entrance
+    card.classList.add('hidden');
+    card.classList.remove('visible');
+
+    // 스켈레톤 상태 텍스트
+    document.getElementById('fundSignalReason').textContent = '데이터 분석 중…';
     const fundTypeBadge = document.getElementById('fundCompanyTypeBadge');
     const fundSignalBadge = document.getElementById('fundSignalBadge');
     if (fundTypeBadge) fundTypeBadge.textContent = '';
     if (fundSignalBadge) fundSignalBadge.textContent = '';
     
-    document.getElementById('fundQuantContent').innerHTML = '<div class="fund-loading">분석 중…</div>';
-    document.getElementById('fundEventContent').innerHTML = '<div class="fund-loading">공시 스캔 중…</div>';
-    document.getElementById('fundSectorContent').innerHTML = '<div class="fund-loading">업종 분석 중…</div>';
+    document.getElementById('fundQuantContent').innerHTML = '<div class="skeleton-pulse" style="height:100px; width:100%;"></div>';
+    document.getElementById('fundEventContent').innerHTML = '<div class="skeleton-pulse" style="height:60px; width:100%;"></div>';
+    document.getElementById('fundSectorContent').innerHTML = '<div class="skeleton-pulse" style="height:120px; width:100%;"></div>';
+
 
     let d;
     try {
@@ -1851,7 +1876,14 @@ async function renderFundamentalReport(stockCode) {
             homeStockContext.fundamental = d;
         }
     }
+
+    // Final reveal
+    card.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        card.classList.add('visible');
+    });
 }
+
 
 function renderAiInsights(data) {
     const container = document.getElementById('aiInsightsCard');

@@ -143,7 +143,7 @@
 
 
             <!-- ── 밸류체인 섹션 (Value Chain Section) ── -->
-            <section id="valueChainSection" class="value-chain-section hidden">
+            <section id="valueChainSection" class="value-chain-section page-section hidden">
                 <div class="vc-container animate-in">
                     <!-- Header -->
                     <div class="section-header" style="margin-bottom: 0;">
@@ -214,7 +214,7 @@
             </div>
             <div id="errorMessage" class="error-banner hidden"></div>
 
-            <section id="dashboardHome" class="dashboard-home">
+            <section id="dashboardHome" class="dashboard-home page-section">
                 <div class="container animate-in">
                     <div class="search-hero">
                         <div class="search-card">
@@ -309,7 +309,7 @@
             <div id="mainResultPlaceholder"></div>
 
             <!-- Stock Result Area (Merged) -->
-            <section id="resultSection" class="result-section hidden">
+            <section id="resultSection" class="result-section page-section hidden">
                 <div class="container animate-in">
 
 
@@ -505,7 +505,7 @@
             </section> <!-- End resultSection -->
 
             <!-- Deep Analysis Section (Relocated) -->
-            <section id="analysisSection" class="analysis-section hidden">
+            <section id="analysisSection" class="analysis-section page-section hidden">
                 <div class="container animate-in">
                     <div class="section-header">
                         <h3 style="display: flex; align-items: center; gap: 10px;">
@@ -520,11 +520,17 @@
                     </div>
 
                     <div id="analysisContentWrapper" class="hidden">
+                        <!-- ── Global Loading State ── -->
+                        <div id="analysisGlobalLoading" class="analysis-loading hidden">
+                            <div class="spinner"></div>
+                            <p id="analysisLoadingText">심층 분석 엔진을 가동 중입니다...</p>
+                        </div>
+
                         <!-- AI Candle & Pattern Analysis Report (Integrated) -->
                         <div id="patternReportSection" class="pattern-report-section hidden">
                             
                             <!-- 1. Trend Analysis Block -->
-                            <div id="aiTrendBlock" class="workout-style ai-trend hidden">
+                            <div id="aiTrendBlock" class="workout-style ai-trend reveal-fade hidden">
                                 <div class="workout-stripe"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
@@ -533,10 +539,6 @@
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
-                                        <div id="analysisLoading" class="analysis-loading hidden">
-                                            <div class="loading-spinner"></div>
-                                            <p>AI 인지형 리포트 생성 중...</p>
-                                        </div>
                                         <div id="trendContainer" class="trend-container hidden">
                                             <div id="trendBadge" class="trend-pill">
                                                 <span id="trendIcon"></span>
@@ -554,7 +556,7 @@
                             </div>
                             
                             <!-- 2. Action Insights / Signals Block -->
-                            <div id="aiSignalsBlock" class="workout-style ai-signals hidden">
+                            <div id="aiSignalsBlock" class="workout-style ai-signals reveal-fade hidden">
                                 <div class="workout-stripe"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
@@ -572,7 +574,7 @@
                             </div>
 
                             <!-- 3. Pattern Detection Block -->
-                            <div id="aiPatternsBlock" class="workout-style ai-patterns hidden">
+                            <div id="aiPatternsBlock" class="workout-style ai-patterns reveal-fade hidden">
                                 <div class="workout-stripe"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
@@ -590,7 +592,7 @@
                             </div>
                             
                             <!-- 4. Candle Chart Block -->
-                            <div id="aiChartBlock" class="workout-style ai-chart hidden">
+                            <div id="aiChartBlock" class="workout-style ai-chart reveal-fade hidden">
                                 <div class="workout-stripe"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
@@ -607,7 +609,7 @@
                             </div>
 
                             <!-- 5. Weekly Summary Block -->
-                            <div id="aiSummaryBlock" class="workout-style ai-summary hidden">
+                            <div id="aiSummaryBlock" class="workout-style ai-summary reveal-fade hidden">
                                 <div class="workout-stripe"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
@@ -625,7 +627,7 @@
                         </div>
 
                         <!-- 🧠 Fundamental Analysis Panel -->
-                        <div id="fundamentalCard" class="workout-style fundamental">
+                        <div id="fundamentalCard" class="workout-style fundamental reveal-fade hidden">
                             <div class="workout-stripe"></div>
                             <div class="workout-content" style="padding: 0;">
                                 <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 24px; margin-bottom: 0; border-bottom: 1px solid var(--border-soft);">
@@ -723,7 +725,7 @@
             </section>
 
             <!-- Watchlist Section -->
-            <section id="watchlistSection" class="watchlist-section hidden">
+            <section id="watchlistSection" class="watchlist-section page-section hidden">
                 <div class="container animate-in">
                     <div class="section-header">
                         <h3>관심종목</h3>
@@ -739,7 +741,7 @@
 
 
             <!-- History Section -->
-            <section id="historySection" class="history-section hidden">
+            <section id="historySection" class="history-section page-section hidden">
                 <div class="container animate-in">
                     <div class="section-header">
                         <h3>검색 기록</h3>
