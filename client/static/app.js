@@ -1347,7 +1347,6 @@ function updateFearGreed(value) {
 async function fetchAnalysisReport(item) {
     if (!item || !item.code) return null;
     const patternReportSection = document.getElementById('patternReportSection');
-    const triggerContainer = document.getElementById('analysisTriggerContainer');
     const analysisLoading = document.getElementById('analysisLoading');
 
     if (patternReportSection) patternReportSection.classList.remove('hidden');
