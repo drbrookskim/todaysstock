@@ -229,6 +229,13 @@ function restoreStockContext(type) {
         // Home and Watchlist still use resultSection for basic charts
         const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
         const placeholder = document.getElementById(placeholderId);
+        
+        // [MOD] If restoring watchlist context but stock is not in watchlist, hide result
+        if (type === 'watchlist' && context.item && !isInWatchlist(context.item.code)) {
+            if (resSec) resSec.classList.add('hidden');
+            return;
+        }
+
         if (placeholder && resSec) {
             placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
             resSec.classList.remove('hidden');
@@ -271,6 +278,12 @@ function showSection(id) {
         target.style.display = ''; // Let CSS handle visibility
         currentActiveSectionId = id; // Sync current active section for scroll persistence
         
+        // [MOD] Hide result section explicitly in Value Chain menu
+        if (id === 'valueChainSection') {
+            const resSec = document.getElementById('resultSection');
+            if (resSec) resSec.classList.add('hidden');
+        }
+
         requestAnimationFrame(() => {
             console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
             if (id === 'dashboardHome') renderMacroIndicators();
@@ -739,9 +752,16 @@ async function selectStock(item, origin = 'search') {
             // Determine where to show results
             const resSec = document.getElementById('resultSection');
             let placeholderId = 'mainResultPlaceholder';
+            const isWatched = isInWatchlist(item.code);
             
             if (currentActiveSectionId === 'dashboardWatchlist') {
-                placeholderId = 'watchlistResultPlaceholder';
+                if (isWatched) {
+                    placeholderId = 'watchlistResultPlaceholder';
+                } else {
+                    // [MOD] If search origin but stock not in watchlist, force go to Home
+                    navigateToSection('navHome');
+                    placeholderId = 'mainResultPlaceholder';
+                }
             } else if (currentActiveSectionId !== 'dashboardHome') {
                 // If not in Watchlist and not in Home (e.g. History), go to Home
                 navigateToSection('navHome');
@@ -2865,11 +2885,12 @@ async function initAuth() {
             // Hide restricted menus for guests
             if (navWatchlist) navWatchlist.style.display = 'none';
             if (navAnalysis) navAnalysis.style.display = 'none';
-            if (navValueChain) navValueChain.style.display = 'none';
+            // [MOD] Value Chain is now a public feature
+            if (navValueChain) navValueChain.style.display = 'flex';
             if (analysisTriggerContainer) analysisTriggerContainer.style.display = 'none';
 
             // Auto-redirect if in restricted section
-            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
+            const restricted = ['watchlistSection', 'analysisSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
             }

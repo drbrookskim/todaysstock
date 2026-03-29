@@ -1067,7 +1067,7 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .recent-list {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
 }
 
@@ -3004,19 +3004,23 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     flex-shrink: 0;
 }
 
-/* Vivid Gradients for Technical Blocks */
-.ai-trend .workout-stripe {
-    background: linear-gradient(to bottom, #818cf8, #6366f1, #4f46e5);
+/* Vivid Emerald Theme for Technical Analysis Blocks */
+.ai-trend .workout-stripe,
+.ai-patterns .workout-stripe,
+.ai-chart .workout-stripe {
+    background: linear-gradient(to bottom, #34d399, #10b981, #059669);
 }
+
+.ai-trend .workout-title i,
+.ai-patterns .workout-title i,
+.ai-chart .workout-title i {
+    color: #10b981;
+}
+
 .ai-signals .workout-stripe {
     background: linear-gradient(to bottom, #fbbf24, #f59e0b, #d97706);
 }
-.ai-patterns .workout-stripe {
-    background: linear-gradient(to bottom, #34d399, #10b981, #059669);
-}
-.ai-chart .workout-stripe {
-    background: linear-gradient(to bottom, #f472b6, #ec4899, #db2777);
-}
+
 .ai-summary .workout-stripe {
     background: linear-gradient(to bottom, #94a3b8, #64748b, #475569);
 }
