@@ -809,9 +809,9 @@ def market_index_history():
         return jsonify({"error": f"지원하지 않는 심볼입니다: {symbol_name}"}), 400
 
     try:
-        # 최근 1개월 데이터 (yfinance)
+        # 최근 1년 데이터 (yfinance)
         ticker = yf.Ticker(ticker_symbol)
-        df = ticker.history(period="1mo")
+        df = ticker.history(period="1y")
         
         if df.empty:
             return jsonify({"error": "데이터를 불러올 수 없습니다."}), 404

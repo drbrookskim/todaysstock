@@ -1183,7 +1183,7 @@ async function renderMacroIndicators() {
 async function renderIndexChart(symbol, name) {
     const titleName = document.getElementById('selectedIndexName');
     const container = document.getElementById('indexChart');
-    if (titleName) titleName.textContent = `${name} 1개월 차트`;
+    if (titleName) titleName.textContent = `${name} 지수 차트 (드래그/줌 가능)`;
     if (!container) return;
 
     // Clear existing
@@ -1231,6 +1231,10 @@ async function renderIndexChart(symbol, name) {
             },
             timeScale: {
                 borderColor: gridColor,
+                timeVisible: true,
+                secondsVisible: false,
+                mouseWheel: true,
+                pinchZoom: true,
             },
             handleScroll: true,
             handleScale: true,
@@ -1259,7 +1263,14 @@ async function renderIndexChart(symbol, name) {
             areaSeries.setData(data.history);
         }
 
-        chart.timeScale().fitContent();
+        if (data.history && data.history.length > 60) {
+            // 최근 60개 데이터(약 3개월)만 우선 보여줌
+            const last = data.history[data.history.length - 1].time;
+            const first = data.history[data.history.length - 60].time;
+            chart.timeScale().setVisibleRange({ from: first, to: last });
+        } else {
+            chart.timeScale().fitContent();
+        }
         currentIndexChart = chart;
 
         // Sync with resize
