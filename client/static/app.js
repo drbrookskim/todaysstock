@@ -1402,7 +1402,7 @@ async function fetchAnalysisReport(item) {
     });
 
     const trendContainer = document.getElementById('trendContainer');
-    if (trendContainer) trendContainer.style.display = 'none';
+    if (trendContainer) trendContainer.classList.add('hidden');
 
     try {
         const market = item.market || (currentStock && currentStock.code === item.code ? currentStock.market : 'KOSPI');

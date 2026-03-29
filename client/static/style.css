@@ -5495,15 +5495,15 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     background: linear-gradient(180deg, #fbbf24, #d97706);
 }
 
-/* ── Deep Analysis (Neutral/Slate) ── */
+/* ── Deep Analysis (Emerald Theme) ── */
 .workout-style.ai-trend .workout-stripe {
-    background: linear-gradient(180deg, var(--color-up), #f87171);
+    background: linear-gradient(180deg, #10b981, #059669);
 }
 .workout-style.ai-patterns .workout-stripe {
-    background: linear-gradient(180deg, var(--accent-indigo), #818cf8);
+    background: linear-gradient(180deg, #10b981, #059669);
 }
 .workout-style.ai-chart .workout-stripe {
-    background: linear-gradient(180deg, #60a5fa, #3b82f6);
+    background: linear-gradient(180deg, #10b981, #059669);
 }
 .workout-style.ai-signals .workout-stripe {
     background: linear-gradient(180deg, #fbbf24, #f59e0b);
