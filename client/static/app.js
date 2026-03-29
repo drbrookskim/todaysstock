@@ -226,9 +226,14 @@ function restoreStockContext(type) {
         return;
     }
 
-        // Home and Watchlist still use resultSection for basic charts
-        const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
+        // [MOD] Basic resultSection is ONLY visible in Home
+        const placeholderId = 'mainResultPlaceholder';
         const placeholder = document.getElementById(placeholderId);
+        
+        if (type !== 'home') {
+            if (resSec) resSec.classList.add('hidden');
+            return;
+        }
         
         // [MOD] If restoring watchlist context but stock is not in watchlist, hide result
         if (type === 'watchlist' && context.item && !isInWatchlist(context.item.code)) {
@@ -398,6 +403,9 @@ async function addToWatchlist(item) {
         if (authModal) authModal.classList.remove('hidden');
         return;
     }
+
+    // [MOD] Always navigate to home when adding to watchlist to see the result card there
+    navigateToSection('navHome');
     
     if (currentWatchlist.some(w => w.code === item.code)) return;
     
@@ -749,24 +757,10 @@ async function selectStock(item, origin = 'search') {
             // Home or Watchlist View: Basic Analysis Only
             homeStockContext = { item, data, analysis: null };
             
-            // Determine where to show results
+            // [MOD] Basic resultSection always goes to Home
+            navigateToSection('navHome');
             const resSec = document.getElementById('resultSection');
-            let placeholderId = 'mainResultPlaceholder';
-            const isWatched = isInWatchlist(item.code);
-            
-            if (currentActiveSectionId === 'dashboardWatchlist') {
-                if (isWatched) {
-                    placeholderId = 'watchlistResultPlaceholder';
-                } else {
-                    // [MOD] If search origin but stock not in watchlist, force go to Home
-                    navigateToSection('navHome');
-                    placeholderId = 'mainResultPlaceholder';
-                }
-            } else if (currentActiveSectionId !== 'dashboardHome') {
-                // If not in Watchlist and not in Home (e.g. History), go to Home
-                navigateToSection('navHome');
-                placeholderId = 'mainResultPlaceholder';
-            }
+            const placeholderId = 'mainResultPlaceholder';
             
             const placeholder = document.getElementById(placeholderId);
             if (placeholder && resSec) {
