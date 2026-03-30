@@ -54,6 +54,13 @@
     --color-up: #ef4444;    /* Red for Increase */
     --color-down: #3b82f6;  /* Blue for Decrease */
     --color-neutral: #94a3b8;
+
+    /* Accent Palette for Stripes */
+    --accent-indigo: #6366f1;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-purple: #a78bfa;
 }
 
 /* ── Dark Theme Overrides ── */
@@ -1462,10 +1469,7 @@ html[data-theme="light"] .theme-icon-btn i {
 
 /* 기업 개요 및 사업 영역 스타일 */
 .company-summary-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 24px;
+    /* Inherits from .workout-style */
     margin-bottom: 24px;
     transition: all 0.3s ease;
 }
@@ -5579,6 +5583,12 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 .workout-style.ai-signals .workout-stripe {
     background: linear-gradient(180deg, #fbbf24, #f59e0b);
+}
+.workout-style.ai-buy-signal .workout-stripe {
+    background: linear-gradient(180deg, #fbbf24, #f59e0b); /* Amber for Buy */
+}
+.workout-style.ai-sell-signal .workout-stripe {
+    background: linear-gradient(180deg, #f43f5e, #e11d48); /* Rose/Red for Sell */
 }
 .workout-style.ai-summary .workout-stripe {
     background: linear-gradient(180deg, #94a3b8, #64748b);

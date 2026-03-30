@@ -342,7 +342,10 @@
                     </div>
 
                     <!-- 기업 개요 및 핵심 사업 영역 -->
-                    <div id="companySummary" class="company-summary-card hidden"></div>
+                    <div id="companySummary" class="workout-style company-summary-card hidden">
+                        <div class="workout-stripe" style="background: var(--accent-indigo);"></div>
+                        <div class="workout-content" id="companySummaryContent"></div>
+                    </div>
                     <div class="ohlv-row">
                         <div class="ohlv-item">
                             <span class="ohlv-label">시가</span>
@@ -556,18 +559,109 @@
                             </div>
                             
                             <!-- 2. Action Insights / Signals Block -->
-                            <div id="aiSignalsBlock" class="workout-style ai-signals reveal-fade hidden">
-                                <div class="workout-stripe"></div>
-                                <div class="workout-content" style="padding: 0;">
-                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
-                                        <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                                            <i class="ph ph-lightning"></i> AI 매수/매도 시그널
+                            <!-- 2. AI Action Insights - Column View -->
+                            <div id="aiSignalsGrid" class="report-grid hidden" style="margin-bottom: 24px;">
+                                <!-- 2a. AI Buy Signal Block -->
+                                <div id="aiBuySignalBlock" class="workout-style ai-buy-signal reveal-fade hidden" style="height: 100%; margin-bottom: 0;">
+                                    <div class="workout-stripe" style="background: var(--accent-amber);"></div>
+                                    <div class="workout-content" style="padding: 0;">
+                                        <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                            <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                                <i class="ph ph-lightning"></i> AI 매수 리포트 (Buy)
+                                            </div>
+                                        </div>
+                                        <div class="workout-body" style="padding: 24px;">
+                                            <div id="buyReport" class="report-card buy hidden" style="border: none; box-shadow: none; padding: 0; margin: 0;">
+                                                <div class="report-header">
+                                                    <span class="report-type">상세 시그널 분석</span>
+                                                    <span id="buySignalBadge" class="signal-badge"></span>
+                                                </div>
+                                                <div class="report-time" id="buyReportTime"></div>
+                                                <div class="report-pattern-row">
+                                                    <div class="pattern-label">주요 패턴</div>
+                                                    <div id="buyPattern" class="pattern-value"></div>
+                                                </div>
+                                                <div id="buyDesc" class="pattern-desc"></div>
+                                                <div class="report-price-grid">
+                                                    <div class="price-item">
+                                                        <span class="price-label">공격적 진입</span>
+                                                        <span id="buyAggressive" class="price-val"></span>
+                                                    </div>
+                                                    <div class="price-item">
+                                                        <span class="price-label">보수적 진입</span>
+                                                        <span id="buyConservative" class="price-val"></span>
+                                                    </div>
+                                                    <div class="price-item highlight">
+                                                        <span class="price-label">목표가</span>
+                                                        <span id="buyTarget" class="price-val"></span>
+                                                    </div>
+                                                    <div class="price-item danger">
+                                                        <span class="price-label">손절가</span>
+                                                        <span id="buyStopLoss" class="price-val"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="report-stats-row">
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">손익비</span>
+                                                        <span id="buyRiskReward" class="stat-val"></span>
+                                                    </div>
+                                                </div>
+                                                <div id="buyVolume" class="report-note"></div>
+                                                <div id="buyTip" class="report-tip"></div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="workout-body" style="padding: 24px;">
-                                        <div id="reportGrid" class="report-grid hidden">
-                                            <div id="buyReportCard" class="report-card buy"></div>
-                                            <div id="sellReportCard" class="report-card sell"></div>
+                                </div>
+
+                                <!-- 2b. AI Sell Signal Block -->
+                                <div id="aiSellSignalBlock" class="workout-style ai-sell-signal reveal-fade hidden" style="height: 100%; margin-bottom: 0;">
+                                    <div class="workout-stripe" style="background: var(--accent-rose);"></div>
+                                    <div class="workout-content" style="padding: 0;">
+                                        <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                            <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                                <i class="ph ph-lightning"></i> AI 매도 리포트 (Sell)
+                                            </div>
+                                        </div>
+                                        <div class="workout-body" style="padding: 24px;">
+                                            <div id="sellReport" class="report-card sell hidden" style="border: none; box-shadow: none; padding: 0; margin: 0;">
+                                                <div class="report-header">
+                                                    <span class="report-type">상세 시그널 분석</span>
+                                                    <span id="sellSignalBadge" class="signal-badge"></span>
+                                                </div>
+                                                <div class="report-time" id="sellReportTime"></div>
+                                                <div class="report-pattern-row">
+                                                    <div class="pattern-label">주요 패턴</div>
+                                                    <div id="sellPattern" class="pattern-value"></div>
+                                                </div>
+                                                <div id="sellDesc" class="pattern-desc"></div>
+                                                <div class="report-price-grid">
+                                                    <div class="price-item">
+                                                        <span class="price-label">매도 가격</span>
+                                                        <span id="sellPrice" class="price-val"></span>
+                                                    </div>
+                                                    <div class="price-item">
+                                                        <span class="price-label">보수적 매도</span>
+                                                        <span id="sellConservative" class="price-val"></span>
+                                                    </div>
+                                                    <div class="price-item highlight">
+                                                        <span class="price-label">목표가</span>
+                                                        <span id="sellTarget" class="price-val"></span>
+                                                    </div>
+                                                    <div class="price-item danger">
+                                                        <span class="price-label">손절가</span>
+                                                        <span id="sellStopLoss" class="price-val"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="report-stats-row">
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">손익비</span>
+                                                        <span id="sellRiskReward" class="stat-val"></span>
+                                                    </div>
+                                                </div>
+                                                <div id="sellVolume" class="report-note"></div>
+                                                <div id="sellTip" class="report-tip"></div>
+                                                <div id="sellAtrNote" class="atr-note" style="display:none;"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -659,7 +753,7 @@
                                             <i class="ph ph-chart-bar"></i> 퀀트 분석 (Quant Axis)
                                         </div>
                                     </div>
-                                    <div class="workout-body" style="padding: 20px;">
+                                    <div class="workout-body" style="padding: 24px;">
                                         <div id="fundQuantContent" class="fund-axis-content"></div>
                                     </div>
                                 </div>
@@ -674,7 +768,7 @@
                                             <i class="ph ph-newspaper"></i> 이벤트 기반 (Event Axis)
                                         </div>
                                     </div>
-                                    <div class="workout-body" style="padding: 20px;">
+                                    <div class="workout-body" style="padding: 24px;">
                                         <div id="fundEventContent" class="fund-axis-content"></div>
                                     </div>
                                 </div>
@@ -682,14 +776,14 @@
 
                             <!-- 🏢 Axis 3: Sector Analysis Tile -->
                             <div id="fundSectorBlock" class="workout-style fundamental-axis reveal-fade hidden">
-                                <div class="workout-stripe" style="background: #a78bfa;"></div>
+                                <div class="workout-stripe" style="background: var(--accent-purple);"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-bottom: 1px solid var(--border-soft);">
                                         <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-factory"></i> 섹터 컨텍스트 (Sector Axis)
                                         </div>
                                     </div>
-                                    <div class="workout-body" style="padding: 20px;">
+                                    <div class="workout-body" style="padding: 24px;">
                                         <div id="fundSectorContent" class="fund-axis-content"></div>
                                     </div>
                                 </div>
@@ -697,14 +791,14 @@
 
                             <!-- 🎯 Axis 4: Target Analysis Tile -->
                             <div id="fundTargetBlock" class="workout-style fundamental-axis reveal-fade hidden">
-                                <div class="workout-stripe" style="background: #fbbf24;"></div>
+                                <div class="workout-stripe" style="background: var(--accent-amber);"></div>
                                 <div class="workout-content" style="padding: 0;">
                                     <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-bottom: 1px solid var(--border-soft);">
                                         <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-target"></i> 목표 분석 (Target Axis)
                                         </div>
                                     </div>
-                                    <div class="workout-body" style="padding: 20px;">
+                                    <div class="workout-body" style="padding: 24px;">
                                         <div id="fundTargetContent" class="fund-axis-content"></div>
                                         <div id="fundAxesUsed" class="fund-axes-used" style="margin-top: 15px; font-size: 0.75rem; color: var(--text-muted);"></div>
                                         <div class="fund-desc" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-sub);">

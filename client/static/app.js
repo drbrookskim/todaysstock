@@ -799,7 +799,7 @@ async function triggerFullDeepAnalysis(code) {
     }
     
     // Hide all blocks initially to prepare for sequential reveal
-    const aiBlocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
+    const aiBlocks = ['aiTrendBlock', 'aiBuySignalBlock', 'aiSellSignalBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
     const allBlocks = [...aiBlocks, 'fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
     allBlocks.forEach(id => {
         const el = document.getElementById(id);
@@ -949,8 +949,10 @@ function renderResult(data) {
 
     // --- Company Summary ---
     const summaryEl = document.getElementById('companySummary');
+    const summaryContent = document.getElementById('companySummaryContent');
     if (data.company_summary) {
-        summaryEl.innerHTML = data.company_summary;
+        if (summaryContent) summaryContent.innerHTML = data.company_summary;
+        else summaryEl.innerHTML = data.company_summary; // Fallback
         summaryEl.classList.remove('hidden');
     } else {
         summaryEl.classList.add('hidden');
@@ -1444,8 +1446,14 @@ async function updateTileData(code) {
 function renderAnalysisReport(data) {
     _lastAnalysisData = data;
     
+    const hasBuyReport = data.buy_report && data.buy_report !== null;
+    const hasSellReport = data.sell_report && data.sell_report !== null;
+    
     // Sequential Reveal Logic
-    const blocks = ['aiTrendBlock', 'aiSignalsBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
+    const blocks = ['aiTrendBlock'];
+    if (hasBuyReport) blocks.push('aiBuySignalBlock');
+    if (hasSellReport) blocks.push('aiSellSignalBlock');
+    blocks.push('aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock');
     
     blocks.forEach((id, index) => {
         const el = document.getElementById(id);
@@ -1676,16 +1684,33 @@ function renderAnalysisReport(data) {
     // renderFundamentalReport(data.code || data.ticker || ''); 
 
     // ── 2. Buy/Sell Reports & Signals Block ──
-    const aiSignalsBlock = document.getElementById('aiSignalsBlock');
-    const reportGrid = document.getElementById('reportGrid');
-    const hasBuyReport = renderBuyReport(data.buy_report);
-    const hasSellReport = renderSellReport(data.sell_report, data.atr_targets);
+    const signalsGrid = document.getElementById('aiSignalsGrid');
+    const buyBlock = document.getElementById('aiBuySignalBlock');
+    const sellBlock = document.getElementById('aiSellSignalBlock');
     
-    if (hasBuyReport || hasSellReport) {
-        if (aiSignalsBlock) aiSignalsBlock.classList.remove('hidden');
-        if (reportGrid) reportGrid.classList.remove('hidden');
-    } else {
-        if (aiSignalsBlock) aiSignalsBlock.classList.add('hidden');
+    const buyRendered = renderBuyReport(data.buy_report);
+    const sellRendered = renderSellReport(data.sell_report, data.atr_targets);
+    
+    if (signalsGrid) {
+        if (hasBuyReport || hasSellReport) {
+            signalsGrid.classList.remove('hidden');
+        } else {
+            signalsGrid.classList.add('hidden');
+        }
+    }
+    
+    if (buyBlock) {
+        if (!hasBuyReport) {
+            buyBlock.classList.add('hidden');
+            buyBlock.classList.remove('visible');
+        }
+    }
+    
+    if (sellBlock) {
+        if (!hasSellReport) {
+            sellBlock.classList.add('hidden');
+            sellBlock.classList.remove('visible');
+        }
     }
 }
 
@@ -2893,9 +2918,9 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // Hide restricted menus for guests
+            // [MOD] Deep Analysis is now accessible to guests for viewing reports
+            if (navAnalysis) navAnalysis.style.display = 'flex';
             if (navWatchlist) navWatchlist.style.display = 'none';
-            if (navAnalysis) navAnalysis.style.display = 'none';
             // [MOD] Value Chain is restricted for guests
             if (navValueChain) navValueChain.style.display = 'none';
 
