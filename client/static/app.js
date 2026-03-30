@@ -183,6 +183,11 @@ function initNavigation() {
                         // Force refresh combined reports
                         triggerFullDeepAnalysis(currentStock.code || currentStock.ticker);
                     }
+                } else if (targetId === 'valueChainSection') {
+                    // [MOD] Load value chain data when section is opened
+                    if (typeof initValueChain === 'function') {
+                        initValueChain();
+                    }
                 }
 
                 // --- Section Persistence Restore ---
@@ -2918,14 +2923,13 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // [MOD] Deep Analysis is now accessible to guests for viewing reports
+            // [MOD] Deep Analysis and Value Chain are now accessible to guests
             if (navAnalysis) navAnalysis.style.display = 'flex';
+            if (navValueChain) navValueChain.style.display = 'flex';
             if (navWatchlist) navWatchlist.style.display = 'none';
-            // [MOD] Value Chain is restricted for guests
-            if (navValueChain) navValueChain.style.display = 'none';
 
             // Auto-redirect if in restricted section
-            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
+            const restricted = ['watchlistSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
             }

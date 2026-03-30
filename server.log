@@ -1,58 +1,28 @@
 /Users/nelcome/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
 🏢 DART 기업코드 3954개 로드 완료
-📊 전체 종목 로드 완료: KOSPI 2417개 + KOSDAQ 1821개 = 총 4238개
+📊 전체 종목 로드 완료: KOSPI 2416개 + KOSDAQ 1821개 = 총 4237개
 🕯️  캔들 패턴 분석 엔진 활성화
  * Serving Flask app 'app'
  * Debug mode: off
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on http://127.0.0.1:5001
 Press CTRL+C to quit
-127.0.0.1 - - [30/Mar/2026 01:45:35] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:35] "GET /static/style.css?v=9 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:35] "GET /static/app.js?v=12 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:35] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:45:36] "GET /api/config HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:36] "GET /manifest.json HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:45:36] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /api/session HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:23] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [30/Mar/2026 23:05:23] "GET /static/style.css?v=9 HTTP/1.1" 304 -
+127.0.0.1 - - [30/Mar/2026 23:05:23] "GET /static/app.js?v=12 HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:25] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
+127.0.0.1 - - [30/Mar/2026 23:05:25] "GET /manifest.json HTTP/1.1" 304 -
+127.0.0.1 - - [30/Mar/2026 23:05:25] "GET /api/config HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:26] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
+127.0.0.1 - - [30/Mar/2026 23:05:27] "GET /sw.js HTTP/1.1" 304 -
+127.0.0.1 - - [30/Mar/2026 23:05:28] "GET /api/session HTTP/1.1" 200 -
 $DX=F: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET / HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /static/style.css HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /static/app.js HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /static/favicon.svg HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:45:37] "GET /static/icons/icon-512.png HTTP/1.1" 304 -
 
 1 Failed download:
 ['DX=F']: possibly delisted; no price data found  (period=5d) (Yahoo error = "No data found, symbol may be delisted")
-127.0.0.1 - - [30/Mar/2026 01:45:38] "GET /api/macro?t=1774802736035 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:38] "GET /api/market-index/history?symbol=KOSPI HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:44] "GET /api/suggest?q=000660 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:53] "GET /api/suggest?q=000660 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:57] "GET /api/stock?code=000660&market=KOSPI&name=SK하이닉스 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:57] "GET /api/macro?t=1774802757919 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:45:59] "GET /api/market-index/history?symbol=KOSPI HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:46:02] "GET /api/fundamental/000660 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:46:17] "GET /api/analysis?code=000660&market=KOSPI&name=SK하이닉스 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:46:17] "GET /api/fundamental/000660 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:07] "GET / HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:07] "GET /static/style.css?v=9 HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:07] "GET /static/app.js?v=12 HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:07] "GET /manifest.json HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:07] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:08] "GET /api/config HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:08] "GET /api/macro?t=1774802827866 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:08] "GET /static/icons/icon-192.png HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:09] "GET /api/session HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:09] "GET /api/suggest?q=000660 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:10] "GET /api/market-index/history?symbol=KOSPI HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:10] "GET /sw.js HTTP/1.1" 304 -
-127.0.0.1 - - [30/Mar/2026 01:47:12] "GET /api/stock?code=000660&market=KOSPI&name=SK하이닉스 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:12] "GET /api/fundamental/000660 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:12] "GET /api/macro?t=1774802832463 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:13] "GET /api/market-index/history?symbol=KOSPI HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:25] "GET /api/analysis?code=000660&market=KOSPI&name=SK하이닉스 HTTP/1.1" 200 -
-127.0.0.1 - - [30/Mar/2026 01:47:25] "GET /api/fundamental/000660 HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:30] "GET /api/macro?t=1774879525859 HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:30] "GET /api/market-index/history?symbol=KOSPI HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:42] "GET /api/valuechain/categories HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:42] "GET /api/valuechain/detail?category=1.%20반도체%20및%20관련%20장비/소재 HTTP/1.1" 200 -
+127.0.0.1 - - [30/Mar/2026 23:05:52] "GET /api/valuechain/detail?category=2.%20자율주행,%20모빌리티%20및%20로봇 HTTP/1.1" 200 -
