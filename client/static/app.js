@@ -3380,6 +3380,114 @@ function _vcRenderForceGraph(sectors, categoryLabel) {
     };
     canvas.onmouseleave = () => { isDragging = false; dragNode = null; hoveredNode = null; };
 
+    // Touch Events for Mobile Pinch-Zoom & Drag
+    let initialPinchDistance = null;
+    let initialPinchCenter = null;
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            // Prevent default to disable page scroll while dragging graph
+            e.preventDefault(); 
+            const touch = e.touches[0];
+            const r = rect();
+            const clientX = touch.clientX;
+            const clientY = touch.clientY;
+            
+            const n = getNodeAt(clientX - r.left, clientY - r.top);
+            mouseDownPos = { x: clientX, y: clientY };
+            if (n) { dragNode = n; isDragging = true; }
+            else { isDragging = true; }
+            lastMouse = { x: clientX, y: clientY };
+        } else if (e.touches.length === 2) {
+            e.preventDefault();
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+            initialPinchDistance = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            
+            const r = rect();
+            initialPinchCenter = {
+                x: (t1.clientX + t2.clientX) / 2 - r.left,
+                y: (t1.clientY + t2.clientY) / 2 - r.top
+            };
+            dragNode = null;
+            isDragging = false;
+        }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+        const r = rect();
+        if (e.touches.length === 1 && isDragging) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const clientX = touch.clientX;
+            const clientY = touch.clientY;
+            const dx = clientX - lastMouse.x;
+            const dy = clientY - lastMouse.y;
+            
+            if (dragNode) {
+                const w = screenToWorld(clientX - r.left, clientY - r.top);
+                dragNode.x = w.x; dragNode.y = w.y;
+                dragNode.vx = 0; dragNode.vy = 0;
+            } else {
+                transform.x += dx / transform.scale;
+                transform.y += dy / transform.scale;
+            }
+            lastMouse = { x: clientX, y: clientY };
+        } else if (e.touches.length === 2 && initialPinchDistance !== null) {
+            e.preventDefault();
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+            const currentDistance = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            
+            const factor = currentDistance / initialPinchDistance;
+            
+            transform.x -= initialPinchCenter.x / transform.scale;
+            transform.y -= initialPinchCenter.y / transform.scale;
+            transform.scale = Math.max(0.2, Math.min(5, transform.scale * factor));
+            transform.x += initialPinchCenter.x / transform.scale;
+            transform.y += initialPinchCenter.y / transform.scale;
+            
+            initialPinchDistance = currentDistance;
+            initialPinchCenter = {
+                x: (t1.clientX + t2.clientX) / 2 - r.left,
+                y: (t1.clientY + t2.clientY) / 2 - r.top
+            };
+        }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+            if (isDragging) {
+                const movedX = Math.abs(lastMouse.x - mouseDownPos.x);
+                const movedY = Math.abs(lastMouse.y - mouseDownPos.y);
+                const isClick = movedX < 10 && movedY < 10; // larger threshold for touch precision
+                
+                if (isClick && lastMouse.x !== 0) { 
+                    const r = rect();
+                    const n = getNodeAt(lastMouse.x - r.left, lastMouse.y - r.top);
+                    if (n && n.type === 'stock') {
+                        _vcSearchStock(n.label);
+                    }
+                }
+            }
+            dragNode = null;
+            isDragging = false;
+            initialPinchDistance = null;
+            initialPinchCenter = null;
+        } else if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            lastMouse = { x: touch.clientX, y: touch.clientY };
+            initialPinchDistance = null;
+        }
+    });
+
+    canvas.addEventListener('touchcancel', () => {
+        dragNode = null;
+        isDragging = false;
+        initialPinchDistance = null;
+        initialPinchCenter = null;
+    });
+
     // Link distance slider
     const slider = document.getElementById('vcLinkDistance');
     if (slider) {
@@ -3451,5 +3559,39 @@ function _vcSearchStock(stockName) {
                 document.getElementById('searchBtn')?.click();
             }
         }, 400);
+    }
+}
+
+// ── Value Chain Fullscreen Toggle ──
+let isVcFullscreen = false;
+window.toggleVcFullscreen = function() {
+    const vcSection = document.getElementById('valueChainSection');
+    const btnIcon = document.querySelector('#vcBtnFullscreen i');
+    if (!vcSection) return;
+
+    isVcFullscreen = !isVcFullscreen;
+    if (isVcFullscreen) {
+        vcSection.classList.add('fullscreen-mode');
+        if (btnIcon) {
+            btnIcon.classList.remove('ph-corners-out');
+            btnIcon.classList.add('ph-corners-in');
+        }
+    } else {
+        vcSection.classList.remove('fullscreen-mode');
+        if (btnIcon) {
+            btnIcon.classList.remove('ph-corners-in');
+            btnIcon.classList.add('ph-corners-out');
+        }
+    }
+
+    // Ensure Force Graph gets properly resized if it is currently visible
+    if (window._vcCurrentView === 'graph' && window._vcFg) {
+        setTimeout(() => {
+            const container = document.getElementById('vcGraphContainer');
+            if (container && window._vcFg) {
+                // Resize to new container dimension
+                window._vcFg.width(container.clientWidth).height(Math.max(500, container.clientHeight - 40));
+            }
+        }, 150);
     }
 }
