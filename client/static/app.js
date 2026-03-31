@@ -3571,12 +3571,14 @@ window.toggleVcFullscreen = function() {
 
     isVcFullscreen = !isVcFullscreen;
     if (isVcFullscreen) {
+        document.body.classList.add('vc-fullscreen-active');
         vcSection.classList.add('fullscreen-mode');
         if (btnIcon) {
             btnIcon.classList.remove('ph-corners-out');
             btnIcon.classList.add('ph-corners-in');
         }
     } else {
+        document.body.classList.remove('vc-fullscreen-active');
         vcSection.classList.remove('fullscreen-mode');
         if (btnIcon) {
             btnIcon.classList.remove('ph-corners-in');

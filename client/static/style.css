@@ -6549,28 +6549,53 @@ details[open] .toggle-icon {
     .report-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Fullscreen Mode ── */
-.value-chain-section.fullscreen-mode {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 99999;
-    background: var(--bg-main);
-    padding: 0;
-    margin: 0;
+/* ── Harmonious Fullscreen Mode (Layout Maximized) ── */
+body.vc-fullscreen-active {
     overflow: hidden;
 }
 
+body.vc-fullscreen-active .top-bar {
+    display: none;
+}
+
+body.vc-fullscreen-active .main-content {
+    height: 100vh;
+    padding: 0;
+}
+
+.value-chain-section.fullscreen-mode {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: var(--bg-main);
+    padding: 0;
+    margin: 0;
+}
+
 .value-chain-section.fullscreen-mode .vc-container {
-    padding: 20px;
+    padding: 16px 24px;
     height: 100%;
     max-width: none;
     border-radius: 0;
-    margin-bottom: 0px;
+    display: flex;
+    flex-direction: column;
 }
 
 .value-chain-section.fullscreen-mode .section-header {
     display: none;
 }
+
+/* Ensure the floating toggle buttons are accessible */
+.value-chain-section.fullscreen-mode .vc-view-toggle {
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+    background: var(--bg-main);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 10px;
+}
+
