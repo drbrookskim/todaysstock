@@ -6554,13 +6554,16 @@ body.vc-fullscreen-active {
     overflow: hidden;
 }
 
-body.vc-fullscreen-active .top-bar {
-    display: none;
+body.vc-fullscreen-active .top-bar,
+body.vc-fullscreen-active .main-sidebar {
+    display: none !important;
 }
 
 body.vc-fullscreen-active .main-content {
     height: 100vh;
+    width: 100vw;
     padding: 0;
+    margin: 0;
 }
 
 .value-chain-section.fullscreen-mode {

@@ -564,9 +564,9 @@
                             <!-- 2. Action Insights / Signals Block -->
                             <!-- 2. AI Action Insights - Column View -->
                             <div id="aiSignalsGrid" class="report-grid hidden" style="margin-bottom: 24px;">
-                                <!-- 2a. AI Buy Signal Block -->
+                                <!-- AI Buy Signal Column -->
                                 <div id="aiBuySignalBlock" class="workout-style ai-buy-signal reveal-fade hidden" style="height: 100%; margin-bottom: 0;">
-                                    <div class="workout-stripe" style="background: var(--accent-amber);"></div>
+                                    <div class="workout-stripe" style="background: var(--color-up);"></div>
                                     <div class="workout-content" style="padding: 0;">
                                         <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
                                             <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
@@ -575,17 +575,34 @@
                                         </div>
                                         <div class="workout-body" style="padding: 24px;">
                                             <div id="buyReport" class="report-card buy hidden" style="border: none; box-shadow: none; padding: 0; margin: 0;">
-                                                <div class="report-header">
-                                                    <span class="report-type">상세 시그널 분석</span>
+                                                <div class="report-header" style="margin-bottom: 20px;">
+                                                    <span class="report-type" style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">상세 시그널 분석</span>
                                                     <span id="buySignalBadge" class="signal-badge"></span>
                                                 </div>
-                                                <div class="report-time" id="buyReportTime"></div>
-                                                <div class="report-pattern-row">
-                                                    <div class="pattern-label">주요 패턴</div>
-                                                    <div id="buyPattern" class="pattern-value"></div>
+                                                <div class="report-time" id="buyReportTime" style="margin-bottom: 16px; font-size: 0.8rem; color: var(--text-muted);"></div>
+
+                                                <!-- 1. Signal Strength Bar -->
+                                                <div class="pattern-confidence" style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                        <span class="confidence-label" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">시그널 강도 / 신뢰도</span>
+                                                        <span id="buyStrengthPct" class="confidence-pct" style="font-size: 0.9rem; font-weight: 700; color: var(--color-up);">0%</span>
+                                                    </div>
+                                                    <div class="confidence-bar" style="height: 6px; background: var(--border-soft); border-radius: 3px; overflow: hidden;">
+                                                        <div id="buyStrengthFill" class="confidence-fill pattern-bullish" style="height: 100%; width: 0%; transition: width 1s ease;"></div>
+                                                    </div>
                                                 </div>
-                                                <div id="buyDesc" class="pattern-desc"></div>
-                                                <div class="report-price-grid">
+
+                                                <!-- 2. Pattern Detail -->
+                                                <div class="pattern-item pattern-bullish" style="margin-bottom: 24px; background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.1);">
+                                                    <div class="pattern-header">
+                                                        <span class="pattern-label" style="font-size: 0.8rem; opacity: 0.7;">매수 주요 패턴</span>
+                                                        <span id="buyPattern" class="pattern-name" style="font-size: 1.1rem;">-</span>
+                                                    </div>
+                                                    <div id="buyDesc" class="pattern-desc" style="margin-top: 10px; line-height: 1.6;"></div>
+                                                </div>
+
+                                                <!-- 3. Price Strategy Grid -->
+                                                <div class="report-price-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
                                                     <div class="price-item">
                                                         <span class="price-label">공격적 진입</span>
                                                         <span id="buyAggressive" class="price-val"></span>
@@ -603,10 +620,11 @@
                                                         <span id="buyStopLoss" class="price-val"></span>
                                                     </div>
                                                 </div>
-                                                <div class="report-stats-row">
-                                                    <div class="stat-item">
-                                                        <span class="stat-label">손익비</span>
-                                                        <span id="buyRiskReward" class="stat-val"></span>
+
+                                                <div class="report-stats-row" style="display: flex; gap: 16px; margin-bottom: 16px;">
+                                                    <div class="stat-item" style="display: flex; align-items: baseline; gap: 8px;">
+                                                        <span class="stat-label" style="font-size: 0.85rem; color: var(--text-muted);">손익비</span>
+                                                        <span id="buyRiskReward" class="stat-val" style="font-size: 1rem; font-weight: 700; color: var(--text-main);"></span>
                                                     </div>
                                                 </div>
                                                 <div id="buyVolume" class="report-note"></div>
@@ -616,9 +634,9 @@
                                     </div>
                                 </div>
 
-                                <!-- 2b. AI Sell Signal Block -->
+                                <!-- AI Sell Signal Column -->
                                 <div id="aiSellSignalBlock" class="workout-style ai-sell-signal reveal-fade hidden" style="height: 100%; margin-bottom: 0;">
-                                    <div class="workout-stripe" style="background: var(--accent-rose);"></div>
+                                    <div class="workout-stripe" style="background: var(--color-down);"></div>
                                     <div class="workout-content" style="padding: 0;">
                                         <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
                                             <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
@@ -627,19 +645,36 @@
                                         </div>
                                         <div class="workout-body" style="padding: 24px;">
                                             <div id="sellReport" class="report-card sell hidden" style="border: none; box-shadow: none; padding: 0; margin: 0;">
-                                                <div class="report-header">
-                                                    <span class="report-type">상세 시그널 분석</span>
+                                                <div class="report-header" style="margin-bottom: 20px;">
+                                                    <span class="report-type" style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">상세 시그널 분석</span>
                                                     <span id="sellSignalBadge" class="signal-badge"></span>
                                                 </div>
-                                                <div class="report-time" id="sellReportTime"></div>
-                                                <div class="report-pattern-row">
-                                                    <div class="pattern-label">주요 패턴</div>
-                                                    <div id="sellPattern" class="pattern-value"></div>
+                                                <div class="report-time" id="sellReportTime" style="margin-bottom: 16px; font-size: 0.8rem; color: var(--text-muted);"></div>
+
+                                                <!-- 1. Signal Strength Bar -->
+                                                <div class="pattern-confidence" style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                        <span class="confidence-label" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">시그널 강도 / 신뢰도</span>
+                                                        <span id="sellStrengthPct" class="confidence-pct" style="font-size: 0.9rem; font-weight: 700; color: var(--color-down);">0%</span>
+                                                    </div>
+                                                    <div class="confidence-bar" style="height: 6px; background: var(--border-soft); border-radius: 3px; overflow: hidden;">
+                                                        <div id="sellStrengthFill" class="confidence-fill pattern-bearish" style="height: 100%; width: 0%; transition: width 1s ease;"></div>
+                                                    </div>
                                                 </div>
-                                                <div id="sellDesc" class="pattern-desc"></div>
-                                                <div class="report-price-grid">
+
+                                                <!-- 2. Pattern Detail -->
+                                                <div class="pattern-item pattern-bearish" style="margin-bottom: 24px; background: rgba(30, 41, 59, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);">
+                                                    <div class="pattern-header">
+                                                        <span class="pattern-label" style="font-size: 0.8rem; opacity: 0.7;">매도 주요 패턴</span>
+                                                        <span id="sellPattern" class="pattern-name" style="font-size: 1.1rem;">-</span>
+                                                    </div>
+                                                    <div id="sellDesc" class="pattern-desc" style="margin-top: 10px; line-height: 1.6;"></div>
+                                                </div>
+
+                                                <!-- 3. Price Strategy Grid -->
+                                                <div class="report-price-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
                                                     <div class="price-item">
-                                                        <span class="price-label">매도 가격</span>
+                                                        <span class="price-label">매도가</span>
                                                         <span id="sellPrice" class="price-val"></span>
                                                     </div>
                                                     <div class="price-item">
@@ -655,10 +690,11 @@
                                                         <span id="sellStopLoss" class="price-val"></span>
                                                     </div>
                                                 </div>
-                                                <div class="report-stats-row">
-                                                    <div class="stat-item">
-                                                        <span class="stat-label">손익비</span>
-                                                        <span id="sellRiskReward" class="stat-val"></span>
+
+                                                <div class="report-stats-row" style="display: flex; gap: 16px; margin-bottom: 16px;">
+                                                    <div class="stat-item" style="display: flex; align-items: baseline; gap: 8px;">
+                                                        <span class="stat-label" style="font-size: 0.85rem; color: var(--text-muted);">손익비</span>
+                                                        <span id="sellRiskReward" class="stat-val" style="font-size: 1rem; font-weight: 700; color: var(--text-main);"></span>
                                                     </div>
                                                 </div>
                                                 <div id="sellVolume" class="report-note"></div>

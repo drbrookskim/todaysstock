@@ -2519,16 +2519,33 @@ function renderBuyReport(report) {
     const timeEl = document.getElementById('buyReportTime');
     if (timeEl) timeEl.textContent = timeStr;
 
-    document.getElementById('buySignalBadge').textContent = `${report.signal_strength}%`;
+    // 1. Signal Strength Bar
+    const strength = report.signal_strength || 0;
+    const strengthPctEl = document.getElementById('buyStrengthPct');
+    const strengthFillEl = document.getElementById('buyStrengthFill');
+    if (strengthPctEl) strengthPctEl.textContent = `${strength}%`;
+    if (strengthFillEl) {
+        // Trigger animation
+        setTimeout(() => {
+            strengthFillEl.style.width = `${strength}%`;
+        }, 100);
+    }
+
+    // 2. Pattern Detail
+    document.getElementById('buySignalBadge').textContent = `${strength}%`;
     document.getElementById('buyPattern').textContent = report.primary_pattern;
     document.getElementById('buyDesc').textContent = report.primary_pattern_desc;
+    
+    // 3. Price Grid
     document.getElementById('buyAggressive').textContent = formatPrice(report.aggressive_entry);
     document.getElementById('buyConservative').textContent = formatPrice(report.conservative_entry);
     document.getElementById('buyTarget').textContent = formatPrice(report.target_price);
     document.getElementById('buyStopLoss').textContent = formatPrice(report.stop_loss);
+    
     document.getElementById('buyRiskReward').textContent = report.risk_reward;
     document.getElementById('buyVolume').innerHTML = `<i class="ph ph-chart-bar"></i> ${report.volume_note}`;
     document.getElementById('buyTip').innerHTML = `<i class="ph ph-lightbulb"></i> ${report.entry_tip}`;
+    
     return true;
 }
 
@@ -2545,37 +2562,54 @@ function renderSellReport(report, atrTargets) {
     const timeEl = document.getElementById('sellReportTime');
     if (timeEl) timeEl.textContent = timeStr;
 
-    document.getElementById('sellSignalBadge').textContent = `${report.signal_strength}%`;
+    // 1. Signal Strength Bar
+    const strength = report.signal_strength || 0;
+    const strengthPctEl = document.getElementById('sellStrengthPct');
+    const strengthFillEl = document.getElementById('sellStrengthFill');
+    if (strengthPctEl) strengthPctEl.textContent = `${strength}%`;
+    if (strengthFillEl) {
+        setTimeout(() => {
+            strengthFillEl.style.width = `${strength}%`;
+        }, 100);
+    }
+
+    // 2. Pattern Detail
+    document.getElementById('sellSignalBadge').textContent = `${strength}%`;
     document.getElementById('sellPattern').textContent = report.primary_pattern;
     document.getElementById('sellDesc').textContent = report.primary_pattern_desc;
+    
+    // 3. Price Grid
     document.getElementById('sellPrice').textContent = formatPrice(report.sell_price);
     document.getElementById('sellConservative').textContent = formatPrice(report.conservative_sell);
     document.getElementById('sellTarget').textContent = formatPrice(report.target_price);
     document.getElementById('sellStopLoss').textContent = formatPrice(report.stop_loss);
+    
     document.getElementById('sellRiskReward').textContent = report.risk_reward;
     document.getElementById('sellVolume').innerHTML = `<i class="ph ph-chart-bar"></i> ${report.volume_note}`;
     document.getElementById('sellTip').innerHTML = `<i class="ph ph-lightbulb"></i> ${report.exit_tip}`;
 
-    // ATR 비교 노트 표시
-    const sellAtrNote = document.getElementById('sellAtrNote');
-    if (sellAtrNote && atrTargets) {
-        // 매도 리포트 손절가(MA20 기준) vs ATR 손절가(변동성 기준) 비교
+    // ATR 비교 노트 표시 (Dynamic Injection if needed, or update Tip)
+    if (atrTargets) {
         const patternSL = typeof report.stop_loss === 'number' ? report.stop_loss : null;
         const atrSL = atrTargets.stop_loss;
-        let noteHtml = `<i class="ph ph-info" style="margin-right:4px;"></i>`
+        const noteHtml = `<div id="sellAtrNote" style="margin-top: 12px; font-size: 0.8rem; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed var(--border-soft); line-height: 1.4; color: var(--text-muted);">`
+            + `<i class="ph ph-info" style="margin-right:4px;"></i>`
             + `<strong>ATR 기준 손절가:</strong> ${atrSL ? atrSL.toLocaleString() + '원' : '-'}`;
+        
+        let extra = '';
         if (patternSL && atrSL) {
             const diff = patternSL - atrSL;
             const pct = ((Math.abs(diff) / atrSL) * 100).toFixed(1);
             const dir = diff > 0 ? `패턴 기준이 ${pct}% 더 높음 (더 엄격)` : diff < 0 ? `ATR 기준이 ${pct}% 더 높음 (더 여유)` : '동일';
-            noteHtml += ` <span style="color:var(--text-muted); font-size:0.7rem;">vs 패턴·MA 기준 ${formatPrice(patternSL)}원 — ${dir}</span>`;
+            extra = `<br><span style="opacity: 0.8; font-size: 0.75rem;">(${dir})</span>`;
         }
-        noteHtml += `<div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">📌 매도 리포트는 <strong>캔들 패턴·이동평균</strong> 기준 / ATR 패널은 <strong>시장 변동폭(14일 ATR)</strong> 기준으로 산출됩니다.</div>`;
-        sellAtrNote.innerHTML = noteHtml;
-        sellAtrNote.style.display = 'block';
-    } else if (sellAtrNote) {
-        sellAtrNote.style.display = 'none';
+        
+        const existingNote = document.getElementById('sellAtrNote');
+        if (existingNote) existingNote.remove();
+        
+        card.insertAdjacentHTML('beforeend', noteHtml + extra + '</div>');
     }
+
     return true;
 }
 
