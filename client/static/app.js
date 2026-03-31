@@ -2923,13 +2923,13 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // [MOD] Deep Analysis and Value Chain are now accessible to guests
-            if (navAnalysis) navAnalysis.style.display = 'flex';
-            if (navValueChain) navValueChain.style.display = 'flex';
+            // Deep Analysis and Value Chain are only accessible to authenticated users
+            if (navAnalysis) navAnalysis.style.display = 'none';
+            if (navValueChain) navValueChain.style.display = 'none';
             if (navWatchlist) navWatchlist.style.display = 'none';
 
             // Auto-redirect if in restricted section
-            const restricted = ['watchlistSection'];
+            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
             }
