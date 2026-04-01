@@ -1715,6 +1715,9 @@ function renderAnalysisReport(data) {
             sellBlock.classList.remove('visible');
         }
     }
+
+    // ── 3. Fundamental Analysis (Signal & Summary) ──
+    renderFundamentalReport(data.code || data.ticker || '');
 }
 
 // ══════════════════════════════════════════════════════════
