@@ -1685,16 +1685,14 @@ function renderAnalysisReport(data) {
     // ── AI Insights: 확률점수 / ATR 목표가 / 거래량 이상 ──
     renderAiInsights(data);
 
-    // ── Fundamental Analysis (Handled by triggerFullDeepAnalysis) ──
-    // renderFundamentalReport(data.code || data.ticker || ''); 
-
     // ── 2. Buy/Sell Reports & Signals Block ──
     const signalsGrid = document.getElementById('aiSignalsGrid');
     const buyBlock = document.getElementById('aiBuySignalBlock');
     const sellBlock = document.getElementById('aiSellSignalBlock');
     
-    const buyRendered = renderBuyReport(data.buy_report);
-    const sellRendered = renderSellReport(data.sell_report, data.atr_targets);
+    // Check if reports exist (already declared at function top)
+    renderBuyReport(data.buy_report);
+    renderSellReport(data.sell_report, data.atr_targets);
     
     if (signalsGrid) {
         if (hasBuyReport || hasSellReport) {
@@ -1741,7 +1739,7 @@ async function renderFundamentalReport(stockCode) {
         b.classList.remove('visible');
     });
 
-    // 스켈레톤 상태 텍스트
+    // Skeleton state
     document.getElementById('fundSignalReason').textContent = '데이터 분석 중…';
     const fundTypeBadge = document.getElementById('fundCompanyTypeBadge');
     const fundSignalBadge = document.getElementById('fundSignalBadge');
@@ -1751,7 +1749,7 @@ async function renderFundamentalReport(stockCode) {
     document.getElementById('fundQuantContent').innerHTML = '<div class="skeleton-pulse" style="height:100px; width:100%;"></div>';
     document.getElementById('fundEventContent').innerHTML = '<div class="skeleton-pulse" style="height:60px; width:100%;"></div>';
     document.getElementById('fundSectorContent').innerHTML = '<div class="skeleton-pulse" style="height:120px; width:100%;"></div>';
-
+    document.getElementById('fundTargetContent').innerHTML = '<div class="skeleton-pulse" style="height:150px; width:100%;"></div>';
 
     let d;
     try {
@@ -1767,16 +1765,30 @@ async function renderFundamentalReport(stockCode) {
         return;
     }
 
-    // ── 헤더 ──
-    document.getElementById('fundCompanyTypeBadge').textContent = d.company_type_label || '';
-
+    // ── Header & Summary Setup ──
     const sigBadge = document.getElementById('fundSignalBadge');
     sigBadge.textContent = d.signal_label || '';
     sigBadge.className = 'fund-signal-badge fund-signal-' + (d.signal || 'hold');
+    document.getElementById('fundCompanyTypeBadge').textContent = d.company_type_label || '';
 
-    document.getElementById('fundSignalReason').textContent = d.signal_reason || '';
+    // Update fundSummaryBlock with 2-column sidebar layout
+    const summaryBody = document.querySelector('#fundSummaryBlock .workout-body');
+    if (summaryBody) {
+        summaryBody.innerHTML = `
+            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:center;">
+                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
+                    <div style="font-size:2.8rem; margin-bottom:8px; filter: drop-shadow(0 0 10px var(--primary-glow));">🧠</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">AI 통합 인지</div>
+                </div>
+                <div class="prob-right-col" style="flex:1;">
+                    <div id="fundSignalReason" class="fund-signal-reason" style="margin:0; border:none; padding:0; font-size:1.1rem; line-height:1.6; font-weight:600; color:var(--text-main);">
+                        ${d.signal_reason || '분석 결과가 없습니다.'}
+                    </div>
+                </div>
+            </div>`;
+    }
 
-    // ── Quant 축 ──
+    // ── Quant Analysis ──
     const q = d.quant || {};
     const qRows = [
         ['ROE', q.roe != null ? q.roe + '%' : '—'],
@@ -1785,30 +1797,25 @@ async function renderFundamentalReport(stockCode) {
         ['연간 매출 성장', q.rev_growth != null ? (q.rev_growth > 0 ? '+' : '') + q.rev_growth + '%' : '—'],
         ['분기 매출 성장', q.qtr_growth != null ? (q.qtr_growth > 0 ? '+' : '') + q.qtr_growth + '%' : '—'],
     ];
-    const scoreColor = q.score >= 75 ? '#ef4444' : q.score >= 55 ? '#f59e0b' : '#3b82f6';
     document.getElementById('fundQuantContent').innerHTML = `
-        <div class="prob-two-col" style="background:transparent; padding:0; gap:20px;">
-            <div class="prob-left-col" style="flex:0 0 140px; border:none; padding-right:0;">
-                <div class="fund-score-wrap" style="margin-bottom:10px;">
-                    <div class="fund-score-num" style="color:${scoreColor}; font-size:2.2rem;">${q.score ?? '—'}</div>
-                    <div class="fund-score-grade" style="color:${scoreColor}; font-size:1rem;">${q.grade ?? ''}</div>
-                </div>
-                <div class="fund-score-bar-bg" style="height:6px; width:100%;">
-                    <div class="fund-score-bar" style="width:${Math.min(q.score ?? 0, 100)}%;background:${scoreColor}"></div>
-                </div>
+        <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
+            <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
+                <div style="font-size:2.5rem; margin-bottom:8px;">📊</div>
+                <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">재무 분석</div>
+                <div class="fund-score-badge" style="margin-top:10px; font-size:1.4rem; font-weight:900; color:var(--primary);">${q.score || '—'}점</div>
             </div>
-            <div class="prob-right-col">
-                <table class="fund-metric-table">
-                    ${qRows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+            <div class="prob-right-col" style="display:flex; flex-direction:column; gap:10px; width:100%;">
+                <table class="fund-metric-table" style="width:100%;">
+                    ${qRows.map(([k, v]) => `<tr><td style="color:var(--text-muted); font-size:0.85rem;">${k}</td><td style="text-align:right; font-weight:700; color:var(--text-main);">${v}</td></tr>`).join('')}
                 </table>
+                <div class="fund-score-desc" style="font-size:0.82rem; color:var(--text-sub); margin-top:10px; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; line-height:1.5;">
+                    ${q.score >= 75 ? '🔥 <b>매우 우수</b> - 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상</b> - 양호한 상태' : '⚠️ <b>기준 미달</b> - 리스크 주의 필요'}
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">${q.period || ''} ${q.qtr_period ? ' / ' + q.qtr_period : ''}</div>
             </div>
-        </div>
-        <div class="fund-score-desc" style="font-size:0.85rem; color:var(--text-color); margin-top:14px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
-            ${q.score >= 75 ? '🔥 <b>매우 우수</b> - 안정적이고 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상</b> - 투자하기 무난한 양호한 재무 상태' : '⚠️ <b>기준 미달</b> - 재무 리스크가 있으므로 주의 필요'}
-        </div>
-        <div class="fund-period-note" style="margin-top:8px;">${q.period || ''} ${q.qtr_period ? '/ ' + q.qtr_period : ''}</div>`;
+        </div>`;
 
-    // ── Event-Driven 축 ──
+    // ── Event-Driven Analysis ──
     const evts = d.events || [];
     if (evts.length === 0) {
         document.getElementById('fundEventContent').innerHTML =
@@ -1820,20 +1827,20 @@ async function renderFundamentalReport(stockCode) {
                     <div style="font-size:2.5rem; margin-bottom:8px;">📢</div>
                     <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">공시 분석</div>
                 </div>
-                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:10px; width:100%;">
                     ${evts.map(ev => `
-                    <div class="fund-event-item fund-event-${ev.signal}" style="width:100%;">
+                    <div class="fund-event-item fund-event-${ev.signal}" style="width:100%; padding:10px 14px; border-radius:12px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span class="fund-event-label">${ev.label}</span>
-                            <span class="fund-event-date" style="font-size:0.75rem;">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
+                            <span class="fund-event-label" style="font-size:0.75rem; font-weight:700;">${ev.label}</span>
+                            <span class="fund-event-date" style="font-size:0.75rem; opacity:0.8;">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
                         </div>
-                        <div class="fund-event-title" title="${ev.title}" style="font-size:0.88rem; font-weight:500;">${ev.title.length > 35 ? ev.title.slice(0, 35) + '…' : ev.title}</div>
+                        <div class="fund-event-title" title="${ev.title}" style="font-size:0.9rem; font-weight:600; line-height:1.4;">${ev.title.length > 35 ? ev.title.slice(0, 35) + '…' : ev.title}</div>
                     </div>`).join('')}
                 </div>
             </div>`;
     }
 
-    // ── Sector Analysis 축 (교체됨) ──
+    // ── Sector Analysis ──
     const s = d.sector || {};
     const comps = s.comparisons || [];
 
@@ -1842,65 +1849,69 @@ async function renderFundamentalReport(stockCode) {
             '<div class="fund-no-data">업종 비교 데이터 없음</div>';
     } else {
         document.getElementById('fundSectorContent').innerHTML = `
-            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px;">
+            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
                 <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
                     <div style="font-size:2.5rem; margin-bottom:8px;">🏢</div>
                     <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">업종 분석</div>
                 </div>
-                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:6px; width:100%;">
-                    <div style="font-size:0.88rem; font-weight:600; color:var(--primary); margin-bottom:4px;">
-                        ${s.name || '종합'} 업종 평균 비교
+                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                    <div style="font-size:0.88rem; font-weight:700; color:var(--primary); margin-bottom:6px; opacity:0.9;">
+                        ${s.name || '종합'} 업종 평균 대비
                     </div>
                     ${comps.map(c => `
-                    <div class="fund-event-item" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border-soft); padding:8px 12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                            <span style="font-size:0.75rem; color:var(--text-muted);">${c.label}</span>
-                            <span style="font-size:0.7rem; font-weight:700; color:${c.status === '우위' || c.status === '저평가' ? '#10b981' : '#ef4444'};">
+                    <div class="fund-event-item" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px 14px; border-radius:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">${c.label}</span>
+                            <span style="font-size:0.75rem; font-weight:900; color:${c.status === '우위' || c.status === '저평가' ? '#10b981' : '#ef4444'}; background:rgba(0,0,0,0.25); padding:2px 10px; border-radius:99px;">
                                 ${c.status}
                             </span>
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                            <span style="font-size:0.95rem; font-weight:700;">${c.value}</span>
-                            <span style="font-size:0.75rem; color:var(--text-muted);">평균 ${c.avg}</span>
+                            <span style="font-size:1.1rem; font-weight:800; color:var(--text-main);">${c.value}</span>
+                            <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">평균 ${c.avg}</span>
                         </div>
                     </div>`).join('')}
                 </div>
             </div>`;
     }
-    // ── Target ──
+
+    // ── Target Analysis ──
     const target = d.target;
-    document.getElementById('fundTargetContent').innerHTML = '';
     if (target) {
         const color = target.status === '저평가' || target.status === '매력' ? '#10b981' : (target.status === '고평가' ? '#ef4444' : '#6366f1');
         document.getElementById('fundTargetContent').innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="text-align:center; padding:12px; background:rgba(255,255,255,0.03); border:1px solid var(--border-soft); border-radius:8px;">
-                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">예상 적정 주가</div>
-                    <div style="font-size:1.4rem; font-weight:800; color:${color};">${Number(target.value).toLocaleString()}원</div>
-                    <div style="font-size:0.85rem; margin-top:4px;">
-                        <span style="color:${color}; font-weight:700;">${target.status}</span>
-                        <span style="color:var(--text-muted); margin-left:4px;">(기대수익: ${target.upside > 0 ? '+' : ''}${target.upside}%)</span>
-                    </div>
+            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
+                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
+                    <div style="font-size:2.5rem; margin-bottom:8px;">🎯</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">가치 분석</div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <div style="padding:8px; background:rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius:6px; font-size:0.7rem;">
-                        <div style="color:var(--text-muted); margin-bottom:2px;">S-RIM (보수)</div>
-                        <div style="font-weight:600;">${Number(target.srim).toLocaleString()}원</div>
+                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:12px; width:100%;">
+                    <div style="text-align:center; padding:18px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; font-weight:600;">예상 적정 주가</div>
+                        <div style="font-size:1.8rem; font-weight:950; color:${color}; letter-spacing:-0.5px; line-height:1;">${Number(target.value).toLocaleString()}원</div>
+                        <div style="font-size:0.95rem; margin-top:8px;">
+                            <span style="background:${color}; color:white; padding:3px 12px; border-radius:99px; font-weight:900; font-size:0.8rem;">${target.status}</span>
+                            <span style="color:var(--text-muted); margin-left:8px; font-weight:700;">(기대수익: ${target.upside > 0 ? '+' : ''}${target.upside}%)</span>
+                        </div>
                     </div>
-                    <div style="padding:8px; background:rgba(255,255,255,0.02); border:1px solid var(--border-soft); border-radius:6px; font-size:0.7rem;">
-                        <div style="color:var(--text-muted); margin-bottom:2px;">EPS*ROE (성장)</div>
-                        <div style="font-weight:600;">${Number(target.basic).toLocaleString()}원</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div style="padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
+                            <div style="color:var(--text-muted); font-size:0.75rem; margin-bottom:4px; font-weight:700;">S-RIM value</div>
+                            <div style="font-weight:800; font-size:1.05rem; color:var(--text-main);">${Number(target.srim).toLocaleString()}원</div>
+                        </div>
+                        <div style="padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
+                            <div style="color:var(--text-muted); font-size:0.75rem; margin-bottom:4px; font-weight:700;">Intrinsic value</div>
+                            <div style="font-weight:800; font-size:1.05rem; color:var(--text-main);">${Number(target.basic).toLocaleString()}원</div>
+                        </div>
                     </div>
-                </div>
-                <div style="font-size:0.65rem; color:var(--text-muted); text-align:center; opacity:0.7;">
-                    * ${target.method} (할인율 8% 적용)
+                    <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; opacity:0.7;">
+                        * ${target.method} (Cash-Flow Discount Model)
+                    </div>
                 </div>
             </div>`;
     } else {
         document.getElementById('fundTargetContent').innerHTML = `
-            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-muted); font-size:0.8rem; text-align:center; padding:20px;">
-                재무 데이터 부족으로<br>산출이 불가능합니다.
-            </div>`;
+            <div class="fund-no-data" style="padding:30px;">재무 데이터 부족으로 산출 불가</div>`;
     }
 
     // ── 사용 축 태그 ──
@@ -1908,7 +1919,7 @@ async function renderFundamentalReport(stockCode) {
     document.getElementById('fundAxesUsed').innerHTML =
         axes.map(a => `<span class="fund-axis-tag">${a}</span>`).join('');
 
-    // Cache in context
+    // Cache context
     if (isInWatchlist(stockCode)) {
         if (watchlistStockContext.item && (watchlistStockContext.item.code === stockCode || watchlistStockContext.item.ticker === stockCode)) {
             watchlistStockContext.fundamental = d;
@@ -1927,7 +1938,7 @@ async function renderFundamentalReport(stockCode) {
                 requestAnimationFrame(() => {
                     b.classList.add('visible');
                 });
-            }, i * 100); // 100ms stagger between tiles
+            }, i * 100);
         });
     });
 }
