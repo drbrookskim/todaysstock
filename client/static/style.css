@@ -1197,6 +1197,7 @@ html[data-theme="light"] .theme-icon-btn i {
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     background: var(--bg-card); /* Fallback */
     border: 1px solid var(--border-soft);
+    overflow: hidden;
 }
 
 /* ── Gradient Backgrounds for Each Axis ── */
@@ -1254,10 +1255,9 @@ html[data-theme="light"] .theme-icon-btn i {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Remove side stripe when in gradient mode */
+/* Remove side stripe when in gradient mode - REVERTED TO GLASS STRIPE */
 .fundamental-axis .workout-stripe {
-    width: 0 !important;
-    display: none;
+    display: block;
 }
 
 .fund-tiles-grid {
@@ -5512,8 +5512,23 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .workout-stripe {
-    width: 8px;
+    width: 12px;
     flex-shrink: 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: relative;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2;
+}
+
+.workout-stripe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .workout-style.buy .workout-stripe {
@@ -5629,56 +5644,56 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .workout-style.nxt-card .workout-stripe,
 .workout-style.ma-card .workout-stripe,
 .workout-style.ma-visual-card .workout-stripe {
-    background: linear-gradient(180deg, #818cf8, #4f46e5);
+    background: linear-gradient(180deg, rgba(129, 140, 248, 0.6), rgba(79, 70, 229, 0.6));
 }
 
 /* ── AI Analysis (Emerald) ── */
 .workout-style.analysis-header-card .workout-stripe,
 .workout-style.patterns-card .workout-stripe,
 .workout-style.candle-chart-card .workout-stripe {
-    background: linear-gradient(180deg, #34d399, #059669);
+    background: linear-gradient(180deg, rgba(52, 211, 153, 0.6), rgba(5, 150, 105, 0.6));
 }
 
 /* ── Trade Signals (Amber) ── */
 .workout-style.report-card.buy .workout-stripe,
 .workout-style.report-card.sell .workout-stripe {
-    background: linear-gradient(180deg, #fbbf24, #d97706);
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.6), rgba(217, 119, 6, 0.6));
 }
 
 /* ── Deep Analysis (Emerald Theme) ── */
 .workout-style.ai-trend .workout-stripe {
-    background: linear-gradient(180deg, #10b981, #059669);
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.6), rgba(5, 150, 105, 0.6));
 }
 .workout-style.ai-patterns .workout-stripe {
-    background: linear-gradient(180deg, #10b981, #059669);
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.6), rgba(5, 150, 105, 0.6));
 }
 .workout-style.ai-chart .workout-stripe {
-    background: linear-gradient(180deg, #10b981, #059669);
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.6), rgba(5, 150, 105, 0.6));
 }
 .workout-style.ai-signals .workout-stripe {
-    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.6), rgba(245, 158, 11, 0.6));
 }
 .workout-style.ai-buy-signal .workout-stripe {
-    background: linear-gradient(180deg, #fbbf24, #f59e0b); /* Amber for Buy */
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.6), rgba(245, 158, 11, 0.6)); /* Amber for Buy */
 }
 .workout-style.ai-sell-signal .workout-stripe {
-    background: linear-gradient(180deg, #f43f5e, #e11d48); /* Rose/Red for Sell */
+    background: linear-gradient(180deg, rgba(244, 63, 94, 0.6), rgba(225, 29, 72, 0.6)); /* Rose/Red for Sell */
 }
 .workout-style.ai-summary .workout-stripe {
-    background: linear-gradient(180deg, #94a3b8, #64748b);
+    background: linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(100, 116, 139, 0.6));
 }
 
 .workout-style.ai-insights .workout-stripe {
-    background: linear-gradient(180deg, #64748b, #334155);
+    background: linear-gradient(180deg, rgba(100, 116, 139, 0.6), rgba(51, 65, 85, 0.6));
 }
 
 .workout-style.cycle .workout-stripe {
-    background: linear-gradient(180deg, #94a3b8, #475569);
+    background: linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(71, 85, 105, 0.6));
 }
 
 .workout-style.rating .workout-stripe,
 .workout-style.fundamental .workout-stripe {
-    background: linear-gradient(180deg, #cbd5e1, #64748b);
+    background: linear-gradient(180deg, rgba(203, 213, 225, 0.6), rgba(100, 116, 139, 0.6));
 }
 
 
