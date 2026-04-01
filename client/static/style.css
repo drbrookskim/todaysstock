@@ -1194,6 +1194,70 @@ html[data-theme="light"] .theme-icon-btn i {
 .workout-style.report-card,
 .workout-style.fundamental-axis {
     padding: 0;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    background: var(--bg-card); /* Fallback */
+    border: 1px solid var(--border-soft);
+}
+
+/* ── Gradient Backgrounds for Each Axis ── */
+#fundQuantBlock {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+#fundEventBlock {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+#fundSectorBlock {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(167, 139, 250, 0.02) 100%);
+    border-color: rgba(167, 139, 250, 0.15);
+}
+#fundTargetBlock {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
+    border-color: rgba(245, 158, 11, 0.15);
+}
+
+/* ── Gradient Headers ── */
+.fundamental-axis .workout-header {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 16px 20px !important;
+    border-bottom: 1px solid var(--border-soft);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle glow behind icons */
+.fundamental-axis .workout-title i {
+    position: relative;
+    z-index: 2;
+}
+
+.fundamental-axis .workout-title i::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    background: currentColor;
+    opacity: 0.15;
+    filter: blur(8px);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+#fundQuantBlock .workout-header { background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), transparent); }
+#fundEventBlock .workout-header { background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent); }
+#fundSectorBlock .workout-header { background: linear-gradient(90deg, rgba(167, 139, 250, 0.1), transparent); }
+#fundTargetBlock .workout-header { background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), transparent); }
+
+.workout-style.fundamental-axis:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Remove side stripe when in gradient mode */
+.fundamental-axis .workout-stripe {
+    width: 0 !important;
+    display: none;
 }
 
 .fund-tiles-grid {
