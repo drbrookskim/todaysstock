@@ -1451,6 +1451,12 @@ async function updateTileData(code) {
 function renderAnalysisReport(data) {
     _lastAnalysisData = data;
     
+    // Ensure parent container is visible immediately
+    const contentWrapper = document.getElementById('analysisContentWrapper');
+    const emptyState = document.getElementById('analysisEmptyState');
+    if (contentWrapper) contentWrapper.classList.remove('hidden');
+    if (emptyState) emptyState.classList.add('hidden');
+
     const hasBuyReport = data.buy_report && data.buy_report !== null;
     const hasSellReport = data.sell_report && data.sell_report !== null;
     
@@ -1730,16 +1736,20 @@ async function renderFundamentalReport(stockCode) {
 
     if (blocks.length === 0 || !stockCode) return;
 
-    // Reset visibility if in analysisSection
-    const emptyState = document.getElementById('analysisEmptyState');
+    // Ensure parent visibility
     const contentWrapper = document.getElementById('analysisContentWrapper');
-    if (emptyState) emptyState.classList.add('hidden');
+    const emptyState = document.getElementById('analysisEmptyState');
     if (contentWrapper) contentWrapper.classList.remove('hidden');
+    if (emptyState) emptyState.classList.add('hidden');
 
-    // Pre-hide with reveal-fade class for sequential entrance
+    // Pre-hide axes with reveal-fade, but reveal summary skeleton immediately
     blocks.forEach(b => {
-        b.classList.add('hidden');
         b.classList.remove('visible');
+        if (b.id === 'fundSummaryBlock') {
+            b.classList.remove('hidden');
+        } else {
+            b.classList.add('hidden');
+        }
     });
 
     // Skeleton state
@@ -1764,7 +1774,16 @@ async function renderFundamentalReport(stockCode) {
         if (d.error) throw new Error(d.error);
     } catch (e) {
         console.warn('Fundamental API error:', e.message);
-        document.getElementById('fundSignalReason').textContent = `❌ 펀더멘탈 데이터 로드 실패 (${e.message})`;
+        const reasonEl = document.getElementById('fundSignalReason');
+        if (reasonEl) reasonEl.textContent = `❌ 펀더멘탈 데이터 로드 실패 (${e.message})`;
+        
+        // Even on error, reveal the blocks that were hidden
+        blocks.forEach((b, i) => {
+            setTimeout(() => {
+                b.classList.remove('hidden');
+                requestAnimationFrame(() => b.classList.add('visible'));
+            }, i * 100);
+        });
         return;
     }
 
