@@ -1192,40 +1192,64 @@ html[data-theme="light"] .theme-icon-btn i {
 .workout-style.patterns-card,
 .workout-style.candle-chart-card,
 .workout-style.report-card,
-.workout-style.fundamental-axis {
+.workout-style.fundamental-axis,
+.workout-style.fundamental {
     padding: 0;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    background: var(--bg-card); /* Fallback */
-    border: 1px solid var(--border-soft);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background: rgba(255, 255, 255, 0.03); /* Translucent glass base */
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
     overflow: hidden;
+    box-shadow: 
+        0 10px 40px -10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15); /* Top specular highlight */
 }
 
-/* ── Gradient Backgrounds for Each Axis ── */
+/* ── Liquid Glass Tints for Each Axis ── */
 #fundQuantBlock {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
-    border-color: rgba(99, 102, 241, 0.15);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0.03) 100%);
+    border-color: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(99, 102, 241, 0.3);
 }
 #fundEventBlock {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
-    border-color: rgba(16, 185, 129, 0.15);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.03) 100%);
+    border-color: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(16, 185, 129, 0.3);
 }
 #fundSectorBlock {
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(167, 139, 250, 0.02) 100%);
-    border-color: rgba(167, 139, 250, 0.15);
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, rgba(167, 139, 250, 0.03) 100%);
+    border-color: rgba(167, 139, 250, 0.25);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(167, 139, 250, 0.3);
 }
 #fundTargetBlock {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
-    border-color: rgba(245, 158, 11, 0.15);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.03) 100%);
+    border-color: rgba(245, 158, 11, 0.25);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(245, 158, 11, 0.3);
+}
+#fundSummaryBlock {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    margin-bottom: 24px;
 }
 
-/* ── Gradient Headers ── */
-.fundamental-axis .workout-header {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 16px 20px !important;
-    border-bottom: 1px solid var(--border-soft);
+/* ── Glassy Headers ── */
+.fundamental-axis .workout-header,
+.fundamental .workout-header {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 20px 24px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
 }
+
+#fundQuantBlock .workout-header { background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), transparent); }
+#fundEventBlock .workout-header { background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), transparent); }
+#fundSectorBlock .workout-header { background: linear-gradient(90deg, rgba(167, 139, 250, 0.15), transparent); }
+#fundTargetBlock .workout-header { background: linear-gradient(90deg, rgba(245, 158, 11, 0.15), transparent); }
+#fundSummaryBlock .workout-header { background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent); }
 
 /* Subtle glow behind icons */
 .fundamental-axis .workout-title i {
@@ -1249,10 +1273,12 @@ html[data-theme="light"] .theme-icon-btn i {
 #fundSectorBlock .workout-header { background: linear-gradient(90deg, rgba(167, 139, 250, 0.1), transparent); }
 #fundTargetBlock .workout-header { background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), transparent); }
 
-.workout-style.fundamental-axis:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.2);
+.workout-style.fundamental-axis:hover,
+.workout-style.fundamental:hover {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.4);
+    background-blend-mode: overlay;
 }
 
 /* Remove side stripe when in gradient mode - REVERTED TO GLASS STRIPE */
