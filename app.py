@@ -239,13 +239,21 @@ def download_stock_df(code, market):
                 "numOfRows": "300",
                 "pageNo": "1",
                 "resultType": "json",
-                "likeSrtnCd": code
+                "srtnCd": code  # Use exact code matching
             }
-            resp = http_requests.get(url, params=params, timeout=3)
+            resp = http_requests.get(url, params=params, timeout=10)
             resp.raise_for_status()
             data = resp.json()
 
             items = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+            print(f"[DEBUG] API Response for {code}: found {len(items)} items")
+            if items:
+                # Filter to ensure we only get the exact code matches in the response.
+                items = [it for it in items if str(it.get("srtnCd")).strip() in [code, f"A{code}"]]
+                print(f"[DEBUG] Filtered items for {code}: {len(items)}")
+                if len(items) > 0:
+                    print(f"[DEBUG] First item ITMS_NM: {items[0].get('itmsNm')}")
+                
             if items:
                 records = []
                 for row in reversed(items):
@@ -272,7 +280,27 @@ def download_stock_df(code, market):
         except Exception as e:
             print(f"⚠️ 공공데이터 API 오류 ({code}): {e}, yfinance 로 대체합니다.")
 
-    # ── 2차 폴백: yfinance ──
+    # ── 2차 폴백: pykrx ──
+    if df is None:
+        try:
+            from pykrx import stock as pystock
+            end_dt = datetime.now()
+            start_dt = end_dt - timedelta(days=450)
+            py_df = pystock.get_market_ohlcv(start_dt.strftime("%Y%m%d"), end_dt.strftime("%Y%m%d"), code)
+            if py_df is not None and not py_df.empty:
+                # Rename Korean columns to English standard
+                idx_name = py_df.index.name
+                py_df = py_df.rename(columns={
+                    "시가": "Open", "고가": "High", "저가": "Low", "종가": "Close", "거래량": "Volume"
+                })
+                # Check for NaN in recent close
+                if "Close" in py_df.columns and not pd.isna(py_df["Close"].iloc[-1]) and py_df["Close"].iloc[-1] > 0:
+                    df = py_df
+                    print(f"✅ pykrx ({code}): {len(df)}일 데이터")
+        except Exception as e:
+            print(f"⚠️ pykrx 오류 ({code}): {e}")
+
+    # ── 3차 폴백: yfinance ──
     if df is None:
         try:
             suffix = ".KS" if market == "KOSPI" else ".KQ"
@@ -291,41 +319,10 @@ def download_stock_df(code, market):
             print(f"❌ yfinance 오류 ({code}): {e}")
             df = None
 
-    # ── [LATEST PRICE UPDATE (GLOBAL TARGET)] ──
-    # 데이터 소스에 관계없이 반환 전 fast_info로 오늘자 최신 틱 데이터를 덮어쓰거나 추가하여 실시간 동기화율을 극대화합니다.
+    # LATEST PRICE UPDATE
     if df is not None and not df.empty:
-        try:
-            suffix_sync = ".KS" if market == "KOSPI" else ".KQ"
-            ticker_obj = yf.Ticker(code + suffix_sync)
-            fast = ticker_obj.fast_info
-            
-            if hasattr(fast, 'last_price') and fast.last_price is not None:
-                today_dt = pd.to_datetime(datetime.now().date())
-                last_dt = pd.to_datetime(df.index[-1].date())
-                
-                # 당일 행이 이미 존재하면 업데이트, 없으면 신규 행 추가
-                if today_dt == last_dt:
-                    df.at[df.index[-1], "Close"] = float(fast.last_price)
-                    if hasattr(fast, 'open') and fast.open is not None:
-                        df.at[df.index[-1], "Open"] = float(fast.open)
-                    if hasattr(fast, 'day_high') and fast.day_high is not None:
-                        df.at[df.index[-1], "High"] = float(fast.day_high)
-                    if hasattr(fast, 'day_low') and fast.day_low is not None:
-                        df.at[df.index[-1], "Low"] = float(fast.day_low)
-                    if hasattr(fast, 'last_volume') and fast.last_volume is not None:
-                        df.at[df.index[-1], "Volume"] = float(fast.last_volume)
-                else:
-                    new_row = pd.DataFrame({
-                        "Open": [float(fast.open) if hasattr(fast, 'open') and fast.open is not None else float(fast.last_price)],
-                        "High": [float(fast.day_high) if hasattr(fast, 'day_high') and fast.day_high is not None else float(fast.last_price)],
-                        "Low": [float(fast.day_low) if hasattr(fast, 'day_low') and fast.day_low is not None else float(fast.last_price)],
-                        "Close": [float(fast.last_price)],
-                        "Volume": [float(fast.last_volume) if hasattr(fast, 'last_volume') and fast.last_volume is not None else 0.0]
-                    }, index=[today_dt])
-                    df = pd.concat([df, new_row])
-                print(f"📡 DF Real-time Sync ({code}): {fast.last_price}")
-        except Exception as e:
-            print(f"⚠️ DF Real-time Sync Error ({code}): {e}")
+        last_price = float(df.iloc[-1]["Close"])
+        print(f"📡 FINAL PRICE ({code}): {last_price}")
 
     return df
 

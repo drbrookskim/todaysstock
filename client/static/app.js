@@ -820,31 +820,30 @@ async function triggerFullDeepAnalysis(code) {
         // Step 1: Fetch AI Analysis
         const analysisData = await fetchAnalysisReport(currentStock || { code });
         
-        // Step 2: Show Fundamental loading status
-        if (loadingText) loadingText.textContent = '기업 펀더멘탈 및 공시 데이터 분석 중...';
-        
-        // Step 3: Start Fundamental Analysis
-        const fundamentalPromise = renderFundamentalReport(code);
-        
         // Hide global loading early if we have AI data to show
         if (analysisData) {
-            console.log('[DEBUG] AI Analysis data received. Hiding global loading.');
-            if (globalLoading) globalLoading.classList.add('hidden');
+            console.log('[DEBUG] AI Analysis data received. Transitioning...');
             _lastAnalysisData = analysisData;
             if (patternReportSection) patternReportSection.classList.remove('hidden');
+            
+            // This renders the AI patterns/chart
             renderAnalysisReport(analysisData);
         }
 
-        await fundamentalPromise;
+        // Step 2: Show Fundamental loading status inside the progress bar or loading text
+        if (loadingText) loadingText.textContent = '기업 펀더멘탈 및 공시 데이터 분석 중...';
+        
+        // Step 3: Start Fundamental Analysis
+        // We await this to ensure the dashboard is fully populated before we hide the global loading finally
+        await renderFundamentalReport(code);
         console.log('[DEBUG] Fundamental analysis rendering complete.');
 
-        // Final safety hide for global loading
-        if (globalLoading) globalLoading.classList.add('hidden');
-        
     } catch (err) {
         console.error('Deep Analysis failed:', err);
-        if (globalLoading) globalLoading.classList.add('hidden');
         showToast('심층 분석 데이터를 불러오지 못했습니다.', 'error');
+    } finally {
+        // Essential: Always hide the global analysis loading block
+        if (globalLoading) globalLoading.classList.add('hidden');
     }
 }
 
@@ -1723,7 +1722,7 @@ function renderAnalysisReport(data) {
     }
 
     // ── 3. Fundamental Analysis (Signal & Summary) ──
-    renderFundamentalReport(data.code || data.ticker || '');
+    // NO-OP: renderFundamentalReport is orchestrated exclusively by triggerFullDeepAnalysis
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1734,26 +1733,25 @@ async function renderFundamentalReport(stockCode) {
         .map(id => document.getElementById(id))
         .filter(el => !!el);
 
-    if (blocks.length === 0 || !stockCode) return;
-
-    // Ensure parent visibility
+    // Ensure parent visibility for '데이터 분석 중…' state
     const contentWrapper = document.getElementById('analysisContentWrapper');
     const emptyState = document.getElementById('analysisEmptyState');
     if (contentWrapper) contentWrapper.classList.remove('hidden');
     if (emptyState) emptyState.classList.add('hidden');
 
-    // Pre-hide axes with reveal-fade, but reveal summary skeleton immediately
+    // Reveal summary block IMMEDIATELY for loading feedback, hide others to prepare sequence
     blocks.forEach(b => {
         b.classList.remove('visible');
         if (b.id === 'fundSummaryBlock') {
-            b.classList.remove('hidden');
+            b.classList.remove('hidden'); // SHOW LOADING
         } else {
             b.classList.add('hidden');
         }
     });
 
     // Skeleton state
-    document.getElementById('fundSignalReason').textContent = '데이터 분석 중…';
+    const reasonElInitial = document.getElementById('fundSignalReason');
+    if (reasonElInitial) reasonElInitial.textContent = '데이터 분석 중…';
     const fundTypeBadge = document.getElementById('fundCompanyTypeBadge');
     const fundSignalBadge = document.getElementById('fundSignalBadge');
     if (fundTypeBadge) fundTypeBadge.textContent = '';
@@ -1789,9 +1787,14 @@ async function renderFundamentalReport(stockCode) {
 
     // ── Header & Summary Setup ──
     const sigBadge = document.getElementById('fundSignalBadge');
-    sigBadge.textContent = d.signal_label || '';
-    sigBadge.className = 'fund-signal-badge fund-signal-' + (d.signal || 'hold');
-    document.getElementById('fundCompanyTypeBadge').textContent = d.company_type_label || '';
+    if (sigBadge) {
+        sigBadge.textContent = d.signal_label || '';
+        sigBadge.className = 'fund-signal-badge fund-signal-' + (d.signal || 'hold');
+    }
+    const typeBadge = document.getElementById('fundCompanyTypeBadge');
+    if (typeBadge) {
+        typeBadge.textContent = d.company_type_label || '';
+    }
 
     // Update fundSummaryBlock with 2-column sidebar layout
     const summaryBody = document.querySelector('#fundSummaryBlock .workout-body');
@@ -1952,18 +1955,24 @@ async function renderFundamentalReport(stockCode) {
         }
     }
 
-    // Final reveal with staggered entrance
-    requestAnimationFrame(() => {
-        blocks.forEach((b, i) => {
-            setTimeout(() => {
-                b.classList.remove('hidden');
-                requestAnimationFrame(() => {
-                    b.classList.add('visible');
-                });
-            }, i * 100);
-        });
+    // ── Final Reveal Orchestration ──
+    const tilesGrid = document.querySelector('.fund-tiles-grid');
+    if (tilesGrid) {
+        tilesGrid.classList.remove('hidden'); // Ensure the wrapper is visible
+        tilesGrid.style.setProperty('display', 'grid', 'important'); // Force grid display
+        tilesGrid.style.setProperty('opacity', '1', 'important');
+    }
+
+    // Force all blocks to be revealed at once (no staggered delay for verification)
+    blocks.forEach(b => {
+        b.classList.remove('hidden');
+        b.classList.add('visible');
+        b.style.setProperty('display', 'block', 'important');
+        b.style.setProperty('opacity', '1', 'important');
+        b.style.setProperty('transform', 'none', 'important');
     });
 }
+
 
 
 function renderAiInsights(data) {
@@ -2996,7 +3005,7 @@ async function initAuth() {
             if (navWatchlist) navWatchlist.style.display = 'none';
 
             // Auto-redirect if in restricted section
-            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
+            const restricted = ['analysisSection', 'watchlistSection', 'valueChainSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
             }
