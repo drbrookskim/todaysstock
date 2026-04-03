@@ -746,11 +746,23 @@ html[data-theme="light"] .theme-icon-btn i {
     gap: 32px;
 }
 
+.dashboard-home:not(.hidden) #mainSearchHero {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-height: 200px;
+}
+
 .search-hero {
     display: flex;
     align-items: flex-start;
     gap: 24px;
     flex-wrap: wrap;
+    transition: opacity 0.3s ease;
+}
+
+.search-hero.hidden {
+    display: none !important;
 }
 
 .content-area {

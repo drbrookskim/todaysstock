@@ -192,16 +192,22 @@ function initNavigation() {
 
                 // --- Section Persistence Restore ---
                 if (targetId === 'dashboardHome') {
-                    restoreStockContext('home');
+                    // [MOD] If clicking sidebar Home directly (not via navigateToSection), reset search context 
+                    resetDashboardHome(e.isTrusted && !e.simulated);
+                    if (!e.isTrusted || e.simulated) {
+                        restoreStockContext('home');
+                    }
                 } else if (targetId === 'watchlistSection') {
                     restoreStockContext('watchlist');
                 }
 
                 // --- Scroll Persistence: Restore target ---
-                requestAnimationFrame(() => {
-                    const savedPos = sectionScrollPositions[targetId] || 0;
-                    window.scrollTo({ top: savedPos, behavior: 'auto' });
-                });
+                if (targetId !== 'dashboardHome') {
+                    requestAnimationFrame(() => {
+                        const savedPos = sectionScrollPositions[targetId] || 0;
+                        window.scrollTo({ top: savedPos, behavior: 'auto' });
+                    });
+                }
             }
         });
     });
@@ -212,6 +218,46 @@ function navigateToSection(navId) {
     if (navItem) {
         navItem.click();
     }
+}
+
+
+/**
+ * [NEW] Consolidated function to reset the Home dashboard view.
+ * Ensures search box is visible and result section is handled correctly.
+ * @param {boolean} force - If true, it resets the current stock and context.
+ */
+function resetDashboardHome(force = false) {
+    const resSec = document.getElementById('resultSection');
+    const searchHero = document.getElementById('mainSearchHero');
+    const searchCard = document.getElementById('mainSearchCard');
+
+    if (force) {
+        if (resSec) resSec.classList.add('hidden');
+        // Reset scroll position for home specifically
+        sectionScrollPositions['dashboardHome'] = 0;
+    }
+
+    // Force visibility of search UI
+    if (searchHero) {
+        searchHero.classList.remove('hidden');
+        searchHero.style.display = 'flex';
+        searchHero.style.opacity = '1';
+        searchHero.style.visibility = 'visible';
+    }
+    if (searchCard) {
+        searchCard.classList.remove('hidden');
+        searchCard.style.display = 'block';
+    }
+
+    // Double frame requestAnimationFrame for scroll reset 
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        });
+    });
+
+    // Refresh data if needed
+    renderMacroIndicators();
 }
 
 function restoreStockContext(type) {
@@ -274,7 +320,7 @@ function showSection(id) {
         const el = document.getElementById(s);
         if (el) {
             el.classList.add('hidden');
-            el.style.display = ''; 
+            // [MOD] Do NOT clear el.style.display, let CSS and explicit JS handle it
         }
     });
 
@@ -296,11 +342,13 @@ function showSection(id) {
         if (resSec) resSec.classList.add('hidden');
     }
 
-    requestAnimationFrame(() => {
-        console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
-        if (id === 'dashboardHome') renderMacroIndicators();
-        // if (id === 'valueChainSection') initValueChain(); // Handled by its own listener
-    });
+    if (id === 'dashboardHome') {
+        resetDashboardHome(false); // standard show, search results might be restored later
+    } else {
+        requestAnimationFrame(() => {
+            console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
+        });
+    }
 }
 
 // ── Sidebar Pin & Toggle ──
@@ -753,9 +801,10 @@ async function selectStock(item, origin = 'search') {
             // Navigate to Home section
             navigateToSection('navHome');
             
-            // Smoothly scroll to the result if on mobile or if it's a new search
+            // Smoothly scroll to the result ONLY if we're not explicitly resetting to a clean Home
             requestAnimationFrame(() => {
                 const resSec = document.getElementById('resultSection');
+                // Only scroll if result is visible and we didn't just force a home reset
                 if (resSec && !resSec.classList.contains('hidden')) {
                     resSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
@@ -840,7 +889,22 @@ async function triggerFullDeepAnalysis(code) {
 
     } catch (err) {
         console.error('Deep Analysis failed:', err);
-        showToast('심층 분석 데이터를 불러오지 못했습니다.', 'error');
+        showToast(`심층 분석 데이터를 불러오지 못했습니다. (${err.message})`, 'error');
+        
+        // [MOD] Update UI to clear "Analyzing..." messages if stuck
+        const reasonEl = document.getElementById('fundSignalReason');
+        if (reasonEl && reasonEl.textContent === '데이터 분석 중…') {
+            reasonEl.textContent = '❌ 분석 데이터를 불러오지 못했습니다.';
+        }
+        
+        // Reveal blocks even on failure to show error state or empty state
+        allBlocks.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                requestAnimationFrame(() => el.classList.add('visible'));
+            }
+        });
     } finally {
         // Essential: Always hide the global analysis loading block
         if (globalLoading) globalLoading.classList.add('hidden');
@@ -1401,7 +1465,7 @@ async function fetchAnalysisReport(item) {
         const name = item.name || (currentStock && currentStock.code === item.code ? currentStock.name : '');
         
         const url = `${API_BASE_URL}/api/analysis?code=${item.code}&market=${market}&name=${encodeURIComponent(name)}`;
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url, { timeout: 30000 });
         if (!response.ok) throw new Error('분석 데이터를 불러오는데 실패했습니다.');
         
         const data = await response.json();
