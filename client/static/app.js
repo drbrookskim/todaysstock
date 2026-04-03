@@ -269,7 +269,7 @@ function restoreStockContext(type) {
 
 function showSection(id) {
     console.log(`[DEBUG] showSection: ${id}`);
-    const sections = ['dashboardHome', 'analysisSection', 'historySection', 'watchlistSection', 'valueChainSection'];
+    const sections = ['dashboardHome', 'analysisSection', 'historySection', 'watchlistSection', 'valueChainSection', 'resultSection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
@@ -1744,6 +1744,7 @@ async function renderFundamentalReport(stockCode) {
         b.classList.remove('visible');
         if (b.id === 'fundSummaryBlock') {
             b.classList.remove('hidden'); // SHOW LOADING
+            requestAnimationFrame(() => b.classList.add('visible')); // ADD VISIBILITY FOR FADE
         } else {
             b.classList.add('hidden');
         }
@@ -2999,13 +3000,13 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // Deep Analysis and Value Chain are only accessible to authenticated users
-            if (navAnalysis) navAnalysis.style.display = 'none';
-            if (navValueChain) navValueChain.style.display = 'none';
+            // 심층분석 and 밸류체인 are visible to all users; watchlist requires login
+            if (navAnalysis) navAnalysis.style.display = 'flex';
+            if (navValueChain) navValueChain.style.display = 'flex';
             if (navWatchlist) navWatchlist.style.display = 'none';
 
-            // Auto-redirect if in restricted section
-            const restricted = ['analysisSection', 'watchlistSection', 'valueChainSection'];
+            // Auto-redirect only from watchlist for guests
+            const restricted = ['watchlistSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
             }
