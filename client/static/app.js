@@ -203,8 +203,8 @@ function initNavigation() {
 
                 // --- Section Persistence Restore ---
                 if (targetId === 'dashboardHome') {
-                    // [MOD] If clicking sidebar Home directly (not via navigateToSection), reset search context 
-                    resetDashboardHome(e.isTrusted && !e.simulated);
+                    // [MOD] Maintain search state even if clicking sidebar Home directly
+                    resetDashboardHome(false); 
                     if (!e.isTrusted || e.simulated) {
                         restoreStockContext('home');
                     }
@@ -244,7 +244,7 @@ function resetDashboardHome(force = false) {
 
     if (force) {
         if (resSec) resSec.classList.add('hidden');
-        // Reset current search context ONLY on force
+        // Reset current search context ONLY on force (logo click, login/logout, etc.)
         currentStock = null; 
         _lastAnalysisData = null;
         sectionScrollPositions['dashboardHome'] = 0;
@@ -256,23 +256,23 @@ function resetDashboardHome(force = false) {
         });
     } else {
         // --- 5. Robust State Restoration ---
-        if (currentStock && resSec) {
+        if (currentStock) {
             console.log('[DEBUG] Restoring search result for', currentStock.name);
-            resSec.classList.remove('hidden');
+            // Ensure section is visible
+            if (resSec) resSec.classList.remove('hidden');
             if (searchHero) searchHero.classList.add('hidden');
             
-            // [MOD] Ensure search input is updated with current query for continuity
-            const searchInput = document.getElementById('searchInput');
+            // [MOD] Fill search input with name for context
             if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
 
-            // Re-render only if the section's content has disappeared or was reset
-            if (resSec.innerHTML.length < 500) {
-                renderResult(currentStock.data || currentStock);
+            // Optional: check if contents are valid
+            if (resSec && resSec.innerHTML.length < 500 && currentStock.data) {
+                renderResult(currentStock.data);
             }
         }
     }
 
-    // Force visibility of search UI only if no stock is active or if specifically requested
+    // Show Hero setup UI ONLY if no active stock or force reset
     if (!currentStock || force) {
         if (searchHero) {
             searchHero.classList.remove('hidden');
@@ -281,7 +281,7 @@ function resetDashboardHome(force = false) {
         }
     }
 
-    // Trigger macro indicators (caching handles the heavy lifting)
+    // Refresh macro/market state (cache handles heavy lifting)
     renderMacroIndicators();
 }
 
@@ -368,6 +368,13 @@ function showSection(id) {
     }
 
     if (id === 'dashboardHome') {
+        renderRecentSearches();
+        // [MOD] Auto-restore search result view if context exists
+        if (currentStock) {
+            if (resSec) resSec.classList.remove('hidden');
+            const searchHero = document.getElementById('mainSearchHero');
+            if (searchHero) searchHero.classList.add('hidden');
+        }
         resetDashboardHome(false); // standard show, search results might be restored later
     } else {
         requestAnimationFrame(() => {
@@ -891,6 +898,23 @@ async function triggerFullDeepAnalysis(code) {
     try {
         console.log(`[DEBUG] triggerFullDeepAnalysis for ${code}`);
         
+        // --- 1. Analysis Cache: Check if already analyzed this stock ---
+        if (_lastAnalysisData && _lastAnalysisData.code === code) {
+            console.log('[DEBUG] Analysis for', code, 'already exists. Re-rendering from cache.');
+            if (globalLoading) globalLoading.classList.add('hidden');
+            if (patternReportSection) patternReportSection.classList.remove('hidden');
+            renderAnalysisReport(_lastAnalysisData);
+            
+            // Show fundamental blocks too if they were hidden
+            allBlocks.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('hidden');
+                    el.classList.add('visible');
+                }
+            });
+            return; // EXIT early
+        }
         // Step 1: Fetch AI Analysis
         const analysisData = await fetchAnalysisReport(currentStock || { code });
         
