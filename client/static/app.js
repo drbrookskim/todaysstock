@@ -1364,10 +1364,10 @@ async function renderIndexChart(symbol, name) {
             areaSeries.setData(data.history);
         }
 
-        if (data.history && data.history.length > 60) {
-            // 최근 60개 데이터(약 3개월)만 우선 보여줌
+        if (data.history && data.history.length > 22) {
+            // 최근 1개월(약 22 거래일)만 우선 보여줌 (수정: 드래그로 2년 전까지 가능)
             const last = data.history[data.history.length - 1].time;
-            const first = data.history[data.history.length - 60].time;
+            const first = data.history[data.history.length - 22].time;
             chart.timeScale().setVisibleRange({ from: first, to: last });
         } else {
             chart.timeScale().fitContent();
@@ -3064,9 +3064,9 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // 심층분석 and 밸류체인 are visible to all users; watchlist requires login
-            if (navAnalysis) navAnalysis.style.display = 'flex';
-            if (navValueChain) navValueChain.style.display = 'flex';
+            // 심층분석, 밸류체인, 관심종목은 게스트에게 숨김
+            if (navAnalysis) navAnalysis.style.display = 'none';
+            if (navValueChain) navValueChain.style.display = 'none';
             if (navWatchlist) navWatchlist.style.display = 'none';
 
             // Auto-redirect only from watchlist for guests
