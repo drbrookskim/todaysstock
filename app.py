@@ -48,16 +48,23 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")  # anon key (공개 키)
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")  # service role key (서버 전용)
 
+# ── Supabase Clients ──────────────────────────────────────
 # Auth 전용 클라이언트 (anon key — auth.get_user() 검증용)
 supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 # DB 전용 서비스 롤 클라이언트 (RLS를 우회하고, 코드에서 user_id로 보안 필터링)
-# service role key가 없으면 supabase_global로 폴백 (RLS 오류 위험 있음)
-db_client: Client = (
-    create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    if SUPABASE_URL and SUPABASE_SERVICE_KEY
-    else supabase_global
-)
+# service role key가 없으면 supabase_global로 폴백하지만 경고를 남김
+db_client: Client = None
+if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+    try:
+        db_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+        print("✅ DB 전용 서비스 롤 클라이언트 생성 완료")
+    except Exception as e:
+        print(f"⚠️ DB 전용 서비스 롤 클라이언트 생성 실패: {e}")
+        db_client = supabase_global
+else:
+    print("⚠️ SUPABASE_SERVICE_KEY가 없어 익명 클라이언트로 폴백합니다. RLS 정책 활성화 시 쓰기 실패 가능성 있음.")
+    db_client = supabase_global
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -786,10 +793,10 @@ def manage_watchlist():
             return jsonify({"success": True})
 
     except Exception as e:
-        print(f"Watchlist error: {e}")
         import traceback
+        print(f"❌ Watchlist error: {e}")
         traceback.print_exc()
-        return jsonify({"success": False, "message": f"관심목록 처리 오류: {str(e)}"}), 500
+        return jsonify({"success": False, "message": f"DB 처리 중 오류가 발생했습니다: {str(e)}"}), 500
 
 # ─────────────────────────────────────────────
 # 라우트

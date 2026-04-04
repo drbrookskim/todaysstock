@@ -244,18 +244,44 @@ function resetDashboardHome(force = false) {
 
     if (force) {
         if (resSec) resSec.classList.add('hidden');
-        // Reset scroll position for home specifically
+        // Reset current search context ONLY on force
+        currentStock = null; 
+        _lastAnalysisData = null;
         sectionScrollPositions['dashboardHome'] = 0;
         
-        // --- 4. Scroll reset only on force ---
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
             });
         });
+    } else {
+        // --- 5. Robust State Restoration ---
+        if (currentStock && resSec) {
+            console.log('[DEBUG] Restoring search result for', currentStock.name);
+            resSec.classList.remove('hidden');
+            if (searchHero) searchHero.classList.add('hidden');
+            
+            // [MOD] Ensure search input is updated with current query for continuity
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
+
+            // Re-render only if the section's content has disappeared or was reset
+            if (resSec.innerHTML.length < 500) {
+                renderResult(currentStock.data || currentStock);
+            }
+        }
     }
 
-    // Refresh data if needed (Cache check inside renderMacroIndicators)
+    // Force visibility of search UI only if no stock is active or if specifically requested
+    if (!currentStock || force) {
+        if (searchHero) {
+            searchHero.classList.remove('hidden');
+            searchHero.style.display = 'flex';
+            searchHero.style.opacity = '1';
+        }
+    }
+
+    // Trigger macro indicators (caching handles the heavy lifting)
     renderMacroIndicators();
 }
 
@@ -1996,14 +2022,14 @@ async function renderFundamentalReport(stockCode) {
                             <span style="color:var(--text-muted); margin-left:8px; font-weight:700;">(기대수익: ${target.upside > 0 ? '+' : ''}${target.upside}%)</span>
                         </div>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <div style="padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
-                            <div style="color:var(--text-muted); font-size:0.75rem; margin-bottom:4px; font-weight:700;">S-RIM value</div>
-                            <div style="font-weight:800; font-size:1.05rem; color:var(--text-main);">${Number(target.srim).toLocaleString()}원</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="fund-tile-v2">
+                            <div class="tile-label">S-RIM value</div>
+                            <div class="tile-value">${Number(target.srim).toLocaleString()} <span style="font-size:0.8rem; font-weight:700; margin-left:2px;">원</span></div>
                         </div>
-                        <div style="padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:12px;">
-                            <div style="color:var(--text-muted); font-size:0.75rem; margin-bottom:4px; font-weight:700;">Intrinsic value</div>
-                            <div style="font-weight:800; font-size:1.05rem; color:var(--text-main);">${Number(target.basic).toLocaleString()}원</div>
+                        <div class="fund-tile-v2">
+                            <div class="tile-label">Intrinsic value</div>
+                            <div class="tile-value">${Number(target.basic).toLocaleString()} <span style="font-size:0.8rem; font-weight:700; margin-left:2px;">원</span></div>
                         </div>
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; opacity:0.7;">
@@ -2456,7 +2482,8 @@ function renderCandleChart(candles) {
 
     // 모바일 1개월, 데스크탑 3개월 차트 분기
     const isMobile = window.innerWidth <= 700;
-    const maxCandles = isMobile ? 22 : 65;
+    // Use 130 candles for Desktop (approx. 6 months), 25 for Mobile
+    const maxCandles = isMobile ? 25 : 130; 
     if (candles.length > maxCandles) {
         candles = candles.slice(-maxCandles);
     }
@@ -2489,14 +2516,24 @@ function renderCandleChart(candles) {
     const legendPad = 25; // Space for date labels at the bottom
 
     const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / candles.length));
-    const svgW = candles.length * barW + 20;
+    const svgW = Math.max(container.clientWidth, (candles.length * barW) + 60);
 
     const toY = (price) => legendTopPad + chartH - ((price - minP) / range) * (chartH - 20) - 10;
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     const textFill = isLight ? '#1e293b' : '#f8fafc';
 
-    let html = `<svg width="100%" height="${legendTopPad + topAreaH + legendPad}" viewBox="0 0 ${svgW} ${legendTopPad + topAreaH + legendPad}">`;
+    // Update container style for horizontal scrolling to support 130 candles
+    if (container) {
+        container.style.overflowX = 'auto';
+        container.style.overflowY = 'hidden';
+        container.style.webkitOverflowScrolling = 'touch'; 
+    }
+
+    // Fixed width SVG inside the scrolling container
+    let html = `<svg width="${svgW}" height="${legendTopPad + topAreaH + legendPad}" 
+                    viewBox="0 0 ${svgW} ${legendTopPad + topAreaH + legendPad}" 
+                    preserveAspectRatio="xMinYMin meet" style="display:block; min-width: ${svgW}px;">`;
 
     // ── Candle sticks & Volume bars ──
     candles.forEach((c, i) => {

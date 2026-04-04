@@ -4377,6 +4377,90 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     border-color: #ef4444;
 }
 
+/* ─────────────────────────────────────────────────────────── */
+/* REUSABLE DETAIL TILE (Matches Disclosure Analysis Style)    */
+/* ─────────────────────────────────────────────────────────── */
+.fund-tile-v2 {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.fund-tile-v2:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.fund-tile-v2::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent-color);
+    opacity: 0.5;
+}
+
+.fund-tile-v2 .tile-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fund-tile-v2 .tile-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+/* New: Reusable Detail Tile Style (matches Disclosure Analysis) */
+.fund-tile-v2 {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+    cursor: default;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.fund-tile-v2:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.fund-tile-v2 .tile-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fund-tile-v2 .tile-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
 .fund-event-neutral {
     background: var(--hover-bg);
     border-color: var(--border-color);
