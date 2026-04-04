@@ -4352,10 +4352,19 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 6px 8px;
-    border-radius: 7px;
-    margin-bottom: 5px;
-    border-left: 3px solid transparent;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.fund-event-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
 }
 
 .fund-event-bullish {

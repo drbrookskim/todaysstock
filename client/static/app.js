@@ -58,6 +58,8 @@ let currentActiveSectionId = 'dashboardHome'; // Track currently visible section
 let homeStockContext = { item: null, data: null, analysis: null };
 let watchlistStockContext = { item: null, data: null, analysis: null };
 
+let _lastMacroLoadTime = 0;
+
 // ── Watchlist Constants ──
 const WATCHLIST_KEY = 'stockfinder-watchlist';
 
@@ -155,12 +157,19 @@ function initNavigation() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // --- Scroll Persistence: Save current ---
+            const targetId = sections[item.id];
+            if (!targetId) return;
+
+            // --- 1. Prevent refresh if already in section ---
+            if (targetId === currentActiveSectionId && e.isTrusted) {
+                return; 
+            }
+
+            // --- 2. Scroll Persistence: Save current ---
             if (currentActiveSectionId) {
                 sectionScrollPositions[currentActiveSectionId] = window.scrollY;
             }
 
-            const targetId = sections[item.id];
             if (targetId) {
                 showSection(targetId);
                 currentActiveSectionId = targetId;
@@ -175,13 +184,15 @@ function initNavigation() {
                         emptyState?.classList.remove('hidden');
                         contentWrapper?.classList.add('hidden');
                         if (currentStockLabel) currentStockLabel.textContent = '';
-                    } else {
-                        emptyState?.classList.add('hidden');
-                        contentWrapper?.classList.remove('hidden');
                         if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
                         
-                        // Force refresh combined reports
-                        triggerFullDeepAnalysis(currentStock.code || currentStock.ticker);
+                        // --- 3. Analysis Cache: Check if already analyzed this stock ---
+                        const stockCode = currentStock.code || currentStock.ticker;
+                        if (!_lastAnalysisData || _lastAnalysisData.code !== stockCode) {
+                            triggerFullDeepAnalysis(stockCode);
+                        } else {
+                            console.log('[DEBUG] Skipping deep analysis - already loaded for', stockCode);
+                        }
                     }
                 } else if (targetId === 'valueChainSection') {
                     // [MOD] Load value chain data when section is opened
@@ -235,28 +246,16 @@ function resetDashboardHome(force = false) {
         if (resSec) resSec.classList.add('hidden');
         // Reset scroll position for home specifically
         sectionScrollPositions['dashboardHome'] = 0;
-    }
-
-    // Force visibility of search UI
-    if (searchHero) {
-        searchHero.classList.remove('hidden');
-        searchHero.style.display = 'flex';
-        searchHero.style.opacity = '1';
-        searchHero.style.visibility = 'visible';
-    }
-    if (searchCard) {
-        searchCard.classList.remove('hidden');
-        searchCard.style.display = 'block';
-    }
-
-    // Double frame requestAnimationFrame for scroll reset 
-    requestAnimationFrame(() => {
+        
+        // --- 4. Scroll reset only on force ---
         requestAnimationFrame(() => {
-            window.scrollTo({ top: 0, behavior: 'auto' });
+            requestAnimationFrame(() => {
+                window.scrollTo({ top: 0, behavior: 'auto' });
+            });
         });
-    });
+    }
 
-    // Refresh data if needed
+    // Refresh data if needed (Cache check inside renderMacroIndicators)
     renderMacroIndicators();
 }
 
@@ -1169,6 +1168,15 @@ async function renderMacroIndicators() {
 
     if (!economyGrid) return;
 
+    // --- 1. Cache Check: Skip if loaded within last 5 mins ---
+    const now = Date.now();
+    const hasData = indexList && indexList.innerHTML.length > 100;
+    if (now - _lastMacroLoadTime < 300000 && hasData) {
+        console.log('[DEBUG] Skipping macro indicators load - using session cache');
+        return;
+    }
+    _lastMacroLoadTime = now;
+
     try {
         const url = `${API_BASE_URL}/api/macro?t=${Date.now()}`;
         console.log('[DEBUG] Fetching macro data from:', url);
@@ -1380,7 +1388,6 @@ async function renderIndexChart(symbol, name) {
             const { width, height } = entries[0].contentRect;
             if (width > 0 && height > 0) {
                 currentIndexChart.applyOptions({ width, height });
-                currentIndexChart.timeScale().fitContent();
             }
         });
         resizeObserver.observe(container);
@@ -1919,12 +1926,17 @@ async function renderFundamentalReport(stockCode) {
                 </div>
                 <div class="prob-right-col" style="display:flex; flex-direction:column; gap:10px; width:100%;">
                     ${evts.map(ev => `
-                    <div class="fund-event-item fund-event-${ev.signal}" style="width:100%; padding:10px 14px; border-radius:12px;">
+                    <div class="fund-event-item fund-event-${ev.signal}" 
+                         ${ev.rcept_no ? `onclick="window.open('https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${ev.rcept_no}', '_blank')"` : ''}
+                         style="width:100%; padding:10px 14px; border-radius:12px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                             <span class="fund-event-label" style="font-size:0.75rem; font-weight:700;">${ev.label}</span>
                             <span class="fund-event-date" style="font-size:0.75rem; opacity:0.8;">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
                         </div>
-                        <div class="fund-event-title" title="${ev.title}" style="font-size:0.9rem; font-weight:600; line-height:1.4;">${ev.title.length > 35 ? ev.title.slice(0, 35) + '…' : ev.title}</div>
+                        <div class="fund-event-title" title="${ev.title}" style="font-size:0.9rem; font-weight:600; line-height:1.4;">
+                            ${ev.title.length > 35 ? ev.title.slice(0, 35) + '…' : ev.title}
+                            ${ev.rcept_no ? '<i class="ph ph-arrow-square-out" style="font-size:0.8rem; margin-left:4px; opacity:0.6;"></i>' : ''}
+                        </div>
                     </div>`).join('')}
                 </div>
             </div>`;
