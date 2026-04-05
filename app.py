@@ -89,8 +89,10 @@ def get_user_db(token: str):
     if SUPABASE_URL and SUPABASE_KEY and token:
         try:
             from supabase import create_client
-            from supabase.lib.client_options import ClientOptions
-            return create_client(SUPABASE_URL, SUPABASE_KEY, options=ClientOptions(headers={"Authorization": f"Bearer {token}"}))
+            # 새 인스턴스 생성 후 JWT 토큰 명시적 주입
+            client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            client.postgrest.auth(token)
+            return client
         except Exception as e:
             print(f"⚠️ get_user_db 클라이언트 생성 실패: {e}")
     return supabase_global
