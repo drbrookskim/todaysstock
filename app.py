@@ -49,52 +49,27 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")  # anon key (공개 키)
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")  # service role key (서버 전용)
 
 # ── Supabase Clients ──────────────────────────────────────
-# Auth 전용 클라이언트 (api key — auth.get_user() 검증용)
-supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
-
-# DB 전용 서비스 롤 클라이언트 (Superuser - RLS 우회용)
-db_client: Client = None
+# 서비스 롤 키(관리자 키)가 있으면 RLS를 우회할 수 있는 마스터 클라이언트로 초기화합니다.
+# 없을 경우 anon 공개 키를 사용하여 초기화합니다. (이 경우 DB 저장이 안 될 수 있음을 경고)
 if SUPABASE_URL and SUPABASE_SERVICE_KEY:
-    try:
-        # options에 headers를 명시하여 서비스 롤 권한을 강제함
-        from supabase.lib.client_options import ClientOptions
-        # [MOD] 서비스 키를 헤더에 명시적으로 주입하여 RLS 우회 보장
-        opts = ClientOptions(
-            postgrest_client_timeout=30,
-            headers={
-                "apiKey": SUPABASE_SERVICE_KEY,
-                "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}"
-            }
-        )
-        db_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY, options=opts)
-        print(f"✅ DB 서비스 롤 클라이언트 (Superuser) 생성 완료")
-    except Exception as e:
-        print(f"⚠️ 서비스 롤 클라이언트 생성 실패: {e}")
-        db_client = supabase_global
+    supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    print(f"✅ DB 서비스 롤 클라이언트 (Superuser) 활성화 - RLS 우회 가능")
+elif SUPABASE_URL and SUPABASE_KEY:
+    supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    print("⚠️ SUPABASE_SERVICE_KEY 미설정: anon 키로 동작합니다. RLS 정책으로 인해 DB 추가가 차단될 수 있습니다.")
 else:
-    # SUPABASE_SERVICE_KEY 초기화가 보장되지 않으면 anon key로 폴백
-    print("⚠️ SUPABASE_SERVICE_KEY 미설정: RLS 정책으로 인해 관심종목 데이터 저장이 실패할 수 있습니다.")
-    db_client = supabase_global
+    supabase_global = None
+    print("❌ SUPABASE_URL 또는 KEY가 설정되지 않았습니다.")
 
-# Helper to get the correct db client (ensures we are using service role for server-side ops)
+# db_client는 기존 코드와의 호환성을 위해 유지
+db_client = supabase_global
+
+# Helper to get the correct db client
 def get_db():
-    global db_client
-    if db_client: return db_client
     return supabase_global
 
 def get_user_db(token: str):
-    """지정된 사용자 토큰을 사용하여 요청을 수행하는 Supabase 클라이언트를 생성/반환 (Service Key 미설정 시 RLS 우회 대응)"""
-    global db_client
-    if db_client: return db_client
-    if SUPABASE_URL and SUPABASE_KEY and token:
-        try:
-            from supabase import create_client
-            # 새 인스턴스 생성 후 JWT 토큰 명시적 주입
-            client = create_client(SUPABASE_URL, SUPABASE_KEY)
-            client.postgrest.auth(token)
-            return client
-        except Exception as e:
-            print(f"⚠️ get_user_db 클라이언트 생성 실패: {e}")
+    """지정된 사용자 토큰을 사용하여 요청을 수행하는 Supabase 클라이언트를 반환 (Service Key가 있으면 마스터 클라이언트 반환)"""
     return supabase_global
 
 @app.errorhandler(Exception)
@@ -760,22 +735,14 @@ def session():
         email     = user_res.user.email or ""
         username  = full_name or (email.split('@')[0] if email else "사용자")
 
-        # Watchlist: 순수 HTTP 요청을 통해 명시적 토큰 주입 (라이브러리 RLS 버그 방지)
+        # Watchlist: 서비스 롤 클라이언트를 사용하거나, 사용자 토큰 기반의 클라이언트로 RLS 우회
         try:
-            import requests
             user_id = user_res.user.id
-            wl_url = f"{SUPABASE_URL}/rest/v1/watchlist?select=stock_code,stock_name,market&user_id=eq.{user_id}"
-            wl_headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {token}"}
-            wl_res = requests.get(wl_url, headers=wl_headers)
-            
-            if wl_res.status_code == 200:
-                watchlist = [
-                    {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
-                    for item in wl_res.json()
-                ]
-            else:
-                print(f"session watchlist error: {wl_res.text}")
-                watchlist = []
+            wl_res = get_user_db(token).table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            watchlist = [
+                {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
+                for item in wl_res.data
+            ]
         except Exception as wl_err:
             print(f"session watchlist error: {wl_err}")
             watchlist = []
@@ -799,16 +766,12 @@ def manage_watchlist():
         return jsonify({"success": False, "message": "서버 설정 오류 (DB 연결 없음)"}), 500
 
     try:
-        import requests
-        base_headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        # 서비스 롤 키(마스터 키)를 가진 전역 클라이언트는 사용자의 RLS 정책을 무조건 통과합니다.
         
         if request.method == "GET":
-            url = f"{SUPABASE_URL}/rest/v1/watchlist?select=stock_code,stock_name,market&user_id=eq.{user_id}"
-            res = requests.get(url, headers=base_headers)
-            if res.status_code == 200:
-                mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.json()]
-                return jsonify(mapped)
-            return jsonify([])
+            res = supabase_global.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
+            return jsonify(mapped)
 
         elif request.method == "POST":
             data = request.json
@@ -817,9 +780,8 @@ def manage_watchlist():
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
 
             # 중복 방지
-            check_url = f"{SUPABASE_URL}/rest/v1/watchlist?select=stock_code&user_id=eq.{user_id}&stock_code=eq.{stock_code}"
-            existing = requests.get(check_url, headers=base_headers).json()
-            if isinstance(existing, list) and len(existing) > 0:
+            existing = supabase_global.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
+            if existing.data:
                 return jsonify({"success": True, "message": "이미 관심종목에 있습니다."})
 
             item = {
@@ -828,14 +790,8 @@ def manage_watchlist():
                 "stock_name": data.get("name"),
                 "market": data.get("market", "KOSPI")
             }
-            # Explicit Execute via direct HTTP request (bypassing python client limitations)
-            insert_url = f"{SUPABASE_URL}/rest/v1/watchlist"
-            insert_res = requests.post(insert_url, headers=base_headers, json=item)
-            
-            if insert_res.status_code not in (200, 201, 204):
-                print(f"Watchlist Insert Error: {insert_res.text}")
-                return jsonify({"success": False, "message": f"DB 저장 실패: {insert_res.text}"}), 500
-                
+            # 마스터 권한 실행
+            supabase_global.table("watchlist").insert(item).execute()
             return jsonify({"success": True})
 
         elif request.method == "DELETE":
@@ -843,9 +799,7 @@ def manage_watchlist():
             code = data.get("code")
             if not code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
-                
-            delete_url = f"{SUPABASE_URL}/rest/v1/watchlist?user_id=eq.{user_id}&stock_code=eq.{code}"
-            requests.delete(delete_url, headers=base_headers)
+            supabase_global.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
             return jsonify({"success": True})
 
     except Exception as e:
