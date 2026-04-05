@@ -760,14 +760,22 @@ def session():
         email     = user_res.user.email or ""
         username  = full_name or (email.split('@')[0] if email else "사용자")
 
-        # Watchlist: 서비스 롤 클라이언트를 사용하거나, 사용자 토큰 기반의 클라이언트로 RLS 우회
+        # Watchlist: 순수 HTTP 요청을 통해 명시적 토큰 주입 (라이브러리 RLS 버그 방지)
         try:
+            import requests
             user_id = user_res.user.id
-            wl_res = get_user_db(token).table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
-            watchlist = [
-                {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
-                for item in wl_res.data
-            ]
+            wl_url = f"{SUPABASE_URL}/rest/v1/watchlist?select=stock_code,stock_name,market&user_id=eq.{user_id}"
+            wl_headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {token}"}
+            wl_res = requests.get(wl_url, headers=wl_headers)
+            
+            if wl_res.status_code == 200:
+                watchlist = [
+                    {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
+                    for item in wl_res.json()
+                ]
+            else:
+                print(f"session watchlist error: {wl_res.text}")
+                watchlist = []
         except Exception as wl_err:
             print(f"session watchlist error: {wl_err}")
             watchlist = []
@@ -791,13 +799,16 @@ def manage_watchlist():
         return jsonify({"success": False, "message": "서버 설정 오류 (DB 연결 없음)"}), 500
 
     try:
-        # [CRITICAL FIX] Use service_role client or specific user client to ensure RLS bypass if user is guest/authenticated
-        target_db = get_user_db(token)
+        import requests
+        base_headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         
         if request.method == "GET":
-            res = target_db.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
-            mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
-            return jsonify(mapped)
+            url = f"{SUPABASE_URL}/rest/v1/watchlist?select=stock_code,stock_name,market&user_id=eq.{user_id}"
+            res = requests.get(url, headers=base_headers)
+            if res.status_code == 200:
+                mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.json()]
+                return jsonify(mapped)
+            return jsonify([])
 
         elif request.method == "POST":
             data = request.json
@@ -806,8 +817,9 @@ def manage_watchlist():
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
 
             # 중복 방지
-            existing = target_db.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
-            if existing.data:
+            check_url = f"{SUPABASE_URL}/rest/v1/watchlist?select=stock_code&user_id=eq.{user_id}&stock_code=eq.{stock_code}"
+            existing = requests.get(check_url, headers=base_headers).json()
+            if isinstance(existing, list) and len(existing) > 0:
                 return jsonify({"success": True, "message": "이미 관심종목에 있습니다."})
 
             item = {
@@ -816,8 +828,14 @@ def manage_watchlist():
                 "stock_name": data.get("name"),
                 "market": data.get("market", "KOSPI")
             }
-            # Explicit execute via target_db
-            target_db.table("watchlist").insert(item).execute()
+            # Explicit Execute via direct HTTP request (bypassing python client limitations)
+            insert_url = f"{SUPABASE_URL}/rest/v1/watchlist"
+            insert_res = requests.post(insert_url, headers=base_headers, json=item)
+            
+            if insert_res.status_code not in (200, 201, 204):
+                print(f"Watchlist Insert Error: {insert_res.text}")
+                return jsonify({"success": False, "message": f"DB 저장 실패: {insert_res.text}"}), 500
+                
             return jsonify({"success": True})
 
         elif request.method == "DELETE":
@@ -825,7 +843,9 @@ def manage_watchlist():
             code = data.get("code")
             if not code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
-            target_db.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
+                
+            delete_url = f"{SUPABASE_URL}/rest/v1/watchlist?user_id=eq.{user_id}&stock_code=eq.{code}"
+            requests.delete(delete_url, headers=base_headers)
             return jsonify({"success": True})
 
     except Exception as e:
