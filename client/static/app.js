@@ -212,11 +212,9 @@ function initNavigation() {
 
                 // --- Section Persistence Restore ---
                 if (targetId === 'dashboardHome') {
-                    // [MOD] Maintain search state even if clicking sidebar Home directly
+                    // [MOD] 주 사용자가 메뉴를 직접 클릭해도 정상적으로 컨텍스트(HTML 노드 위치 및 검색 상태)를 복원해야 결과창이 소실되지 않음
                     resetDashboardHome(false); 
-                    if (!e.isTrusted || e.simulated) {
-                        restoreStockContext('home');
-                    }
+                    restoreStockContext('home');
                 } else if (targetId === 'watchlistSection') {
                     // [MOD] If current stock is in watchlist, ensure it's shown in watchlist tab too
                     if (currentStock && isInWatchlist(currentStock.code)) {
@@ -403,7 +401,7 @@ function showSection(id) {
     const supportsResult = ['dashboardHome', 'watchlistSection', 'resultSection'];
     if (resSec && !supportsResult.includes(id)) {
         resSec.classList.add('hidden');
-        resSec.style.display = 'none';
+        resSec.style.setProperty('display', 'none', 'important');
     }
 
     if (id === 'dashboardHome') {
