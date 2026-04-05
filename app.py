@@ -82,6 +82,19 @@ def get_db():
     if db_client: return db_client
     return supabase_global
 
+def get_user_db(token: str):
+    """지정된 사용자 토큰을 사용하여 요청을 수행하는 Supabase 클라이언트를 생성/반환 (Service Key 미설정 시 RLS 우회 대응)"""
+    global db_client
+    if db_client: return db_client
+    if SUPABASE_URL and SUPABASE_KEY and token:
+        try:
+            from supabase import create_client
+            from supabase.lib.client_options import ClientOptions
+            return create_client(SUPABASE_URL, SUPABASE_KEY, options=ClientOptions(headers={"Authorization": f"Bearer {token}"}))
+        except Exception as e:
+            print(f"⚠️ get_user_db 클라이언트 생성 실패: {e}")
+    return supabase_global
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     # API 요청 중 발생한 모든 예외를 잡아서 JSON 형태로 반환합니다.
@@ -745,10 +758,10 @@ def session():
         email     = user_res.user.email or ""
         username  = full_name or (email.split('@')[0] if email else "사용자")
 
-        # Watchlist: 서비스 롤 클라이언트를 사용하고 user_id로 명시적 필터링
+        # Watchlist: 서비스 롤 클라이언트를 사용하거나, 사용자 토큰 기반의 클라이언트로 RLS 우회
         try:
             user_id = user_res.user.id
-            wl_res = db_client.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            wl_res = get_user_db(token).table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             watchlist = [
                 {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
                 for item in wl_res.data
@@ -776,9 +789,10 @@ def manage_watchlist():
         return jsonify({"success": False, "message": "서버 설정 오류 (DB 연결 없음)"}), 500
 
     try:
+        # [CRITICAL FIX] Use service_role client or specific user client to ensure RLS bypass if user is guest/authenticated
+        target_db = get_user_db(token)
+        
         if request.method == "GET":
-            # [CRITICAL FIX] Use service_role client to ensure RLS bypass if user is guest/authenticated
-            target_db = get_db()
             res = target_db.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
             return jsonify(mapped)
@@ -789,9 +803,6 @@ def manage_watchlist():
             if not stock_code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
 
-            # [CRITICAL FIX] Force Service Role to bypass policy
-            target_db = get_db()
-            
             # 중복 방지
             existing = target_db.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
             if existing.data:
@@ -803,7 +814,7 @@ def manage_watchlist():
                 "stock_name": data.get("name"),
                 "market": data.get("market", "KOSPI")
             }
-            # Explicit execute via target_db (Service Role Client)
+            # Explicit execute via target_db
             target_db.table("watchlist").insert(item).execute()
             return jsonify({"success": True})
 
@@ -812,7 +823,7 @@ def manage_watchlist():
             code = data.get("code")
             if not code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
-            get_db().table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
+            target_db.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
             return jsonify({"success": True})
 
     except Exception as e:
