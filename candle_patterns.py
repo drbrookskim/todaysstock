@@ -1222,10 +1222,9 @@ def analyze_candle_patterns(df):
     df["_MA60"] = df["Close"].rolling(window=60).mean()
     df["_MA120"] = df["Close"].rolling(window=120).mean()
 
-    # ── 최근 캔들 데이터 ──
-    # NaN이 포함된 데이터 제거
+    # ── 최근 캔들 데이터 (12개월치 드래그 지원을 위해 300개로 확대) ──
     df_clean = df.dropna(subset=["Open", "High", "Low", "Close"])
-    recent_count = min(60, len(df_clean))
+    recent_count = min(300, len(df_clean))
     recent_candles = []
     import math
 

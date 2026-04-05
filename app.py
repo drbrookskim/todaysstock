@@ -49,22 +49,38 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")  # anon key (공개 키)
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")  # service role key (서버 전용)
 
 # ── Supabase Clients ──────────────────────────────────────
-# Auth 전용 클라이언트 (anon key — auth.get_user() 검증용)
+# Auth 전용 클라이언트 (api key — auth.get_user() 검증용)
 supabase_global: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
-# DB 전용 서비스 롤 클라이언트 (RLS를 우회하고, 코드에서 user_id로 보안 필터링)
-# service role key가 없으면 supabase_global로 폴백하지만 경고를 남김
+# DB 전용 서비스 롤 클라이언트 (Superuser - RLS 우회용)
 db_client: Client = None
 if SUPABASE_URL and SUPABASE_SERVICE_KEY:
     try:
-        db_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-        print("✅ DB 전용 서비스 롤 클라이언트 생성 완료")
+        # options에 headers를 명시하여 서비스 롤 권한을 강제함
+        from supabase.lib.client_options import ClientOptions
+        # [MOD] 서비스 키를 헤더에 명시적으로 주입하여 RLS 우회 보장
+        opts = ClientOptions(
+            postgrest_client_timeout=30,
+            headers={
+                "apiKey": SUPABASE_SERVICE_KEY,
+                "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}"
+            }
+        )
+        db_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY, options=opts)
+        print(f"✅ DB 서비스 롤 클라이언트 (Superuser) 생성 완료")
     except Exception as e:
-        print(f"⚠️ DB 전용 서비스 롤 클라이언트 생성 실패: {e}")
+        print(f"⚠️ 서비스 롤 클라이언트 생성 실패: {e}")
         db_client = supabase_global
 else:
-    print("⚠️ SUPABASE_SERVICE_KEY가 없어 익명 클라이언트로 폴백합니다. RLS 정책 활성화 시 쓰기 실패 가능성 있음.")
+    # SUPABASE_SERVICE_KEY 초기화가 보장되지 않으면 anon key로 폴백
+    print("⚠️ SUPABASE_SERVICE_KEY 미설정: RLS 정책으로 인해 관심종목 데이터 저장이 실패할 수 있습니다.")
     db_client = supabase_global
+
+# Helper to get the correct db client (ensures we are using service role for server-side ops)
+def get_db():
+    global db_client
+    if db_client: return db_client
+    return supabase_global
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -696,6 +712,7 @@ def logout():
 def me():
     """클라이언트가 전달한 토큰을 기반으로 사용자 정보 확인"""
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    
     if token and supabase_global:
         try:
             res = supabase_global.auth.get_user(token)
@@ -708,9 +725,9 @@ def me():
             if full_name:
                 username = full_name
             else:
-                username = email.split('@')[0] if email and email.endswith('@stockfinder.local') else email.split('@')[0] if email else "사용자"
+                username = email.split('@')[0] if email else "사용자"
                 
-            return jsonify({"logged_in": True, "username": username})
+            return jsonify({"logged_in": True, "username": username, "user_id": res.user.id})
         except:
             pass
     return jsonify({"logged_in": False})
@@ -760,7 +777,9 @@ def manage_watchlist():
 
     try:
         if request.method == "GET":
-            res = db_client.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            # [CRITICAL FIX] Use service_role client to ensure RLS bypass if user is guest/authenticated
+            target_db = get_db()
+            res = target_db.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             mapped = [{"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]} for item in res.data]
             return jsonify(mapped)
 
@@ -770,8 +789,11 @@ def manage_watchlist():
             if not stock_code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
 
-            # 중복 방지: 이미 있는지 확인
-            existing = db_client.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
+            # [CRITICAL FIX] Force Service Role to bypass policy
+            target_db = get_db()
+            
+            # 중복 방지
+            existing = target_db.table("watchlist").select("stock_code").eq("user_id", user_id).eq("stock_code", stock_code).execute()
             if existing.data:
                 return jsonify({"success": True, "message": "이미 관심종목에 있습니다."})
 
@@ -781,7 +803,8 @@ def manage_watchlist():
                 "stock_name": data.get("name"),
                 "market": data.get("market", "KOSPI")
             }
-            db_client.table("watchlist").insert(item).execute()
+            # Explicit execute via target_db (Service Role Client)
+            target_db.table("watchlist").insert(item).execute()
             return jsonify({"success": True})
 
         elif request.method == "DELETE":
@@ -789,7 +812,7 @@ def manage_watchlist():
             code = data.get("code")
             if not code:
                 return jsonify({"success": False, "message": "종목 코드가 필요합니다."}), 400
-            db_client.table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
+            get_db().table("watchlist").delete().eq("user_id", user_id).eq("stock_code", code).execute()
             return jsonify({"success": True})
 
     except Exception as e:
@@ -1100,4 +1123,4 @@ def serve_static(path):
 
 if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_ENV") == "development"
-    app.run(debug=debug_mode, port=5001, use_reloader=False)
+    app.run(host="0.0.0.0", debug=debug_mode, port=8000, use_reloader=False)

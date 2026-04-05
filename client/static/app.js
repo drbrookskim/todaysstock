@@ -180,19 +180,28 @@ function initNavigation() {
                     const contentWrapper = document.getElementById('analysisContentWrapper');
                     const currentStockLabel = document.getElementById('analysisCurrentStock');
 
-                    if (!currentStock) {
-                        emptyState?.classList.remove('hidden');
-                        contentWrapper?.classList.add('hidden');
-                        if (currentStockLabel) currentStockLabel.textContent = '';
-                        if (currentStockLabel) currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
+                    // [CORRECTED] If we have a stock, show analysis content and trigger analysis
+                    if (currentStock) {
+                        emptyState?.classList.add('hidden');
+                        contentWrapper?.classList.remove('hidden');
+                        if (currentStockLabel) {
+                            currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
+                        }
                         
-                        // --- 3. Analysis Cache: Check if already analyzed this stock ---
                         const stockCode = currentStock.code || currentStock.ticker;
+                        // --- 3. Analysis Cache: Check if already analyzed this stock ---
                         if (!_lastAnalysisData || _lastAnalysisData.code !== stockCode) {
                             triggerFullDeepAnalysis(stockCode);
                         } else {
                             console.log('[DEBUG] Skipping deep analysis - already loaded for', stockCode);
+                            const patternReportSection = document.getElementById('patternReportSection');
+                            if (patternReportSection) patternReportSection.classList.remove('hidden');
                         }
+                    } else {
+                        // No stock selected - show empty state
+                        emptyState?.classList.remove('hidden');
+                        contentWrapper?.classList.add('hidden');
+                        if (currentStockLabel) currentStockLabel.textContent = '';
                     }
                 } else if (targetId === 'valueChainSection') {
                     // [MOD] Load value chain data when section is opened
@@ -209,6 +218,10 @@ function initNavigation() {
                         restoreStockContext('home');
                     }
                 } else if (targetId === 'watchlistSection') {
+                    // [MOD] If current stock is in watchlist, ensure it's shown in watchlist tab too
+                    if (currentStock && isInWatchlist(currentStock.code)) {
+                        watchlistStockContext = { item: currentStock, data: (homeStockContext.item?.code === currentStock.code) ? homeStockContext.data : null };
+                    }
                     restoreStockContext('watchlist');
                 }
 
@@ -243,41 +256,67 @@ function resetDashboardHome(force = false) {
     const searchCard = document.getElementById('mainSearchCard');
 
     if (force) {
-        if (resSec) resSec.classList.add('hidden');
+        console.log('[DEBUG] Executing full UI reset');
+        if (resSec) {
+            resSec.classList.add('hidden');
+            resSec.style.display = 'none';
+        }
         // Reset current search context ONLY on force (logo click, login/logout, etc.)
         currentStock = null; 
         _lastAnalysisData = null;
         sectionScrollPositions['dashboardHome'] = 0;
         
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                window.scrollTo({ top: 0, behavior: 'auto' });
-            });
-        });
+        if (searchHero) {
+            searchHero.style.display = 'flex';
+            searchHero.classList.remove('hidden');
+            searchHero.style.opacity = '1';
+        }
+
+        window.scrollTo({ top: 0, behavior: 'auto' });
     } else {
         // --- 5. Robust State Restoration ---
         if (currentStock) {
             console.log('[DEBUG] Restoring search result for', currentStock.name);
-            // Ensure section is visible
-            if (resSec) resSec.classList.remove('hidden');
-            if (searchHero) searchHero.classList.add('hidden');
             
-            // [MOD] Fill search input with name for context
+            // Ensure section is visible through animation frame for state stability
+            requestAnimationFrame(() => {
+                const resSecMem = document.getElementById('resultSection');
+                const heroMem = document.getElementById('mainSearchHero');
+                
+                if (resSecMem) {
+                    resSecMem.classList.remove('hidden');
+                    // Physical Layer Override: Force through direct style to prevent any override
+                    resSecMem.style.setProperty('display', 'block', 'important');
+                    resSecMem.style.setProperty('visibility', 'visible', 'important');
+                    resSecMem.style.setProperty('opacity', '1', 'important');
+                }
+                if (heroMem) {
+                    heroMem.classList.add('hidden');
+                    heroMem.style.setProperty('display', 'none', 'important');
+                }
+            });
+            
             if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
 
-            // Optional: check if contents are valid
-            if (resSec && resSec.innerHTML.length < 500 && currentStock.data) {
+            // [FIX] Always ensure results are rendered if they exist in memory
+            if (resSec && currentStock.data) {
                 renderResult(currentStock.data);
             }
         }
     }
 
-    // Show Hero setup UI ONLY if no active stock or force reset
-    if (!currentStock || force) {
+    // [CRITICAL] Show Hero UI ONLY if we have NO active stock AND it's a force reset (like logo click)
+    if (force || !currentStock) {
         if (searchHero) {
             searchHero.classList.remove('hidden');
-            searchHero.style.display = 'flex';
+            searchHero.style.setProperty('display', 'flex', 'important');
             searchHero.style.opacity = '1';
+        }
+    } else {
+        // Double-down on ensuring hero is hidden if currentStock exists
+        if (searchHero) {
+            searchHero.classList.add('hidden');
+            searchHero.style.setProperty('display', 'none', 'important');
         }
     }
 
@@ -298,16 +337,17 @@ function restoreStockContext(type) {
     }
 
     try {
-        // [MOD] Basic resultSection is ONLY visible in Home
-        const placeholderId = 'mainResultPlaceholder';
+        // [MOD] Basic resultSection is visible in Home OR Watchlist (if stock is in watchlist)
+        const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
         const placeholder = document.getElementById(placeholderId);
         
-        if (type !== 'home') {
+        // Skip if wrong type and not home (already handled home above)
+        if (type !== 'home' && type !== 'watchlist') {
             if (resSec) resSec.classList.add('hidden');
             return;
         }
         
-        // [MOD] If restoring watchlist context but stock is not in watchlist, hide result
+        // [MOD] If in watchlist tab, ensure the stock is actually in the watchlist
         if (type === 'watchlist' && context.item && !isInWatchlist(context.item.code)) {
             if (resSec) resSec.classList.add('hidden');
             return;
@@ -356,26 +396,56 @@ function showSection(id) {
         currentActiveSectionId = id;
     }
 
-    // resultSection should ONLY be hidden if we move to a section that doesn't support it
     const resSec = document.getElementById('resultSection');
-    if (resSec && id !== 'dashboardHome' && id !== 'watchlistSection' && id !== 'resultSection') {
+    // --- 6. Intelligent Result Hiding ---
+    // resultSection should ONLY be hidden if we move to a section that doesn't support it (e.g., Value Chain)
+    // Home and Watchlist support showing the shared result card.
+    const supportsResult = ['dashboardHome', 'watchlistSection', 'resultSection'];
+    if (resSec && !supportsResult.includes(id)) {
         resSec.classList.add('hidden');
-    }
-    
-    // [MOD] Hide result section explicitly in Value Chain menu
-    if (id === 'valueChainSection') {
-        if (resSec) resSec.classList.add('hidden');
+        resSec.style.display = 'none';
     }
 
     if (id === 'dashboardHome') {
         renderRecentSearches();
-        // [MOD] Auto-restore search result view if context exists
+        // [CRITICAL FIX] Ensure search results are visible and prioritize display stability via inline-block-important
         if (currentStock) {
-            if (resSec) resSec.classList.remove('hidden');
-            const searchHero = document.getElementById('mainSearchHero');
-            if (searchHero) searchHero.classList.add('hidden');
+            console.log('[DEBUG] Home visible - hard-forcing result card display for', currentStock.name);
+            requestAnimationFrame(() => {
+                const resSecMem = document.getElementById('resultSection');
+                if (resSecMem) {
+                    resSecMem.classList.remove('hidden');
+                    // Physical Layer Override: Force through direct style to prevent any JS-based override
+                    resSecMem.style.setProperty('display', 'block', 'important');
+                    resSecMem.style.setProperty('visibility', 'visible', 'important');
+                    resSecMem.style.setProperty('opacity', '1', 'important');
+                }
+                const searchHero = document.getElementById('mainSearchHero');
+                if (searchHero) {
+                    searchHero.classList.add('hidden');
+                    searchHero.style.setProperty('display', 'none', 'important');
+                }
+                // Robust scroll position restoration
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            });
         }
-        resetDashboardHome(false); // standard show, search results might be restored later
+        resetDashboardHome(false); 
+    } else if (id === 'analysisSection') {
+        // Logo Reset
+        const logoLink = document.querySelector('.logo-link');
+        if (logoLink) {
+            logoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('[DEBUG] Logo clicked - performing force reset');
+                navigateToSection('navHome');
+                resetDashboardHome(true);
+            });
+        }
+        // [MOD] Ensure analysis report is unhidden even if it was hidden by other section logic
+        const patternReportSection = document.getElementById('patternReportSection');
+        if (patternReportSection && _lastAnalysisData && currentStock && _lastAnalysisData.code === (currentStock.code || currentStock.ticker)) {
+            patternReportSection.classList.remove('hidden');
+        }
     } else {
         requestAnimationFrame(() => {
             console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
@@ -502,14 +572,12 @@ async function addToWatchlist(item) {
     updateWatchlistBtn();
     showToast(`${item.name} 종목이 관심종목에 추가되었습니다.`, 'success');
 
-    // Context handling (stay in Home)
-    homeStockContext = { item: item, data: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null, analysis: (homeStockContext.item?.code === item.code) ? homeStockContext.data : null };
-    const resSec = document.getElementById('resultSection');
-    const placeholder = document.getElementById('mainResultPlaceholder');
-    if (resSec && placeholder) {
-        placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
-        resSec.classList.remove('hidden');
-    }
+    // [MOD] Ensure context sync for both Home and Watchlist tabs
+    homeStockContext = { item: item, data: (currentStock?.code === item.code) ? currentStock.data : null };
+    watchlistStockContext = { item: item, data: (currentStock?.code === item.code) ? currentStock.data : null };
+    
+    // Refresh Watchlist tab content if visible or if we are about to switch to it
+    restoreStockContext('watchlist');
 
     // 백그라운드 서버 요청
     try {
@@ -547,7 +615,6 @@ async function removeFromWatchlist(code) {
             showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
             // Sync context if the removed stock matches current context
             if (removedItem.code === currentStock?.code) {
-                 homeStockContext = { item: removedItem, data: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.data : null, analysis: (removedItem.code === watchlistStockContext.item?.code) ? watchlistStockContext.analysis : null };
                  watchlistStockContext = { item: null, data: null, analysis: null };
             }
         }
@@ -558,11 +625,16 @@ async function removeFromWatchlist(code) {
     }
     
     // ── 로그인 사용자: 낙관적 UI (Optimistic Update) ──
-    // 1. 즉시 UI에서 제거 (서버 응답 대기 없음)
     const rollbackSnapshot = [...currentWatchlist];
     currentWatchlist = currentWatchlist.filter(w => w.code !== code);
     saveWatchlist(currentWatchlist);
     updateWatchlistBtn();
+    
+    // [MOD] Clear watchlist context if removed
+    if (watchlistStockContext.item?.code === code) {
+        watchlistStockContext = { item: null, data: null };
+    }
+
     if (removedItem) {
         showToast(`"${removedItem.name || code}" 종목이 삭제되었습니다.`, 'info');
     }
@@ -870,42 +942,23 @@ async function triggerFullDeepAnalysis(code) {
     const globalLoading = document.getElementById('analysisGlobalLoading');
     const loadingText = document.getElementById('analysisLoadingText');
     const patternReportSection = document.getElementById('patternReportSection');
-    const fundBlocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock']
-        .map(id => document.getElementById(id))
-        .filter(el => !!el);
     const emptyState = document.getElementById('analysisEmptyState');
     const contentWrapper = document.getElementById('analysisContentWrapper');
 
-    // Reset UI state
-    if (emptyState) emptyState.classList.add('hidden');
-    if (contentWrapper) contentWrapper.classList.remove('hidden');
-    if (globalLoading) {
-        globalLoading.classList.remove('hidden');
-        if (loadingText) loadingText.textContent = 'AI 캔들 패턴 및 추세 분석 중...';
-    }
-    
-    // Hide all blocks initially to prepare for sequential reveal
     const aiBlocks = ['aiTrendBlock', 'aiBuySignalBlock', 'aiSellSignalBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
     const allBlocks = [...aiBlocks, 'fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
-    allBlocks.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.classList.add('hidden');
-            el.classList.remove('visible');
-        }
-    });
 
     try {
         console.log(`[DEBUG] triggerFullDeepAnalysis for ${code}`);
         
         // --- 1. Analysis Cache: Check if already analyzed this stock ---
         if (_lastAnalysisData && _lastAnalysisData.code === code) {
-            console.log('[DEBUG] Analysis for', code, 'already exists. Re-rendering from cache.');
+            console.log('[DEBUG] Analysis for', code, 'already exists. Re-rendering from cache instantly.');
+            if (emptyState) emptyState.classList.add('hidden');
+            if (contentWrapper) contentWrapper.classList.remove('hidden');
             if (globalLoading) globalLoading.classList.add('hidden');
             if (patternReportSection) patternReportSection.classList.remove('hidden');
-            renderAnalysisReport(_lastAnalysisData);
             
-            // Show fundamental blocks too if they were hidden
             allBlocks.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -913,8 +966,26 @@ async function triggerFullDeepAnalysis(code) {
                     el.classList.add('visible');
                 }
             });
-            return; // EXIT early
+            
+            renderAnalysisReport(_lastAnalysisData);
+            return; 
         }
+
+        // Reset UI state for FRESH loading ONLY
+        if (emptyState) emptyState.classList.add('hidden');
+        if (contentWrapper) contentWrapper.classList.remove('hidden');
+        if (globalLoading) {
+            globalLoading.classList.remove('hidden');
+            if (loadingText) loadingText.textContent = 'AI 캔들 패턴 및 추세 분석 중...';
+        }
+        
+        allBlocks.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden');
+                el.classList.remove('visible');
+            }
+        });
         // Step 1: Fetch AI Analysis
         const analysisData = await fetchAnalysisReport(currentStock || { code });
         
@@ -970,8 +1041,11 @@ function showError(msg) {
 function renderResult(data) {
     // --- Stock Header ---
     const marketBadge = document.getElementById('stockMarketBadge');
-    marketBadge.textContent = data.market;
-    marketBadge.className = `market-badge ${data.market.toLowerCase()}`;
+    const market = data.market || '';
+    marketBadge.textContent = market;
+    marketBadge.className = `market-badge ${market ? market.toLowerCase() : ''}`;
+    if (!market) marketBadge.style.display = 'none';
+    else marketBadge.style.display = 'inline-block';
 
     document.getElementById('stockName').textContent = data.name;
     updateWatchlistBtn();
@@ -2068,36 +2142,30 @@ async function renderFundamentalReport(stockCode) {
 
     // ── 사용 축 태그 ──
     const axes = d.axes_used || [];
-    document.getElementById('fundAxesUsed').innerHTML =
-        axes.map(a => `<span class="fund-axis-tag">${a}</span>`).join('');
-
-    // Cache context
-    if (isInWatchlist(stockCode)) {
-        if (watchlistStockContext.item && (watchlistStockContext.item.code === stockCode || watchlistStockContext.item.ticker === stockCode)) {
-            watchlistStockContext.fundamental = d;
-        }
-    } else {
-        if (homeStockContext.item && (homeStockContext.item.code === stockCode || homeStockContext.item.ticker === stockCode)) {
-            homeStockContext.fundamental = d;
-        }
+    const axesEl = document.getElementById('fundAxesUsed');
+    if (axesEl) {
+        axesEl.innerHTML = axes.map(a => `<span class="fund-axis-tag">${a}</span>`).join('');
     }
 
-    // ── Final Reveal Orchestration ──
+    // ── Final Reveal Orchestration (Reveal All Pillars) ──
+    const pillarIds = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
+    pillarIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('hidden');
+            el.classList.add('visible');
+            el.style.setProperty('display', 'block', 'important');
+            el.style.setProperty('opacity', '1', 'important');
+            el.style.setProperty('transform', 'none', 'important');
+        }
+    });
+
     const tilesGrid = document.querySelector('.fund-tiles-grid');
     if (tilesGrid) {
-        tilesGrid.classList.remove('hidden'); // Ensure the wrapper is visible
-        tilesGrid.style.setProperty('display', 'grid', 'important'); // Force grid display
+        tilesGrid.classList.remove('hidden');
+        tilesGrid.style.setProperty('display', 'grid', 'important');
         tilesGrid.style.setProperty('opacity', '1', 'important');
     }
-
-    // Force all blocks to be revealed at once (no staggered delay for verification)
-    blocks.forEach(b => {
-        b.classList.remove('hidden');
-        b.classList.add('visible');
-        b.style.setProperty('display', 'block', 'important');
-        b.style.setProperty('opacity', '1', 'important');
-        b.style.setProperty('transform', 'none', 'important');
-    });
 }
 
 
@@ -2494,8 +2562,17 @@ function renderCycleTimelineChart(cyc) {
 
     html += '</svg>';
     container.innerHTML = html;
+
+    // [CRITICAL] Set initial scroll position to the far right (most recent data)
+    // Wrap in requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+        container.scrollLeft = container.scrollWidth;
+        console.log('[DEBUG] Candle chart scroll set to right:', container.scrollLeft);
+    });
 }
 
+
+let currentChart = null;
 
 function renderCandleChart(candles) {
     const container = document.getElementById('candleChart');
@@ -2504,186 +2581,144 @@ function renderCandleChart(candles) {
         return;
     }
 
-    // 모바일 1개월, 데스크탑 3개월 차트 분기
-    const isMobile = window.innerWidth <= 700;
-    // Use 130 candles for Desktop (approx. 6 months), 25 for Mobile
-    const maxCandles = isMobile ? 25 : 130; 
-    if (candles.length > maxCandles) {
-        candles = candles.slice(-maxCandles);
+    // Clear existing chart instance if any
+    if (currentChart) {
+        currentChart.remove();
+        currentChart = null;
     }
-
-    const titleEl = document.getElementById('chartTitle');
-    if (titleEl) {
-        titleEl.innerHTML = `<i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 ${isMobile ? '1' : '3'}개월 간 캔들 차트`;
-    }
-
-    // Collect all price points including MAs for proper scaling
-    const allPrices = candles.flatMap(c => {
-        const prices = [c.high, c.low];
-        if (c.ma5 != null) prices.push(c.ma5);
-        if (c.ma20 != null) prices.push(c.ma20);
-        if (c.ma60 != null) prices.push(c.ma60);
-        if (c.ma120 != null) prices.push(c.ma120);
-        return prices;
-    });
-    const minP = Math.min(...allPrices);
-    const maxP = Math.max(...allPrices);
-    const range = maxP - minP || 1;
-    const maxV = Math.max(...candles.map(c => c.volume)) || 1;
-
-    // Layout Constants
-    const chartH = 200; // Candlestick area height
-    const volH = 50;    // Volume area height
-    const gap = 15;     // Gap between candles and volume
-    const legendTopPad = 35; // Space for legend at the top
-    const topAreaH = chartH + gap + volH; // 265
-    const legendPad = 25; // Space for date labels at the bottom
-
-    const barW = Math.max(10, Math.min(40, (container.clientWidth - 40) / candles.length));
-    const svgW = Math.max(container.clientWidth, (candles.length * barW) + 60);
-
-    const toY = (price) => legendTopPad + chartH - ((price - minP) / range) * (chartH - 20) - 10;
+    container.innerHTML = '';
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    const textFill = isLight ? '#1e293b' : '#f8fafc';
+    const chartOptions = {
+        width: container.clientWidth,
+        height: 320,
+        layout: {
+            background: { type: 'solid', color: 'transparent' },
+            textColor: isLight ? '#1e293b' : '#f8fafc',
+            fontFamily: 'Inter, sans-serif',
+        },
+        grid: {
+            vertLines: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' },
+            horzLines: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' },
+        },
+        crosshair: {
+            mode: 1, // Normal crosshair
+            vertLine: { labelBackgroundColor: '#6366f1' },
+            horzLine: { labelBackgroundColor: '#6366f1' },
+        },
+        timeScale: {
+            borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+            timeVisible: true,
+            secondsVisible: false,
+        },
+        handleScroll: {
+            mouseWheel: true,
+            pressedMouseMove: true,
+            horzTouchDrag: true,
+            vertTouchDrag: false,
+        },
+        handleScale: {
+            mouseWheel: true,
+            pinch: true,
+            axisPressedMouseMove: true,
+        },
+    };
 
-    // Update container style for horizontal scrolling to support 130 candles
-    if (container) {
-        container.style.overflowX = 'auto';
-        container.style.overflowY = 'hidden';
-        container.style.webkitOverflowScrolling = 'touch'; 
+    const chart = LightweightCharts.createChart(container, chartOptions);
+    currentChart = chart;
+
+    // 1. Candlestick Series
+    const candleSeries = chart.addCandlestickSeries({
+        upColor: '#ef4444',
+        downColor: '#3b82f6',
+        borderVisible: false,
+        wickUpColor: '#ef4444',
+        wickDownColor: '#3b82f6',
+    });
+
+    // 2. Moving Averages
+    const ma5Series = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1.5, title: '5' });
+    const ma20Series = chart.addLineSeries({ color: '#EC4899', lineWidth: 1.5, title: '20' });
+    const ma60Series = chart.addLineSeries({ color: '#14B8A6', lineWidth: 1.5, title: '60' });
+    const ma120Series = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1.5, title: '120' });
+
+    // 3. Volume Series (Overlay)
+    const volumeSeries = chart.addHistogramSeries({
+        color: '#71717a',
+        priceFormat: { type: 'volume' },
+        priceScaleId: '', // Overlay over main price scale
+    });
+    volumeSeries.priceScale().applyOptions({
+        scaleMargins: { top: 0.8, bottom: 0 },
+    });
+
+    // Prepare data
+    // Original date format might be '2024-04-05' or similar
+    const candleData = [];
+    const volData = [];
+    const ma5Data = [];
+    const ma20Data = [];
+    const ma60Data = [];
+    const ma120Data = [];
+
+    candles.forEach(c => {
+        const time = c.date; // Expecting 'YYYY-MM-DD'
+        candleData.push({ time, open: c.open, high: c.high, low: c.low, close: c.close });
+        volData.push({ 
+            time, 
+            value: c.volume, 
+            color: c.is_bullish ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)' 
+        });
+        if (c.ma5) ma5Data.push({ time, value: c.ma5 });
+        if (c.ma20) ma20Data.push({ time, value: c.ma20 });
+        if (c.ma60) ma60Data.push({ time, value: c.ma60 });
+        if (c.ma120) ma120Data.push({ time, value: c.ma120 });
+    });
+
+    candleSeries.setData(candleData);
+    volumeSeries.setData(volData);
+    ma5Series.setData(ma5Data);
+    ma20Series.setData(ma20Data);
+    ma60Series.setData(ma60Data);
+    ma120Series.setData(ma120Data);
+
+    // Set Initial Visible Range (Last 1 Month ≈ 22 bars)
+    if (candles.length > 22) {
+        chart.timeScale().setVisibleLogicalRange({
+            from: candles.length - 22,
+            to: candles.length - 1,
+        });
+    } else {
+        chart.timeScale().fitContent();
     }
 
-    // Fixed width SVG inside the scrolling container
-    let html = `<svg width="${svgW}" height="${legendTopPad + topAreaH + legendPad}" 
-                    viewBox="0 0 ${svgW} ${legendTopPad + topAreaH + legendPad}" 
-                    preserveAspectRatio="xMinYMin meet" style="display:block; min-width: ${svgW}px;">`;
-
-    // ── Candle sticks & Volume bars ──
-    candles.forEach((c, i) => {
-        const x = i * barW + 10;
-        const cx = x + barW / 2;
-        const bodyTop = toY(Math.max(c.open, c.close));
-        const bodyBot = toY(Math.min(c.open, c.close));
-        const bodyH = Math.max(1, bodyBot - bodyTop);
-        const wickTop = toY(c.high);
-        const wickBot = toY(c.low);
-        // 한국 시장은 양봉=빨강, 음봉=파랑
-        const color = c.is_bullish ? '#ef4444' : '#3b82f6';
-        const fill = color;
-
-        // Animate up from the bottom of the main chart
-        html += `<g class="candle-group" style="transform-origin: 0px ${chartH - 10}px; transform: scaleY(0); transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) ${i * 0.02}s;">`;
-
-        // Wick
-        html += `<line x1="${cx}" y1="${wickTop}" x2="${cx}" y2="${wickBot}" stroke="${color}" stroke-width="1.5"/>`;
-        // Body
-        html += `<rect x="${x + barW * 0.2}" y="${bodyTop}" width="${barW * 0.6}" height="${bodyH}"
-                    fill="${fill}" stroke="${color}" stroke-width="1.5" rx="1"/>`;
-        html += `</g>`;
-
-        // Volume Bar
-        const vRectH = Math.max(1, (c.volume / maxV) * volH);
-        const vRectY = legendTopPad + topAreaH - vRectH;
-        html += `<rect class="vol-group" x="${x + barW * 0.2}" y="${vRectY}" width="${barW * 0.6}" height="${vRectH}"
-                    fill="${fill}" opacity="0.6" style="transform-origin: 0px ${legendTopPad + topAreaH}px; transform: scaleY(0); transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) ${i * 0.02}s;"/>`;
-
-        // Date label (겹치지 않게 조절, 최대 12개 내외만 표시)
-        // 날짜 레이블: 7 캔들(영업일) 간격으로 표시 (≈ 1주일), 마지막 캔들은 항상 표시
-        const step = 7;
-        if (i % step === 0 || i === candles.length - 1) {
-            html += `<text x="${cx}" y="${legendTopPad + topAreaH + 20}" text-anchor="middle" fill="${textFill}"
-                        font-size="11" font-weight="600" font-family="Inter">${c.date}</text>`;
+    // Update Title with Dynamic Range Info
+    const isMobile = window.innerWidth <= 700;
+    const titleEl = document.getElementById('chartTitle');
+    if (titleEl) {
+        titleEl.innerHTML = `<i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 12개월 주가 분석 (줌/드래그 지원)`;
+    }
+    // Resize handling
+    window.addEventListener('resize', () => {
+        if (currentChart) {
+            currentChart.applyOptions({ width: container.clientWidth });
         }
     });
 
-    // ── Support & Resistance Lines (Phase 2 Layout) ──
-    const highestC = Math.max(...candles.map(c => c.high));
-    const lowestC = Math.min(...candles.map(c => c.low));
-    const resY = toY(highestC);
-    const supY = toY(lowestC);
-
-    html += `<line x1="10" y1="${resY}" x2="${svgW - 50}" y2="${resY}" stroke="rgba(239, 68, 68, 0.8)" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8"/>`;
-    html += `<text x="${svgW - 10}" y="${resY + 4}" text-anchor="end" fill="rgba(239, 68, 68, 0.9)" font-size="10" font-weight="700">저항선</text>`;
-
-    html += `<line x1="10" y1="${supY}" x2="${svgW - 50}" y2="${supY}" stroke="rgba(59, 130, 246, 0.8)" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8"/>`;
-    html += `<text x="${svgW - 10}" y="${supY + 4}" text-anchor="end" fill="rgba(59, 130, 246, 0.9)" font-size="10" font-weight="700">지지선</text>`;
-
-    // ── Moving Average lines (Phase 2 Colors & MA120) ──
-    const maConfigs = [
-        { key: 'ma5', color: '#F59E0B', label: '5일선' },
-        { key: 'ma20', color: '#EC4899', label: '20일선' },
-        { key: 'ma60', color: '#14B8A6', label: '60일선' },
-        { key: 'ma120', color: '#8B5CF6', label: '120일선' }
-    ];
-
-    maConfigs.forEach(ma => {
-        const points = [];
-        candles.forEach((c, i) => {
-            if (c[ma.key] != null) {
-                const cx = i * barW + 10 + barW / 2;
-                const cy = toY(c[ma.key]);
-                points.push(`${cx},${cy}`);
-            }
-        });
-        if (points.length >= 2) {
-            html += `<polyline points="${points.join(' ')}" 
-                        fill="none" stroke="${ma.color}" stroke-width="1.5" 
-                        stroke-linecap="round" stroke-linejoin="round" 
-                        stroke-opacity="0.85" 
-                        class="ma-line"
-                        pathLength="100" />`;
-        }
-    });
-
-    // ── Resistance & Support Lines (Phase 2 - Attachment 4) ──
-    const resistPrice = maxP * 0.98;
-    const supportPrice = minP * 1.02;
-    
-    html += `<line x1="0" y1="${toY(resistPrice)}" x2="${svgW}" y2="${toY(resistPrice)}" 
-                stroke="#ef4444" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.6" />`;
-    html += `<text x="${svgW - 45}" y="${toY(resistPrice) - 5}" fill="#ef4444" font-size="10" font-weight="600">저항선</text>`;
-
-    html += `<line x1="0" y1="${toY(supportPrice)}" x2="${svgW}" y2="${toY(supportPrice)}" 
-                stroke="#3b82f6" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.6" />`;
-    html += `<text x="${svgW - 45}" y="${toY(supportPrice) + 12}" fill="#3b82f6" font-size="10" font-weight="600">지지선</text>`;
-
-    // ── MA Legend (Moved to Top) ──
-    const legendY = 15;
-    const legendStartX = 5;
-    maConfigs.forEach((ma, idx) => {
-        const lx = legendStartX + idx * 64;
-        html += `<line x1="${lx}" y1="${legendY - 3}" x2="${lx + 12}" y2="${legendY - 3}" 
-                    stroke="${ma.color}" stroke-width="2.5"/>`;
-        html += `<text x="${lx + 15}" y="${legendY + 1}" fill="${textFill}" 
-                    font-size="11" font-weight="600" font-family="Inter">${ma.label}</text>`;
-    });
-
-    html += '</svg>';
-    container.innerHTML = html;
-
-    observeElement(container, (el) => {
-        el.querySelectorAll('.candle-group').forEach(cg => {
-            cg.style.transform = 'scaleY(1)';
-        });
-        el.querySelectorAll('.vol-group').forEach(vg => {
-            vg.style.transform = 'scaleY(1)';
-        });
-        el.querySelectorAll('.ma-line').forEach((line, index) => {
-            line.style.animation = `drawLine 2s ease-out ${index * 0.3}s forwards`;
-        });
-    });
-
+    // ── MA Visual Bars (The "Quicken" Style Bars below chart) ──
     const maVisualBarsContainer = document.getElementById('maVisualBars');
-    observeElement(maVisualBarsContainer, (el) => {
-        el.querySelectorAll('.ma-bar-fill').forEach(fillEl => {
-            fillEl.style.width = fillEl.getAttribute('data-target-width') + '%';
-        });
-        el.querySelectorAll('.ma-bar-current-price').forEach(priceEl => {
-            priceEl.style.left = priceEl.getAttribute('data-target-left') + '%';
-        });
-    });
-
+    if (maVisualBarsContainer) {
+        setTimeout(() => {
+            maVisualBarsContainer.querySelectorAll('.ma-bar-fill').forEach(fillEl => {
+                const targetW = fillEl.getAttribute('data-target-width');
+                if (targetW) fillEl.style.width = targetW + '%';
+            });
+            maVisualBarsContainer.querySelectorAll('.ma-bar-current-price').forEach(priceEl => {
+                const targetL = priceEl.getAttribute('data-target-left');
+                if (targetL) priceEl.style.left = targetL + '%';
+            });
+        }, 300);
+    }
 }
 
 function renderBuyReport(report) {
@@ -3064,7 +3099,6 @@ async function initAuth() {
                     // ── 폴백: Render 백엔드 경유 ──
                     const endpoint = isLoginMode ? API_BASE_URL + '/api/login' : API_BASE_URL + '/api/register';
                     const res = await fetch(endpoint, {
-                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
                     });
@@ -3137,15 +3171,16 @@ async function initAuth() {
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
             }
 
-            // 심층분석, 밸류체인, 관심종목은 게스트에게 숨김
+            // 비로그인(Guest)에게는 핵심 분석 메뉴를 숨김 (v54 Update)
             if (navAnalysis) navAnalysis.style.display = 'none';
             if (navValueChain) navValueChain.style.display = 'none';
             if (navWatchlist) navWatchlist.style.display = 'none';
 
-            // Auto-redirect only from watchlist for guests
-            const restricted = ['watchlistSection'];
+            // 게스트가 제한된 섹션(관심종목 등) 접근 시 홈으로 리다이렉트
+            const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
+                showModal(); // 로그인 유도 모달 노출
             }
             
             // Clear or hide watchlist for guest if needed
