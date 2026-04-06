@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting for the Peak | Stock Search</title>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <meta name="description" content="코스피, 코스닥 종목을 검색하고 주가 및 이동평균선 정보를 확인하세요.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +34,21 @@
 
         .watchlist-section.hidden {
             display: none !important;
+        }
+
+        /* ── Candle Chart Container Specifics ── */
+        .candle-chart {
+            width: 100%;
+            min-height: 320px;
+            height: 320px;
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .candle-chart-card {
+            width: 100%;
+            overflow: visible;
         }
     </style>
     <!-- Supabase JS SDK v2 — for direct browser auth (bypasses Render round-trip) -->
@@ -727,7 +741,11 @@
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="candleChartCard" class="candle-chart-card hidden" style="border: none; box-shadow: none; padding: 0; margin-bottom: 0;">
-                                            <div id="candleChart" class="candle-chart"></div>
+                                            <div class="scan-line"></div>
+                                            <div class="scan-shimmer"></div>
+                                            <div id="candleChart" class="candle-chart">
+                                                <div id="chartLegend" class="chart-legend"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -754,6 +772,11 @@
                         <!-- 🧠 Fundamental Analysis Highlights (Signal & Summary) -->
                         <div id="fundSummaryBlock" class="workout-style fundamental reveal-fade hidden">
                             <div class="workout-content" style="padding: 0;">
+                                <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                    <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                        <i class="ph ph-brain"></i> AI 통합 분석 총평
+                                    </div>
+                                </div>
                                 <div class="workout-body" style="padding: 24px;">
                                     <div id="fundSignalReason" class="fund-signal-reason" style="margin-bottom: 0; border: none; padding: 0;">데이터 분석 중…</div>
                                 </div>
@@ -764,6 +787,11 @@
                             <!-- 📊 Axis 1: Quant Analysis Tile -->
                             <div id="fundQuantBlock" class="workout-style fundamental-axis reveal-fade hidden">
                                 <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-chart-pie-slice"></i> 재무 건전성 및 가치
+                                        </div>
+                                    </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="fundQuantContent" class="fund-axis-content"></div>
                                     </div>
@@ -773,6 +801,11 @@
                             <!-- 📰 Axis 2: Event-Driven Tile -->
                             <div id="fundEventBlock" class="workout-style fundamental-axis reveal-fade hidden">
                                 <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-megaphone"></i> 주요 공시 및 모멘텀
+                                        </div>
+                                    </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="fundEventContent" class="fund-axis-content"></div>
                                     </div>
@@ -782,6 +815,11 @@
                             <!-- 🏢 Axis 3: Sector Analysis Tile -->
                             <div id="fundSectorBlock" class="workout-style fundamental-axis reveal-fade hidden">
                                 <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-buildings"></i> 업종 및 시장 지위
+                                        </div>
+                                    </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="fundSectorContent" class="fund-axis-content"></div>
                                     </div>
@@ -791,6 +829,11 @@
                             <!-- 🎯 Axis 4: Target Analysis Tile -->
                             <div id="fundTargetBlock" class="workout-style fundamental-axis reveal-fade hidden">
                                 <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header" style="background: rgba(255,255,255,0.03); padding: 16px 24px; border-bottom: 1px solid var(--border-soft);">
+                                        <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-target"></i> 적정 가치 및 목표가
+                                        </div>
+                                    </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="fundTargetContent" class="fund-axis-content"></div>
                                         <div id="fundAxesUsed" class="fund-axes-used" style="margin-top: 15px; font-size: 0.75rem; color: var(--text-muted);"></div>

@@ -1657,6 +1657,8 @@ function renderAnalysisReport(data) {
     if (hasBuyReport) blocks.push('aiBuySignalBlock');
     if (hasSellReport) blocks.push('aiSellSignalBlock');
     blocks.push('aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock');
+    // Add Fundamental blocks for standard UI reveal
+    blocks.push('fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock');
     
     blocks.forEach((id, index) => {
         const el = document.getElementById(id);
@@ -1794,12 +1796,18 @@ function renderAnalysisReport(data) {
     const noPatternsMsg = document.getElementById('noPatternsMsg');
 
     if (!data.patterns || data.patterns.length === 0) {
-        if (aiPatternsBlock) aiPatternsBlock.classList.remove('hidden'); // Always show the block header
+        if (aiPatternsBlock) {
+            aiPatternsBlock.classList.remove('hidden'); // Always show the block header
+            requestAnimationFrame(() => aiPatternsBlock.classList.add('visible'));
+        }
         if (patternsCard) patternsCard.classList.remove('hidden');
         if (patternsList) patternsList.innerHTML = '';
         if (noPatternsMsg) noPatternsMsg.classList.remove('hidden');
     } else {
-        if (aiPatternsBlock) aiPatternsBlock.classList.remove('hidden');
+        if (aiPatternsBlock) {
+            aiPatternsBlock.classList.remove('hidden');
+            requestAnimationFrame(() => aiPatternsBlock.classList.add('visible'));
+        }
         if (patternsCard) patternsCard.classList.remove('hidden');
         if (noPatternsMsg) noPatternsMsg.classList.add('hidden');
         patternsList.innerHTML = data.patterns.map(p => {
@@ -1840,9 +1848,19 @@ function renderAnalysisReport(data) {
     const aiChartBlock = document.getElementById('aiChartBlock');
     const candleChartCard = document.getElementById('candleChartCard');
     if (data.recent_candles && data.recent_candles.length > 0) {
-        if (aiChartBlock) aiChartBlock.classList.remove('hidden');
-        if (candleChartCard) candleChartCard.classList.remove('hidden');
-        renderCandleChart(data.recent_candles);
+        if (aiChartBlock) {
+            aiChartBlock.classList.remove('hidden', 'visible');
+            requestAnimationFrame(() => aiChartBlock.classList.add('visible'));
+        }
+        if (candleChartCard) {
+            candleChartCard.classList.remove('hidden', 'visible');
+            requestAnimationFrame(() => candleChartCard.classList.add('visible'));
+        }
+        
+        // [FIX] Ensure parent layout is reflowed before rendering chart to avoid 0-width issue
+        setTimeout(() => {
+            renderCandleChart(data.recent_candles);
+        }, 100);
     } else {
         if (aiChartBlock) aiChartBlock.classList.add('hidden');
     }
@@ -1853,7 +1871,10 @@ function renderAnalysisReport(data) {
     const recentWeekList = document.getElementById('recentWeekList');
 
     if (data.recent_week_analysis && data.recent_week_analysis.length > 0) {
-        if (aiSummaryBlock) aiSummaryBlock.classList.remove('hidden');
+        if (aiSummaryBlock) {
+            aiSummaryBlock.classList.remove('hidden');
+            requestAnimationFrame(() => aiSummaryBlock.classList.add('visible'));
+        }
         if (recentWeekAnalysis) recentWeekAnalysis.classList.remove('hidden');
         if (recentWeekList) {
             recentWeekList.innerHTML = '';
@@ -1990,20 +2011,12 @@ async function renderFundamentalReport(stockCode) {
         typeBadge.textContent = d.company_type_label || '';
     }
 
-    // Update fundSummaryBlock with 2-column sidebar layout
+    // Update fundSummaryBlock with clean single-column layout
     const summaryBody = document.querySelector('#fundSummaryBlock .workout-body');
     if (summaryBody) {
         summaryBody.innerHTML = `
-            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:center;">
-                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
-                    <div style="font-size:2.8rem; margin-bottom:8px; filter: drop-shadow(0 0 10px var(--primary-glow));">🧠</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">AI 통합 인지</div>
-                </div>
-                <div class="prob-right-col" style="flex:1;">
-                    <div id="fundSignalReason" class="fund-signal-reason" style="margin:0; border:none; padding:0; font-size:1.1rem; line-height:1.6; font-weight:600; color:var(--text-main);">
-                        ${d.signal_reason || '분석 결과가 없습니다.'}
-                    </div>
-                </div>
+            <div id="fundSignalReason" class="fund-signal-reason" style="margin:0; border:none; padding:0; font-size:1.15rem; line-height:1.7; font-weight:600; color:var(--text-main);">
+                ${d.signal_reason || '분석 결과가 없습니다.'}
             </div>`;
     }
 
@@ -2017,21 +2030,18 @@ async function renderFundamentalReport(stockCode) {
         ['분기 매출 성장', q.qtr_growth != null ? (q.qtr_growth > 0 ? '+' : '') + q.qtr_growth + '%' : '—'],
     ];
     document.getElementById('fundQuantContent').innerHTML = `
-        <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
-            <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
-                <div style="font-size:2.5rem; margin-bottom:8px;">📊</div>
-                <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">재무 분석</div>
-                <div class="fund-score-badge" style="margin-top:10px; font-size:1.4rem; font-weight:900; color:var(--primary);">${q.score || '—'}점</div>
+        <div style="display:flex; flex-direction:column; gap:16px; width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">분석 스코어</div>
+                <div class="fund-score-badge" style="font-size:1.6rem; font-weight:900; color:var(--primary);">${q.score || '—'}점</div>
             </div>
-            <div class="prob-right-col" style="display:flex; flex-direction:column; gap:10px; width:100%;">
-                <table class="fund-metric-table" style="width:100%;">
-                    ${qRows.map(([k, v]) => `<tr><td style="color:var(--text-muted); font-size:0.85rem;">${k}</td><td style="text-align:right; font-weight:700; color:var(--text-main);">${v}</td></tr>`).join('')}
-                </table>
-                <div class="fund-score-desc" style="font-size:0.82rem; color:var(--text-sub); margin-top:10px; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; line-height:1.5;">
-                    ${q.score >= 75 ? '🔥 <b>매우 우수</b> - 강력한 펀더멘탈' : q.score >= 55 ? '✅ <b>평균 이상</b> - 양호한 상태' : '⚠️ <b>기준 미달</b> - 리스크 주의 필요'}
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">${q.period || ''} ${q.qtr_period ? ' / ' + q.qtr_period : ''}</div>
+            <table class="fund-metric-table" style="width:100%;">
+                ${qRows.map(([k, v]) => `<tr><td style="color:var(--text-muted); font-size:0.85rem;">${k}</td><td style="text-align:right; font-weight:700; color:var(--text-main);">${v}</td></tr>`).join('')}
+            </table>
+            <div class="fund-score-desc" style="font-size:0.85rem; color:var(--text-sub); background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; line-height:1.6;">
+                ${q.score >= 75 ? '🔥 <b>매우 우수</b> - 강력한 펀더멘탈 기반' : q.score >= 55 ? '✅ <b>평균 이상</b> - 재무 안정성 확보' : '⚠️ <b>기준 미달</b> - 리스크 관리 필요'}
             </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); text-align:right;">${q.period || ''} ${q.qtr_period ? ' / ' + q.qtr_period : ''}</div>
         </div>`;
 
     // ── Event-Driven Analysis ──
@@ -2041,26 +2051,20 @@ async function renderFundamentalReport(stockCode) {
             '<div class="fund-no-data">최근 30일 주요 공시 없음</div>';
     } else {
         document.getElementById('fundEventContent').innerHTML = `
-            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
-                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
-                    <div style="font-size:2.5rem; margin-bottom:8px;">📢</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">공시 분석</div>
-                </div>
-                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:10px; width:100%;">
-                    ${evts.map(ev => `
-                    <div class="fund-event-item fund-event-${ev.signal}" 
-                         ${ev.rcept_no ? `onclick="window.open('https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${ev.rcept_no}', '_blank')"` : ''}
-                         style="width:100%; padding:10px 14px; border-radius:12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span class="fund-event-label" style="font-size:0.75rem; font-weight:700;">${ev.label}</span>
-                            <span class="fund-event-date" style="font-size:0.75rem; opacity:0.8;">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
-                        </div>
-                        <div class="fund-event-title" title="${ev.title}" style="font-size:0.9rem; font-weight:600; line-height:1.4;">
-                            ${ev.title.length > 35 ? ev.title.slice(0, 35) + '…' : ev.title}
-                            ${ev.rcept_no ? '<i class="ph ph-arrow-square-out" style="font-size:0.8rem; margin-left:4px; opacity:0.6;"></i>' : ''}
-                        </div>
-                    </div>`).join('')}
-                </div>
+            <div style="display:flex; flex-direction:column; gap:12px; width:100%;">
+                ${evts.map(ev => `
+                <div class="fund-event-item fund-event-${ev.signal}" 
+                     ${ev.rcept_no ? `onclick="window.open('https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${ev.rcept_no}', '_blank')"` : ''}
+                     style="width:100%; padding:12px 16px; border-radius:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span class="fund-event-label" style="font-size:0.8rem; font-weight:700;">${ev.label}</span>
+                        <span class="fund-event-date" style="font-size:0.75rem; opacity:0.8;">${ev.date ? ev.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3') : ''}</span>
+                    </div>
+                    <div class="fund-event-title" title="${ev.title}" style="font-size:0.95rem; font-weight:600; line-height:1.5;">
+                        ${ev.title.length > 40 ? ev.title.slice(0, 40) + '…' : ev.title}
+                        ${ev.rcept_no ? '<i class="ph ph-arrow-square-out" style="font-size:0.85rem; margin-left:4px; opacity:0.6;"></i>' : ''}
+                    </div>
+                </div>`).join('')}
             </div>`;
     }
 
@@ -2073,29 +2077,24 @@ async function renderFundamentalReport(stockCode) {
             '<div class="fund-no-data">업종 비교 데이터 없음</div>';
     } else {
         document.getElementById('fundSectorContent').innerHTML = `
-            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
-                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
-                    <div style="font-size:2.5rem; margin-bottom:8px;">🏢</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">업종 분석</div>
+            <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+                <div style="font-size:0.9rem; font-weight:700; color:var(--primary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                    <i class="ph ph-trend-up" style="font-size:1.1rem;"></i>
+                    ${s.name || '종합'} 업종 평균 대비
                 </div>
-                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:8px; width:100%;">
-                    <div style="font-size:0.88rem; font-weight:700; color:var(--primary); margin-bottom:6px; opacity:0.9;">
-                        ${s.name || '종합'} 업종 평균 대비
+                ${comps.map(c => `
+                <div class="fund-event-item" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px 16px; border-radius:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:700;">${c.label}</span>
+                        <span style="font-size:0.75rem; font-weight:900; color:${c.status === '우위' || c.status === '저평가' ? '#10b981' : '#ef4444'}; background:rgba(0,0,0,0.25); padding:2px 12px; border-radius:99px;">
+                            ${c.status}
+                        </span>
                     </div>
-                    ${comps.map(c => `
-                    <div class="fund-event-item" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px 14px; border-radius:12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">${c.label}</span>
-                            <span style="font-size:0.75rem; font-weight:900; color:${c.status === '우위' || c.status === '저평가' ? '#10b981' : '#ef4444'}; background:rgba(0,0,0,0.25); padding:2px 10px; border-radius:99px;">
-                                ${c.status}
-                            </span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                            <span style="font-size:1.1rem; font-weight:800; color:var(--text-main);">${c.value}</span>
-                            <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">평균 ${c.avg}</span>
-                        </div>
-                    </div>`).join('')}
-                </div>
+                    <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                        <span style="font-size:1.2rem; font-weight:800; color:var(--text-main);">${c.value}</span>
+                        <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">업계평균 ${c.avg}</span>
+                    </div>
+                </div>`).join('')}
             </div>`;
     }
 
@@ -2104,33 +2103,27 @@ async function renderFundamentalReport(stockCode) {
     if (target) {
         const color = target.status === '저평가' || target.status === '매력' ? '#10b981' : (target.status === '고평가' ? '#ef4444' : '#6366f1');
         document.getElementById('fundTargetContent').innerHTML = `
-            <div class="prob-two-col" style="background:transparent; padding:0; gap:20px; align-items:flex-start;">
-                <div class="prob-left-col" style="flex:0 0 100px; border:none; padding-right:0; align-items:center;">
-                    <div style="font-size:2.5rem; margin-bottom:8px;">🎯</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">가치 분석</div>
+            <div style="display:flex; flex-direction:column; gap:16px; width:100%;">
+                <div style="text-align:center; padding:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:20px; box-shadow: 0 4px 30px rgba(0,0,0,0.2);">
+                    <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px; font-weight:700; letter-spacing:0.5px;">AI 예상 적정 가치</div>
+                    <div style="font-size:2.2rem; font-weight:950; color:${color}; letter-spacing:-1px; line-height:1.1;">${Number(target.value).toLocaleString()}원</div>
+                    <div style="font-size:1rem; margin-top:12px; display:flex; justify-content:center; align-items:center; gap:10px;">
+                        <span style="background:${color}; color:white; padding:4px 14px; border-radius:99px; font-weight:900; font-size:0.85rem;">${target.status}</span>
+                        <span style="color:var(--text-main); font-weight:700;">(기대수익: <span style="color:${target.upside > 0 ? '#10b981' : '#ef4444'}">${target.upside > 0 ? '+' : ''}${target.upside}%</span>)</span>
+                    </div>
                 </div>
-                <div class="prob-right-col" style="display:flex; flex-direction:column; gap:12px; width:100%;">
-                    <div style="text-align:center; padding:18px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-                        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; font-weight:600;">예상 적정 주가</div>
-                        <div style="font-size:1.8rem; font-weight:950; color:${color}; letter-spacing:-0.5px; line-height:1;">${Number(target.value).toLocaleString()}원</div>
-                        <div style="font-size:0.95rem; margin-top:8px;">
-                            <span style="background:${color}; color:white; padding:3px 12px; border-radius:99px; font-weight:900; font-size:0.8rem;">${target.status}</span>
-                            <span style="color:var(--text-muted); margin-left:8px; font-weight:700;">(기대수익: ${target.upside > 0 ? '+' : ''}${target.upside}%)</span>
-                        </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="fund-tile-v2" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">
+                        <div class="tile-label" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">S-RIM 기반 가치</div>
+                        <div class="tile-value" style="font-size:1.1rem; font-weight:800;">${Number(target.srim).toLocaleString()}<span style="font-size:0.8rem; margin-left:2px; opacity:0.7;">원</span></div>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div class="fund-tile-v2">
-                            <div class="tile-label">S-RIM value</div>
-                            <div class="tile-value">${Number(target.srim).toLocaleString()} <span style="font-size:0.8rem; font-weight:700; margin-left:2px;">원</span></div>
-                        </div>
-                        <div class="fund-tile-v2">
-                            <div class="tile-label">Intrinsic value</div>
-                            <div class="tile-value">${Number(target.basic).toLocaleString()} <span style="font-size:0.8rem; font-weight:700; margin-left:2px;">원</span></div>
-                        </div>
+                    <div class="fund-tile-v2" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">
+                        <div class="tile-label" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">청산 가치 (BPS)</div>
+                        <div class="tile-value" style="font-size:1.1rem; font-weight:800;">${Number(target.basic).toLocaleString()}<span style="font-size:0.8rem; margin-left:2px; opacity:0.7;">원</span></div>
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; opacity:0.7;">
-                        * ${target.method} (Cash-Flow Discount Model)
-                    </div>
+                </div>
+                <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; opacity:0.6; line-height:1.4;">
+                    * ${target.method} (현금흐름할인법) 및 업종 멀티플 가중치 적용
                 </div>
             </div>`;
     } else {
@@ -2587,8 +2580,12 @@ function renderCandleChart(candles) {
     container.innerHTML = '';
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    
+    // Ensure container has width
+    const containerWidth = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 800);
+    
     const chartOptions = {
-        width: container.clientWidth,
+        width: containerWidth,
         height: 320,
         layout: {
             background: { type: 'solid', color: 'transparent' },
@@ -2634,11 +2631,11 @@ function renderCandleChart(candles) {
         wickDownColor: '#3b82f6',
     });
 
-    // 2. Moving Averages
-    const ma5Series = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1.5, title: '5' });
-    const ma20Series = chart.addLineSeries({ color: '#EC4899', lineWidth: 1.5, title: '20' });
-    const ma60Series = chart.addLineSeries({ color: '#14B8A6', lineWidth: 1.5, title: '60' });
-    const ma120Series = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1.5, title: '120' });
+    // 2. Moving Averages (Colors matched with top legend)
+    const ma5Series = chart.addLineSeries({ color: '#FFD700', lineWidth: 1.5, title: '5' });
+    const ma20Series = chart.addLineSeries({ color: '#FF00FF', lineWidth: 1.5, title: '20' });
+    const ma60Series = chart.addLineSeries({ color: '#00FFFF', lineWidth: 1.5, title: '60' });
+    const ma120Series = chart.addLineSeries({ color: '#ADFF2F', lineWidth: 1.5, title: '120' });
 
     // 3. Volume Series (Overlay)
     const volumeSeries = chart.addHistogramSeries({
@@ -2673,6 +2670,8 @@ function renderCandleChart(candles) {
         if (c.ma120) ma120Data.push({ time, value: c.ma120 });
     });
 
+    // ── Lazy Unfolding Logic ──
+    // Set ALL data immediately for stability
     candleSeries.setData(candleData);
     volumeSeries.setData(volData);
     ma5Series.setData(ma5Data);
@@ -2680,26 +2679,146 @@ function renderCandleChart(candles) {
     ma60Series.setData(ma60Data);
     ma120Series.setData(ma120Data);
 
-    // Set Initial Visible Range (Last 1 Month ≈ 22 bars)
-    if (candles.length > 22) {
-        chart.timeScale().setVisibleLogicalRange({
-            from: candles.length - 22,
-            to: candles.length - 1,
-        });
-    } else {
-        chart.timeScale().fitContent();
+    const totalCount = candleData.length;
+    let isInitialAnimating = true;
+
+    // Phase 1: Sliding Viewport Reveal (High-end sliding animation)
+    // We want to show a 60-bar window (approx 3 months) eventually.
+    // Start by showing only the left 1/3 of that window and expand right.
+    const finalWindowSize = Math.min(totalCount, 60); 
+    const startWindowSize = Math.min(totalCount, 15);
+    let currentWindowSize = startWindowSize;
+
+    function animateViewport() {
+        if (currentWindowSize < finalWindowSize) {
+            currentWindowSize++;
+            chart.timeScale().setVisibleLogicalRange({
+                from: totalCount - finalWindowSize,
+                to: totalCount - finalWindowSize + currentWindowSize,
+            });
+            requestAnimationFrame(animateViewport);
+        } else {
+            isInitialAnimating = false;
+        }
+    }
+
+    // Initial fixed view (before sliding)
+    chart.timeScale().setVisibleLogicalRange({
+        from: totalCount - finalWindowSize,
+        to: totalCount - finalWindowSize + startWindowSize,
+    });
+    
+    // Start sliding animation after a short delay
+    setTimeout(animateViewport, 300);
+
+    // Phase 2: Lazy Animation on Scroll (Discovering even older history)
+    // We don't need a custom discovery loop anymore because data is already there.
+    // However, to satisfy the "one after another" request for the past,
+    // we can keep the discovery logic OR just let the user explore.
+    // Given the previous request, the sliding reveal above handles the core "wow".
+    
+    // Check if user has navigated past the initial 60 bars (for the future-proofness)
+    chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (isInitialAnimating || !range) return;
+        // User is free to explore the pre-loaded 1 year of data.
+    });
+
+    let isRevealingPast = false;
+    function revealPastData(targetIdx) {
+        if (isRevealingPast) return;
+        isRevealingPast = true;
+
+        function step() {
+            if (renderedStartIndex > targetIdx) {
+                renderedStartIndex--;
+                // Prepend 1 candle by updating the whole set (setData is required for prepending in LW Charts)
+                const newVisibleData = candleData.slice(renderedStartIndex);
+                candleSeries.setData(newVisibleData);
+                volumeSeries.setData(volData.slice(renderedStartIndex));
+                
+                // Optimized MA filtering
+                const visibleTimes = new Set(newVisibleData.map(d => d.time));
+                ma5Series.setData(ma5Data.filter(d => visibleTimes.has(d.time)));
+                ma20Series.setData(ma20Data.filter(d => visibleTimes.has(d.time)));
+                ma60Series.setData(ma60Data.filter(d => visibleTimes.has(d.time)));
+                ma120Series.setData(ma120Data.filter(d => visibleTimes.has(d.time)));
+
+                setTimeout(step, 10); // Very fast reveal
+            } else {
+                isRevealingPast = false;
+            }
+        }
+        step();
     }
 
     // Update Title with Dynamic Range Info
-    const isMobile = window.innerWidth <= 700;
     const titleEl = document.getElementById('chartTitle');
     if (titleEl) {
         titleEl.innerHTML = `<i class="ph ph-chart-line-up" style="margin-right: 6px;"></i> 최근 12개월 주가 분석 (줌/드래그 지원)`;
     }
+
+    // ── Top Legend Interaction ──
+    const legend = document.getElementById('chartLegend');
+    function updateLegend(param) {
+        let data = null;
+        if (param && param.time) {
+            data = {
+                time: param.time,
+                open: param.seriesData.get(candleSeries)?.open,
+                high: param.seriesData.get(candleSeries)?.high,
+                low: param.seriesData.get(candleSeries)?.low,
+                close: param.seriesData.get(candleSeries)?.close,
+                ma5: param.seriesData.get(ma5Series),
+                ma20: param.seriesData.get(ma20Series),
+                ma60: param.seriesData.get(ma60Series),
+                ma120: param.seriesData.get(ma120Series)
+            };
+        } else {
+            // Default to last data point
+            const lastIdx = candleData.length - 1;
+            if (lastIdx >= 0) {
+                const c = candleData[lastIdx];
+                data = {
+                    time: c.time,
+                    open: c.open,
+                    high: c.high,
+                    low: c.low,
+                    close: c.close,
+                    ma5: ma5Data.find(d => d.time === c.time)?.value,
+                    ma20: ma20Data.find(d => d.time === c.time)?.value,
+                    ma60: ma60Data.find(d => d.time === c.time)?.value,
+                    ma120: ma120Data.find(d => d.time === c.time)?.value
+                };
+            }
+        }
+
+        if (data && legend) {
+            const isUp = data.close >= data.open;
+            const colorClass = isUp ? 'bullish' : 'bearish';
+            const fmt = (v) => v != null ? Math.round(v).toLocaleString() : '—';
+            
+            legend.innerHTML = `
+                <div class="legend-item"><span class="legend-label">TIME</span> <span class="legend-val">${data.time}</span></div>
+                <div class="legend-item"><span class="legend-label">O</span> <span class="legend-val ${colorClass}">${fmt(data.open)}</span></div>
+                <div class="legend-item"><span class="legend-label">H</span> <span class="legend-val ${colorClass}">${fmt(data.high)}</span></div>
+                <div class="legend-item"><span class="legend-label">L</span> <span class="legend-val ${colorClass}">${fmt(data.low)}</span></div>
+                <div class="legend-item"><span class="legend-label">C</span> <span class="legend-val ${colorClass}">${fmt(data.close)}</span></div>
+                <div class="legend-item"><span class="legend-label ma5-label">MA5</span> <span class="legend-val ma5-label">${fmt(data.ma5)}</span></div>
+                <div class="legend-item"><span class="legend-label ma20-label">MA20</span> <span class="legend-val ma20-label">${fmt(data.ma20)}</span></div>
+                <div class="legend-item"><span class="legend-label ma60-label">MA60</span> <span class="legend-val ma60-label">${fmt(data.ma60)}</span></div>
+                <div class="legend-item"><span class="legend-label ma120-label">MA120</span> <span class="legend-val ma120-label">${fmt(data.ma120)}</span></div>
+            `;
+        }
+    }
+
+    chart.subscribeCrosshairMove(updateLegend);
+    updateLegend(); // Initial call
+
     // Resize handling
     window.addEventListener('resize', () => {
         if (currentChart) {
-            currentChart.applyOptions({ width: container.clientWidth });
+            const newW = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 800);
+            currentChart.applyOptions({ width: newW });
         }
     });
 

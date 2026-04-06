@@ -1251,7 +1251,7 @@ html[data-theme="light"] .theme-icon-btn i {
 .fundamental-axis .workout-header,
 .fundamental .workout-header {
     background: rgba(255, 255, 255, 0.02);
-    padding: 20px 24px !important;
+    padding: 16px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
@@ -1287,10 +1287,9 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .workout-style.fundamental-axis:hover,
 .workout-style.fundamental:hover {
-    transform: translateY(-8px) scale(1.01);
-    box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.8);
-    border-color: rgba(255, 255, 255, 0.4);
-    background-blend-mode: overlay;
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Remove side stripe when in gradient mode - REVERTED TO GLASS STRIPE */
@@ -2217,6 +2216,90 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     padding: 24px;
     box-shadow: var(--shadow-premium);
     margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Scanning Animation for AI Deep Scanning ── */
+.candle-chart-card .scan-line {
+    position: absolute;
+    top: 0;
+    left: -10%;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        var(--accent-emerald), 
+        rgba(0, 255, 170, 0.8),
+        var(--accent-emerald), 
+        transparent
+    );
+    box-shadow: 0 0 15px rgba(0, 255, 170, 0.4);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.candle-chart-card.visible .scan-line {
+    animation: chartScan 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes chartScan {
+    0% {
+        left: -5%;
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        left: 105%;
+        opacity: 0;
+    }
+}
+
+.candle-chart-card .scan-shimmer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 255, 170, 0) 0%,
+        rgba(0, 255, 170, 0.03) 45%,
+        rgba(0, 255, 170, 0.05) 50%,
+        rgba(0, 255, 170, 0.03) 55%,
+        rgba(0, 255, 170, 0) 100%
+    );
+    background-size: 200% 100%;
+    z-index: 9;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.candle-chart-card.visible .scan-shimmer {
+    animation: chartShimmer 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes chartShimmer {
+    0% {
+        background-position: -200% 0;
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        background-position: 200% 0;
+        opacity: 0;
+    }
 }
 
 .card-subtitle {
@@ -2361,9 +2444,72 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 
 /* Candle Chart */
 .candle-chart {
+    position: relative;
     width: 100%;
-    overflow-x: auto;
-    padding: 8px 0;
+    height: 450px;
+    background: transparent;
+}
+
+.chart-legend {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    pointer-events: none;
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--text-main);
+    background: rgba(10, 12, 18, 0.45);
+    backdrop-filter: blur(8px);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: calc(100% - 24px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    transition: opacity 0.2s ease;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-label {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.legend-val {
+    min-width: 55px;
+    letter-spacing: -0.2px;
+}
+
+/* OHLC Colors */
+.legend-val.bullish { color: #f23645; } /* TradingView Red */
+.legend-val.bearish { color: #2962ff; } /* TradingView Blue */
+
+/* MA Label Colors (Matching the actual chart lines) */
+.ma5-label { color: #FFD700; }   /* Gold */
+.ma20-label { color: #FF00FF; }  /* Magenta */
+.ma60-label { color: #00FFFF; }  /* Cyan */
+.ma120-label { color: #ADFF2F; } /* GreenYellow */
+
+@media (max-width: 768px) {
+    .chart-legend {
+        font-size: 0.7rem;
+        padding: 5px 8px;
+        gap: 6px;
+        top: 6px;
+        left: 6px;
+    }
 }
 
 .candle-chart svg {
@@ -3172,9 +3318,9 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 }
 
 .workout-style:hover {
-    transform: translateY(-4px) scale(1.005);
-    border-color: var(--primary-soft);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.1);
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 .workout-stripe {
@@ -5638,8 +5784,9 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .workout-style:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .workout-stripe {

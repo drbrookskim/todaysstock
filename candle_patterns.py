@@ -1237,7 +1237,7 @@ def analyze_candle_patterns(df):
             continue
 
         candle = {
-            "date": df_clean.index[i].strftime("%m/%d"),
+            "date": df_clean.index[i].strftime("%Y-%m-%d"),
             "open": int(o),
             "high": int(h),
             "low": int(l),
