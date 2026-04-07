@@ -2800,15 +2800,15 @@ function renderCandleChart(candles) {
             const fmt = (v) => v != null ? Math.round(v).toLocaleString() : '—';
             
             legend.innerHTML = `
-                <div class="legend-item"><span class="legend-label">TIME</span> <span class="legend-val">${data.time}</span></div>
-                <div class="legend-item"><span class="legend-label">O</span> <span class="legend-val ${colorClass}">${fmt(data.open)}</span></div>
-                <div class="legend-item"><span class="legend-label">H</span> <span class="legend-val ${colorClass}">${fmt(data.high)}</span></div>
-                <div class="legend-item"><span class="legend-label">L</span> <span class="legend-val ${colorClass}">${fmt(data.low)}</span></div>
-                <div class="legend-item"><span class="legend-label">C</span> <span class="legend-val ${colorClass}">${fmt(data.close)}</span></div>
-                <div class="legend-item"><span class="legend-label ma5-label">MA5</span> <span class="legend-val ma5-label">${fmt(data.ma5)}</span></div>
-                <div class="legend-item"><span class="legend-label ma20-label">MA20</span> <span class="legend-val ma20-label">${fmt(data.ma20)}</span></div>
-                <div class="legend-item"><span class="legend-label ma60-label">MA60</span> <span class="legend-val ma60-label">${fmt(data.ma60)}</span></div>
-                <div class="legend-item"><span class="legend-label ma120-label">MA120</span> <span class="legend-val ma120-label">${fmt(data.ma120)}</span></div>
+                <div class="legend-item"><span class="legend-label">일자</span> <span class="legend-val">${data.time}</span></div>
+                <div class="legend-item"><span class="legend-label">시가</span> <span class="legend-val ${colorClass}">${fmt(data.open)}</span></div>
+                <div class="legend-item"><span class="legend-label">종가</span> <span class="legend-val ${colorClass}">${fmt(data.close)}</span></div>
+                <div class="legend-item"><span class="legend-label">고가</span> <span class="legend-val ${colorClass}">${fmt(data.high)}</span></div>
+                <div class="legend-item"><span class="legend-label">저가</span> <span class="legend-val ${colorClass}">${fmt(data.low)}</span></div>
+                <div class="legend-item"><span class="legend-label ma5-label">5일선</span> <span class="legend-val ma5-label">${fmt(data.ma5)}</span></div>
+                <div class="legend-item"><span class="legend-label ma20-label">20일선</span> <span class="legend-val ma20-label">${fmt(data.ma20)}</span></div>
+                <div class="legend-item"><span class="legend-label ma60-label">60일선</span> <span class="legend-val ma60-label">${fmt(data.ma60)}</span></div>
+                <div class="legend-item"><span class="legend-label ma120-label">120일선</span> <span class="legend-val ma120-label">${fmt(data.ma120)}</span></div>
             `;
         }
     }
