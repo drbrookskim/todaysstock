@@ -2577,7 +2577,9 @@ function renderCandleChart(candles) {
         currentChart.remove();
         currentChart = null;
     }
-    container.innerHTML = '';
+    
+    // 차트 컨테이너 초기화 시 범례(Legend) 요소 보존
+    container.innerHTML = '<div id="chartLegend" class="chart-legend"></div>';
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     
