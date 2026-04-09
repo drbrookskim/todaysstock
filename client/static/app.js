@@ -378,7 +378,7 @@ function restoreStockContext(type) {
 
 function showSection(id) {
     console.log(`[DEBUG] showSection: ${id}`);
-    const sections = ['dashboardHome', 'analysisSection', 'historySection', 'watchlistSection', 'valueChainSection', 'resultSection'];
+    const sections = ['dashboardHome', 'analysisSection', 'historySection', 'watchlistSection', 'valueChainSection', 'resultSection', 'adminSection'];
     sections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
@@ -4020,41 +4020,58 @@ async function renderAdminDashboard() {
     const listContainer = document.getElementById('adminUserList');
     if (!listContainer) return;
 
+    // 초기화 및 로딩 표시
     listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">사용자 목록을 불러오는 중...</td></tr>';
 
     try {
         const token = getSupaToken();
+        if (!token) {
+            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">인증 토큰이 없습니다. 다시 로그인해 주세요.</td></tr>';
+            return;
+        }
+
+        console.log('[ADMIN] Fetching pending users...');
         const res = await fetch(`${API_BASE_URL}/api/admin/pending`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!res.ok) {
+            throw new Error(`HTTP Error: ${res.status}`);
+        }
+
         const data = await res.json();
+        console.log('[ADMIN] Pending users data:', data);
 
         if (!data.success) {
-            listContainer.innerHTML = `<tr><td colspan="4" class="empty-msg" style="color:var(--color-up)">${data.message}</td></tr>`;
+            listContainer.innerHTML = `<tr><td colspan="4" class="empty-msg" style="color:var(--color-up)">${data.message || '권한이 없거나 요청에 실패했습니다.'}</td></tr>`;
             return;
         }
 
         if (!data.users || data.users.length === 0) {
-            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">승인 대기 중인 사용자가 없습니다.</td></tr>';
+            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">현재 승인 대기 중인 사용자가 없습니다.</td></tr>';
             return;
         }
 
-        listContainer.innerHTML = data.users.map(u => `
-            <tr>
-                <td>${u.email}</td>
-                <td>${new Date(u.created_at).toLocaleString()}</td>
-                <td><span class="status-badge status-pending">승인 대기</span></td>
-                <td>
-                    <button class="btn-approve" onclick="approveUser('${u.id}')">
-                        <i class="ph ph-check"></i> 승인
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        listContainer.innerHTML = data.users.map(u => {
+            const email = u.email || 'N/A';
+            const dateStr = u.created_at ? new Date(u.created_at).toLocaleString() : 'N/A';
+            return `
+                <tr>
+                    <td>${email}</td>
+                    <td>${dateStr}</td>
+                    <td><span class="status-badge status-pending">승인 대기</span></td>
+                    <td>
+                        <button class="btn-approve" onclick="approveUser('${u.id}')">
+                            <i class="ph ph-check"></i> 승인
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
     } catch (e) {
         console.error('[ADMIN] Failed to load pending users', e);
-        listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">목록 로드 중 오류가 발생했습니다.</td></tr>';
+        listContainer.innerHTML = `<tr><td colspan="4" class="empty-msg">목록 로드 중 오류가 발생했습니다: ${e.message}</td></tr>`;
     }
 }
 

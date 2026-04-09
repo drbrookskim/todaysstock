@@ -6880,13 +6880,14 @@ body.vc-fullscreen-active .main-content {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.2);
     color: #f59e0b;
-    padding: 10px 16px;
-    border-radius: 12px;
-    margin-bottom: 30px; /* 사이드바 상단 여백 고려 */
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-top: 10px;
+    margin-bottom: 5px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.82rem;
+    gap: 8px;
+    font-size: 0.78rem;
     animation: fadeIn 0.4s ease;
     line-height: 1.4;
 }
