@@ -73,7 +73,14 @@ def _get_or_create_profile(user_id, email):
         # 서비스 롤 키(supabase_global)를 사용하여 RLS를 무시하고 조회
         res = supabase_global.table("profiles").select("*").eq("id", user_id).execute()
         if res.data:
-            return res.data[0]
+            profile = res.data[0]
+            # [Fix] 최초 관리자 계정은 기존에 미승인 상태였더라도 로그인 시 강제로 승인 상태로 보정
+            if email.lower() == INITIAL_ADMIN_EMAIL.lower() and (not profile.get("is_approved") or profile.get("role") != "admin"):
+                print(f"👑 Syncing admin status for {email}")
+                supabase_global.table("profiles").update({"is_approved": True, "role": "admin"}).eq("id", user_id).execute()
+                profile["is_approved"] = True
+                profile["role"] = "admin"
+            return profile
             
         # 프로필이 없는 경우 새로 생성
         is_approved = (email.lower() == INITIAL_ADMIN_EMAIL.lower())
