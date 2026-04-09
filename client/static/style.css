@@ -6872,13 +6872,101 @@ body.vc-fullscreen-active .main-content {
 }
 
 /* Ensure the floating toggle buttons are accessible */
-.value-chain-section.fullscreen-mode .vc-view-toggle {
-    position: sticky;
-    top: 0;
-    z-index: 1010;
-    background: var(--bg-main);
-    padding: 10px 0;
+
+/* ──────────────────────────────────────────────────
+   Pending Approval Banner & Admin UI
+   ────────────────────────────────────────────────── */
+.pending-banner {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    padding: 10px 16px;
+    border-radius: 12px;
+    margin-bottom: 30px; /* 사이드바 상단 여백 고려 */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    animation: fadeIn 0.4s ease;
+    line-height: 1.4;
+}
+
+.pending-banner i {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.admin-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-main);
+    box-shadow: var(--shadow-premium);
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.admin-table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.85rem;
     border-bottom: 1px solid var(--border-soft);
-    margin-bottom: 10px;
+}
+
+.admin-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.admin-table tr:hover td {
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.admin-table .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.admin-table .status-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.admin-table .btn-approve {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-table .btn-approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(81, 84, 238, 0.3);
+}
+
+.admin-table .empty-msg {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-muted);
 }
 

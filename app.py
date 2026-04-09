@@ -61,6 +61,36 @@ else:
     supabase_global = None
     print("❌ SUPABASE_URL 또는 KEY가 설정되지 않았습니다.")
 
+# --- 관리자 승인 시스템 상수 및 헬퍼 ---
+INITIAL_ADMIN_EMAIL = "nelcome9@gmail.com"
+
+def _get_or_create_profile(user_id, email):
+    """사용자 프로필을 조회하고 없으면 생성합니다."""
+    if not supabase_global:
+        return {"is_approved": True, "role": "user"}  # Supabase가 안 잡혀있을 때의 Fallback
+
+    try:
+        # 서비스 롤 키(supabase_global)를 사용하여 RLS를 무시하고 조회
+        res = supabase_global.table("profiles").select("*").eq("id", user_id).execute()
+        if res.data:
+            return res.data[0]
+            
+        # 프로필이 없는 경우 새로 생성
+        is_approved = (email.lower() == INITIAL_ADMIN_EMAIL.lower())
+        role = "admin" if (email.lower() == INITIAL_ADMIN_EMAIL.lower()) else "user"
+        
+        new_profile = {
+            "id": user_id,
+            "email": email,
+            "is_approved": is_approved,
+            "role": role
+        }
+        supabase_global.table("profiles").insert(new_profile).execute()
+        return new_profile
+    except Exception as e:
+        print(f"⚠️ Profile check/create error: {e}")
+        return {"is_approved": True, "role": "user"} # 오류 시 서비스 중단을 막기 위해 승인된 것으로 간주(개발 편의성)
+
 # db_client는 기존 코드와의 호환성을 위해 유지
 db_client = supabase_global
 
@@ -657,8 +687,6 @@ def login():
     except Exception as e:
         print(f"❌ Login error for {username}: {str(e)}")
         return jsonify({"success": False, "message": "아이디 또는 비밀번호가 올바르지 않습니다."}), 401
-
-
 @app.route("/api/auth/google", methods=["GET"])
 def auth_google():
     """Supabase OAuth (Google) 로그인 URL 반환 (Implicit Flow 강제 적용)"""
@@ -717,7 +745,15 @@ def me():
             else:
                 username = email.split('@')[0] if email else "사용자"
                 
-            return jsonify({"logged_in": True, "username": username, "user_id": res.user.id})
+            profile = _get_or_create_profile(res.user.id, email)
+                
+            return jsonify({
+                "logged_in": True, 
+                "username": username, 
+                "user_id": res.user.id,
+                "is_approved": profile.get("is_approved", False),
+                "role": profile.get("role", "user")
+            })
         except:
             pass
     return jsonify({"logged_in": False})
@@ -735,10 +771,10 @@ def session():
         email     = user_res.user.email or ""
         username  = full_name or (email.split('@')[0] if email else "사용자")
 
-        # Watchlist: 서비스 롤 클라이언트를 사용하거나, 사용자 토큰 기반의 클라이언트로 RLS 우회
+        # Watchlist
         try:
             user_id = user_res.user.id
-            wl_res = get_user_db(token).table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
+            wl_res = supabase_global.table("watchlist").select("stock_code,stock_name,market").eq("user_id", user_id).execute()
             watchlist = [
                 {"code": item["stock_code"], "name": item["stock_name"], "market": item["market"]}
                 for item in wl_res.data
@@ -747,10 +783,66 @@ def session():
             print(f"session watchlist error: {wl_err}")
             watchlist = []
 
-        return jsonify({"logged_in": True, "username": username, "watchlist": watchlist})
+        # 프로필 정보 연동
+        profile = _get_or_create_profile(user_res.user.id, email)
+
+        return jsonify({
+            "logged_in": True, 
+            "username": username, 
+            "watchlist": watchlist,
+            "is_approved": profile.get("is_approved", False),
+            "role": profile.get("role", "user")
+        })
     except Exception as e:
-        print(f"session auth error: {e}")
+        print(f"session error: {e}")
         return jsonify({"logged_in": False, "watchlist": []})
+
+
+# ── 관리자 승인 API ────────────────────────────────────────────────
+@app.route("/api/admin/pending", methods=["GET"])
+def admin_get_pending():
+    """승인 대기 중인 사용자 목록 조회 (관리자 전용)"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token or not supabase_global:
+        return jsonify({"success": False, "message": "권한이 없습니다."}), 403
+    
+    try:
+        # 요청자의 권한 확인
+        req_user = supabase_global.auth.get_user(token)
+        req_profile = supabase_global.table("profiles").select("role").eq("id", req_user.user.id).execute()
+        
+        if not req_profile.data or req_profile.data[0].get("role") != "admin":
+            return jsonify({"success": False, "message": "관리자 전용 기능입니다."}), 403
+            
+        # 대기 중인 목록 조회
+        pending_res = supabase_global.table("profiles").select("*").eq("is_approved", False).execute()
+        return jsonify({"success": True, "users": pending_res.data})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route("/api/admin/approve", methods=["POST"])
+def admin_approve_user():
+    """사용자 승인 처리 (관리자 전용)"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    data = request.json
+    target_user_id = data.get("user_id")
+    
+    if not token or not supabase_global or not target_user_id:
+        return jsonify({"success": False, "message": "잘못된 요청입니다."}), 400
+        
+    try:
+        # 요청자의 권한 확인
+        req_user = supabase_global.auth.get_user(token)
+        req_profile = supabase_global.table("profiles").select("role").eq("id", req_user.user.id).execute()
+        
+        if not req_profile.data or req_profile.data[0].get("role") != "admin":
+            return jsonify({"success": False, "message": "관리자 전용 기능입니다."}), 403
+            
+        # 대상 사용자 승인 처리
+        supabase_global.table("profiles").update({"is_approved": True}).eq("id", target_user_id).execute()
+        return jsonify({"success": True, "message": "승인이 완료되었습니다."})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 @app.route("/api/watchlist", methods=["GET", "POST", "DELETE"])

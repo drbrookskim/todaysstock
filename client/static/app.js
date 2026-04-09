@@ -383,9 +383,16 @@ function showSection(id) {
         const el = document.getElementById(s);
         if (el) {
             el.classList.add('hidden');
-            // [MOD] Do NOT clear el.style.display, let CSS and explicit JS handle it
         }
     });
+
+    // --- [승인 시스템 적용] 승인되지 않은 사용자의 특정 섹션 접근 차단 ---
+    const restrictedForUnapproved = ['analysisSection', 'valueChainSection', 'watchlistSection'];
+    if (authUser?.logged_in && !authUser.is_approved && restrictedForUnapproved.includes(id)) {
+        console.warn(`[AUTH] Access denied to ${id} (Not Approved)`);
+        navigateToSection('navHome');
+        return;
+    }
 
     const target = document.getElementById(id);
     if (target) {
@@ -444,6 +451,8 @@ function showSection(id) {
         if (patternReportSection && _lastAnalysisData && currentStock && _lastAnalysisData.code === (currentStock.code || currentStock.ticker)) {
             patternReportSection.classList.remove('hidden');
         }
+    } else if (id === 'adminSection') {
+        renderAdminDashboard();
     } else {
         requestAnimationFrame(() => {
             console.log(`[DEBUG] Section "${id}" is now active. Triggering renderers.`);
@@ -3271,13 +3280,40 @@ async function initAuth() {
                 sidebarUserSection.title = "사용자 정보";
             }
 
-            // Show restricted menus for authenticated users
-            if (navWatchlist) navWatchlist.style.display = 'flex';
-            if (navAnalysis) navAnalysis.style.display = 'flex';
-            if (navValueChain) navValueChain.style.display = 'flex';
-
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
             updateWatchlistCount();
+
+            // --- [승인 시스템 적용] 승인 상태 배너 및 메뉴 제어 ---
+            const pendingBanner = document.getElementById('pendingApprovalBanner');
+            const navAdmin = document.getElementById('navAdmin');
+            const navAnalysis = document.getElementById('navAnalysis');
+            const navValueChain = document.getElementById('navValueChain');
+            const navWatchlist = document.getElementById('navWatchlist');
+
+            if (authUser.is_approved) {
+                if (pendingBanner) pendingBanner.classList.add('hidden');
+                if (navAnalysis) navAnalysis.style.display = 'flex';
+                if (navValueChain) navValueChain.style.display = 'flex';
+                if (navWatchlist) navWatchlist.style.display = 'flex';
+            } else {
+                if (pendingBanner) pendingBanner.classList.remove('hidden');
+                if (navAnalysis) navAnalysis.style.display = 'none';
+                if (navValueChain) navValueChain.style.display = 'none';
+                if (navWatchlist) navWatchlist.style.display = 'none';
+                
+                // 승인 대기 중인데 차단된 섹션에 있다면 홈으로
+                const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
+                if (restricted.includes(currentActiveSectionId)) {
+                    navigateToSection('navHome');
+                }
+            }
+
+            // 관리자 메뉴 노출
+            if (authUser.role === 'admin') {
+                if (navAdmin) navAdmin.classList.remove('hidden');
+            } else {
+                if (navAdmin) navAdmin.classList.add('hidden');
+            }
         } else {
             console.log('[DEBUG] updateAuthUI - Updating UI for Guest');
             if (userNameEl) userNameEl.textContent = 'Guest';
@@ -3321,8 +3357,13 @@ async function initAuth() {
             const data = await res.json();
             console.log('Session data:', data);
 
-            // authUser 형식 유지 (logged_in, username)
-            authUser = { logged_in: data.logged_in, username: data.username };
+            // authUser 형식 유지 (logged_in, username, is_approved, role)
+            authUser = { 
+                logged_in: data.logged_in, 
+                username: data.username,
+                is_approved: data.is_approved,
+                role: data.role
+            };
 
             if (data.logged_in && data.watchlist) {
                 currentWatchlist = data.watchlist;
@@ -3398,6 +3439,11 @@ function _vcRenderCategories() {
 }
 
 async function _vcSelectCategory(cat) {
+    // [보안 지연 확인] 승인되지 않은 경우 접근 불가 안내 (v55)
+    if (authUser && !authUser.is_approved) {
+        showToast('관리자 승인 후 이용 가능합니다.', 'warning');
+        return;
+    }
     _vcCurrentCategory = cat;
     _vcRenderCategories();
     const label = document.getElementById('vcCategoryLabel');
@@ -3963,5 +4009,78 @@ window.toggleVcFullscreen = function() {
                 window._vcFg.width(container.clientWidth).height(Math.max(500, container.clientHeight - 40));
             }
         }, 150);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────
+// ── 관리자 대시보드 (Admin Dashboard)
+// ──────────────────────────────────────────────────────────────────
+
+async function renderAdminDashboard() {
+    const listContainer = document.getElementById('adminUserList');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">사용자 목록을 불러오는 중...</td></tr>';
+
+    try {
+        const token = getSupaToken();
+        const res = await fetch(`${API_BASE_URL}/api/admin/pending`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            listContainer.innerHTML = `<tr><td colspan="4" class="empty-msg" style="color:var(--color-up)">${data.message}</td></tr>`;
+            return;
+        }
+
+        if (!data.users || data.users.length === 0) {
+            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">승인 대기 중인 사용자가 없습니다.</td></tr>';
+            return;
+        }
+
+        listContainer.innerHTML = data.users.map(u => `
+            <tr>
+                <td>${u.email}</td>
+                <td>${new Date(u.created_at).toLocaleString()}</td>
+                <td><span class="status-badge status-pending">승인 대기</span></td>
+                <td>
+                    <button class="btn-approve" onclick="approveUser('${u.id}')">
+                        <i class="ph ph-check"></i> 승인
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (e) {
+        console.error('[ADMIN] Failed to load pending users', e);
+        listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">목록 로드 중 오류가 발생했습니다.</td></tr>';
+    }
+}
+
+async function approveUser(userId) {
+    if (!confirm('정말 이 사용자를 승인하시겠습니까?')) return;
+
+    try {
+        const token = getSupaToken();
+        const res = await fetch(`${API_BASE_URL}/api/admin/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            showToast('사용자 승인이 완료되었습니다.', 'success');
+            renderAdminDashboard(); // 목록 갱신
+        } else {
+            showToast(data.message || '승인에 실패했습니다.', 'error');
+        }
+    } catch (e) {
+        console.error('[ADMIN] Approve error', e);
+        showToast('네트워크 오류가 발생했습니다.', 'error');
     }
 }
