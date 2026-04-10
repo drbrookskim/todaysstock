@@ -41,8 +41,9 @@ def _cache_set(key: str, value):
 
 app = Flask(__name__, static_folder=None)
 # 모든 오리진에서 API 접근 허용 및 전용 메서드/헤더 완화 (배포 환경 통신 복구)
+# [Fix] origins="*"와 supports_credentials=True가 충돌할 수 있으므로 명시적 오리진 지정
 CORS(app, 
-     resources={r"/api/*": {"origins": "*"}}, 
+     resources={r"/api/*": {"origins": ["https://todaysstock.pages.dev", "http://localhost:8000", "http://127.0.0.1:8000"]}}, 
      allow_headers=["Authorization", "Content-Type", "x-requested-with"],
      methods=["GET", "POST", "DELETE", "OPTIONS", "PUT"],
      supports_credentials=True)
