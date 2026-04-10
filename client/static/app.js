@@ -1306,12 +1306,23 @@ async function renderMacroIndicators() {
 
     // --- 1. Cache Check: Skip if loaded within last 5 mins ---
     const now = Date.now();
-    const hasData = indexList && indexList.innerHTML.length > 100;
+    const hasData = indexList && indexList.innerHTML.length > 100 && !indexList.innerHTML.includes('ph-spinner');
     if (now - _lastMacroLoadTime < 300000 && hasData) {
         console.log('[DEBUG] Skipping macro indicators load - using session cache');
         return;
     }
     _lastMacroLoadTime = now;
+
+    // Show Loading state
+    if (indexList) {
+        indexList.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; color:var(--text-muted); gap: 12px;">
+                <i class="ph ph-spinner ph-spin" style="font-size:24px; color:var(--primary);"></i>
+                <span style="font-size:0.9rem;">지표 데이터를 불러오는 중...</span>
+                <span style="font-size:0.75rem; opacity:0.6;">(서버가 시작되는 중이면 최대 40초가 소요될 수 있습니다)</span>
+            </div>
+        `;
+    }
 
     try {
         const url = `${API_BASE_URL}/api/macro?t=${Date.now()}`;
