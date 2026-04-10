@@ -3021,6 +3021,12 @@ function toggleTheme() {
 function startApp() {
     console.log('[DEBUG] startApp() executing. readyState:', document.readyState);
     
+    // DEBUG BANNER (To verfiy execution and version in production)
+    const debugBanner = document.createElement('div');
+    debugBanner.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:red; color:white; padding:10px; z-index:9999; text-align:center; font-weight:bold; word-break:break-all;';
+    debugBanner.innerHTML = 'APP.JS V14 LOADED: ' + new Date().toLocaleTimeString();
+    document.body.prepend(debugBanner);
+    
     // ── Sync Init (blocking is fine, these are instant DOM operations) ──
     const safeRun = (name, fn) => {
         try {
