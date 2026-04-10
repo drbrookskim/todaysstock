@@ -40,7 +40,8 @@ def _cache_set(key: str, value):
 
 
 app = Flask(__name__, static_folder=None)
-CORS(app)
+# 모든 오리진에서 API 접근 허용 및 인증 헤더 처리
+CORS(app, resources={r"/api/*": {"origins": "*"}}, allow_headers=["Authorization", "Content-Type"])
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24).hex())
 
 load_dotenv()

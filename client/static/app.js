@@ -35,6 +35,7 @@ async function fetchWithTimeout(resource, options = {}) {
         return response;
     } catch (error) {
         clearTimeout(id);
+        console.error(`[DEBUG] fetchWithTimeout Error (${resource}):`, error);
         if (error.name === 'AbortError') {
             const err = new Error('서버 응답 시간이 초과되었습니다 (30초). 잠시 후 다시 시도해 주세요.');
             err.name = 'TimeoutError';
@@ -3366,7 +3367,7 @@ async function initAuth() {
             });
             console.log('Session response status:', res.status);
             const data = await res.json();
-            console.log('Session data:', data);
+            console.log('[DEBUG] Session data received:', data);
 
             // authUser 형식 유지 (logged_in, username, is_approved, role)
             authUser = { 
@@ -3382,7 +3383,7 @@ async function initAuth() {
             }
 
         } catch (error) {
-            console.warn("Session check failed", error);
+            console.error("[DEBUG] fetchUserSession failed:", error);
         }
         updateAuthUI();
     };
