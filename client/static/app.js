@@ -3388,8 +3388,8 @@ async function initAuth() {
         updateAuthUI();
     };
 
-    // 로드 시 초기 세션 확인
-    await fetchUserSession();
+    // 로드 시 초기 세션 확인 (비동기로 실행하여 메인 흐름 차단 방지)
+    fetchUserSession().catch(err => console.error('[DEBUG] Initial session fetch failed:', err));
 }
 
 // ──────────────────────────────────────────────────────────────────
