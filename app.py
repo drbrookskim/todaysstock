@@ -814,18 +814,27 @@ def admin_get_users():
         return jsonify({"success": False, "message": "권한이 없습니다."}), 403
     
     try:
-        # 요청자의 권한 확인
-        req_user = supabase_global.auth.get_user(token)
-        req_profile = supabase_global.table("profiles").select("role").eq("id", req_user.user.id).execute()
-        
+        # 1. 요청자의 권한 확인 (안전한 인증 확인)
+        try:
+            user_res = supabase_global.auth.get_user(token)
+            if not user_res or not user_res.user:
+                return jsonify({"success": False, "message": "유효하지 않은 세션입니다."}), 401
+            req_user_id = user_res.user.id
+        except Exception as auth_err:
+            print(f"[ADMIN] Auth check error: {auth_err}")
+            return jsonify({"success": False, "message": "인증에 실패했습니다."}), 401
+
+        # 2. 관리자 권한 확인
+        req_profile = supabase_global.table("profiles").select("role").eq("id", req_user_id).execute()
         if not req_profile.data or req_profile.data[0].get("role") != "admin":
             return jsonify({"success": False, "message": "관리자 전용 기능입니다."}), 403
             
-        # 모든 가입 사용자 목록 조회 (최근 가입순)
+        # 3. 모든 가입 사용자 목록 조회 (최근 가입순)
         users_res = supabase_global.table("profiles").select("*").order("created_at", desc=True).execute()
         return jsonify({"success": True, "users": users_res.data})
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        print(f"[ADMIN] Get users error: {e}")
+        return jsonify({"success": False, "message": f"서버 오류: {str(e)}"}), 500
 
 @app.route("/api/admin/approve", methods=["POST"])
 def admin_approve_user():

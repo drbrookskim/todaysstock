@@ -3276,7 +3276,14 @@ async function initAuth() {
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
             const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
-            if (sidebarWithdrawBtn) sidebarWithdrawBtn.classList.remove('hidden');
+            if (sidebarWithdrawBtn) {
+                // 관리자는 계정 보호를 위해 탈퇴 메뉴를 노출하지 않음
+                if (authUser.role === 'admin') {
+                    sidebarWithdrawBtn.classList.add('hidden');
+                } else {
+                    sidebarWithdrawBtn.classList.remove('hidden');
+                }
+            }
             if (sidebarUserSection) {
                 sidebarUserSection.style.cursor = 'default';
                 sidebarUserSection.title = "사용자 정보";
