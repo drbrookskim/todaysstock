@@ -1316,11 +1316,11 @@ async function renderMacroIndicators() {
     try {
         const url = `${API_BASE_URL}/api/macro?t=${Date.now()}`;
         console.log('[DEBUG] Fetching macro data from:', url);
-        const resp = await fetchWithTimeout(url, { timeout: 30000 });
+        const resp = await fetchWithTimeout(url, { timeout: 45000 });
         if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
         const data = await resp.json();
         if (data.error) console.warn('[DEBUG] Server reported error:', data.error);
-        console.log('[DEBUG] Macro data received:', data);
+        console.log('[DEBUG] Macro data received:', Object.keys(data));
 
         // Data Mapping (시장 지수 대시보드용)
         const indexData = [
@@ -1411,7 +1411,7 @@ async function renderMacroIndicators() {
 
     } catch (err) {
         console.error("renderMacroIndicators error:", err);
-        const errorMsg = err.name === 'TimeoutError' ? '서버 응답 시간 초과 (30초)' : (err.message || '알 수 없는 오류');
+        const errorMsg = err.name === 'TimeoutError' ? '서버 응답 시간 초과 (45초)' : (err.message || '알 수 없는 오류');
         if (indexList) {
             indexList.innerHTML = `
                 <div class="error-msg" style="padding: 20px; text-align: center;">
@@ -1420,6 +1420,15 @@ async function renderMacroIndicators() {
                     <button onclick="renderMacroIndicators()" style="margin-top: 12px; padding: 4px 12px; font-size: 12px; cursor: pointer;">다시 시도</button>
                 </div>
             `;
+        }
+        // Auto-retry once after 5 seconds (handles Render cold-start delays)
+        if (!err._retried) {
+            err._retried = true;
+            console.log('[DEBUG] Auto-retrying macro fetch in 5s...');
+            setTimeout(() => {
+                _lastMacroLoadTime = 0; // reset cache so it re-fetches
+                renderMacroIndicators();
+            }, 5000);
         }
     }
 }
@@ -3001,11 +3010,11 @@ function toggleTheme() {
 function startApp() {
     console.log('[DEBUG] startApp() executing. readyState:', document.readyState);
     
-    // ── Safe Init Sequence ──
-    const safeInit = (name, fn) => {
+    // ── Safe Init Sequence (supports both sync and async fns) ──
+    const safeInit = async (name, fn) => {
         try {
             console.log(`[DEBUG] Initializing: ${name}`);
-            fn();
+            await fn();
         } catch (err) {
             console.error(`[ERROR] Failed to initialize ${name}:`, err);
         }
@@ -3015,6 +3024,7 @@ function startApp() {
     safeInit('Navigation', initNavigation);
     safeInit('MobileSidebar', initMobileSidebar);
     safeInit('Watchlist', renderWatchlist);
+    // MacroIndicators: run without awaiting so it doesn't block other init
     safeInit('MacroIndicators', renderMacroIndicators);
     safeInit('Auth', initAuth);
 
