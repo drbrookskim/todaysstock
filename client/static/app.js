@@ -3275,6 +3275,8 @@ async function initAuth() {
             if (pageGreeting) pageGreeting.textContent = authUser.username ? `Hello, ${authUser.username} 🕊️` : 'Hello, User 🕊️';
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
+            const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
+            if (sidebarWithdrawBtn) sidebarWithdrawBtn.classList.remove('hidden');
             if (sidebarUserSection) {
                 sidebarUserSection.style.cursor = 'default';
                 sidebarUserSection.title = "사용자 정보";
@@ -3321,6 +3323,8 @@ async function initAuth() {
             if (pageGreeting) pageGreeting.textContent = 'Hello, Signnith 🕊️';
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.add('hidden');
+            const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
+            if (sidebarWithdrawBtn) sidebarWithdrawBtn.classList.add('hidden');
             if (sidebarUserSection) {
                 sidebarUserSection.style.cursor = 'pointer';
                 sidebarUserSection.title = "로그인하려면 클릭하세요";
@@ -4030,8 +4034,8 @@ async function renderAdminDashboard() {
             return;
         }
 
-        console.log('[ADMIN] Fetching pending users...');
-        const res = await fetch(`${API_BASE_URL}/api/admin/pending`, {
+        console.log('[ADMIN] Fetching all users...');
+        const res = await fetch(`${API_BASE_URL}/api/admin/users`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -4040,7 +4044,7 @@ async function renderAdminDashboard() {
         }
 
         const data = await res.json();
-        console.log('[ADMIN] Pending users data:', data);
+        console.log('[ADMIN] Users data:', data);
 
         if (!data.success) {
             listContainer.innerHTML = `<tr><td colspan="4" class="empty-msg" style="color:var(--color-up)">${data.message || '권한이 없거나 요청에 실패했습니다.'}</td></tr>`;
@@ -4048,29 +4052,35 @@ async function renderAdminDashboard() {
         }
 
         if (!data.users || data.users.length === 0) {
-            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">현재 승인 대기 중인 사용자가 없습니다.</td></tr>';
+            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">가입된 사용자가 없습니다.</td></tr>';
             return;
         }
 
         listContainer.innerHTML = data.users.map(u => {
             const email = u.email || 'N/A';
             const dateStr = u.created_at ? new Date(u.created_at).toLocaleString() : 'N/A';
+            
+            // 상태 뱃지 및 작업 버튼 분기 처리
+            const statusBadge = u.is_approved 
+                ? '<span class="status-badge status-approved">승인 완료</span>' 
+                : '<span class="status-badge status-pending">승인 대기</span>';
+            
+            const actionBtn = u.is_approved 
+                ? '<span style="color:var(--accent); font-size: 1.2rem;"><i class="ph ph-check-circle-fill"></i></span>'
+                : `<button class="btn-approve" onclick="approveUser('${u.id}')"><i class="ph ph-check"></i> 승인</button>`;
+
             return `
                 <tr>
                     <td>${email}</td>
                     <td>${dateStr}</td>
-                    <td><span class="status-badge status-pending">승인 대기</span></td>
-                    <td>
-                        <button class="btn-approve" onclick="approveUser('${u.id}')">
-                            <i class="ph ph-check"></i> 승인
-                        </button>
-                    </td>
+                    <td>${statusBadge}</td>
+                    <td>${actionBtn}</td>
                 </tr>
             `;
         }).join('');
 
     } catch (e) {
-        console.error('[ADMIN] Failed to load pending users', e);
+        console.error('[ADMIN] Failed to load users', e);
         listContainer.innerHTML = `<tr><td colspan="4" class="empty-msg">목록 로드 중 오류가 발생했습니다: ${e.message}</td></tr>`;
     }
 }
@@ -4099,5 +4109,37 @@ async function approveUser(userId) {
     } catch (e) {
         console.error('[ADMIN] Approve error', e);
         showToast('네트워크 오류가 발생했습니다.', 'error');
+    }
+}
+
+/**
+ * [NEW] 회원 탈퇴 처리 (withdrawal)
+ */
+async function withdrawAccount() {
+    const confirm1 = confirm("정말 회원 탈퇴를 진행하시겠습니까?\n모든 관심종목과 데이터가 복구 불가능하게 영구 삭제됩니다.");
+    if (!confirm1) return;
+
+    const confirm2 = confirm("마지막 확인입니다. 탈퇴하시겠습니까?");
+    if (!confirm2) return;
+
+    try {
+        const token = getSupaToken();
+        const res = await fetch(`${API_BASE_URL}/api/auth/withdrawal`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert("회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.");
+            // 세션 정리 및 페이지 새로고침
+            localStorage.removeItem('supabase_token');
+            window.location.reload();
+        } else {
+            showToast(data.message || "탈퇴 처리 중 오류가 발생했습니다.", "error");
+        }
+    } catch (e) {
+        console.error("Withdrawal error:", e);
+        showToast("서버 통신 오류가 발생했습니다.", "error");
     }
 }

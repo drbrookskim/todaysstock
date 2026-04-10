@@ -806,9 +806,9 @@ def session():
 
 
 # ── 관리자 승인 API ────────────────────────────────────────────────
-@app.route("/api/admin/pending", methods=["GET"])
-def admin_get_pending():
-    """승인 대기 중인 사용자 목록 조회 (관리자 전용)"""
+@app.route("/api/admin/users", methods=["GET"])
+def admin_get_users():
+    """전체 사용자 목록 조회 (관리자 전용)"""
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     if not token or not supabase_global:
         return jsonify({"success": False, "message": "권한이 없습니다."}), 403
@@ -821,9 +821,9 @@ def admin_get_pending():
         if not req_profile.data or req_profile.data[0].get("role") != "admin":
             return jsonify({"success": False, "message": "관리자 전용 기능입니다."}), 403
             
-        # 대기 중인 목록 조회
-        pending_res = supabase_global.table("profiles").select("*").eq("is_approved", False).execute()
-        return jsonify({"success": True, "users": pending_res.data})
+        # 모든 가입 사용자 목록 조회 (최근 가입순)
+        users_res = supabase_global.table("profiles").select("*").order("created_at", desc=True).execute()
+        return jsonify({"success": True, "users": users_res.data})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
@@ -849,6 +849,30 @@ def admin_approve_user():
         supabase_global.table("profiles").update({"is_approved": True}).eq("id", target_user_id).execute()
         return jsonify({"success": True, "message": "승인이 완료되었습니다."})
     except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route("/api/auth/withdrawal", methods=["DELETE"])
+def withdraw_account():
+    """사용자 본인 계정 탈퇴 처리 (Supabase Admin API 이용)"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token or not supabase_global:
+        return jsonify({"success": False, "message": "인증 정보가 없습니다."}), 401
+        
+    try:
+        # 1. 토큰으로 사용자 정보 조회
+        user_res = supabase_global.auth.get_user(token)
+        if not user_res or not user_res.user:
+            return jsonify({"success": False, "message": "유효하지 않은 사용자입니다."}), 401
+            
+        user_id = user_res.user.id
+        
+        # 2. Supabase Admin SDK를 사용하여 유저 삭제 (profiles, watchlists는 CASCADE 삭제됨)
+        # Note: supabase_global은 서비스 롤 키로 생성되어 admin 권한을 가짐
+        supabase_global.auth.admin.delete_user(user_id)
+        
+        return jsonify({"success": True, "message": "회원 탈퇴가 완료되었습니다."})
+    except Exception as e:
+        print(f"Withdrawal error: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 

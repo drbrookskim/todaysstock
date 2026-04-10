@@ -451,6 +451,32 @@ html:not([data-theme="light"]) .nav-item.active i {
     font-size: 1.1rem;
 }
 
+.withdrawal-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    border-radius: var(--radius-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+}
+
+.withdrawal-btn:hover {
+    background: rgba(239, 68, 68, 0.05); /* Very light red */
+    color: var(--color-up); /* Red */
+    border-color: rgba(239, 68, 68, 0.1);
+}
+
+.withdrawal-btn i {
+    font-size: 1.2rem;
+}
+
 /* ── Main Content Area ── */
 .main-content {
     flex: 1;
@@ -6942,6 +6968,11 @@ body.vc-fullscreen-active .main-content {
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+.admin-table .status-approved {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent);
 }
 
 .admin-table .status-pending {
