@@ -687,11 +687,14 @@ function renderWatchlist() {
     }
 
     // "관심종목에는 타일 형태만 표시" - Simplified tile layout
-    container.innerHTML = list.map(item => `
-        <div class="watchlist-tile animate-in" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(item.market)}" data-name="${escapeHtml(item.name)}">
+    container.innerHTML = list.map(item => {
+        const market = item.market || 'KOSPI';
+        const marketClass = market.toLowerCase();
+        return `
+        <div class="watchlist-tile animate-in" data-code="${escapeHtml(item.code)}" data-market="${escapeHtml(market)}" data-name="${escapeHtml(item.name)}">
             <div class="watchlist-tile-clickable-area">
                 <div class="watchlist-tile-header">
-                    <span class="watchlist-tile-market ${item.market.toLowerCase()}">${escapeHtml(item.market)}</span>
+                    <span class="watchlist-tile-market ${marketClass}">${escapeHtml(market)}</span>
                     <button class="watchlist-tile-remove" onclick="event.stopPropagation(); removeFromWatchlist('${escapeHtml(item.code)}')">
                         <i class="ph ph-x"></i>
                     </button>
@@ -824,7 +827,8 @@ function renderSuggestions(items, query) {
     }
 
     suggestDropdown.innerHTML = items.map((item, idx) => {
-        const marketClass = escapeHtml(item.market).toLowerCase();
+        const market = item.market || 'KOSPI';
+        const marketClass = market.toLowerCase();
         const highlightedName = highlightMatch(escapeHtml(item.name), escapeHtml(query));
         const addedBadge = '';
         return `
@@ -2997,24 +3001,32 @@ function toggleTheme() {
 function startApp() {
     console.log('[DEBUG] startApp() executing. readyState:', document.readyState);
     
-    initTheme();
+    // ── Safe Init Sequence ──
+    const safeInit = (name, fn) => {
+        try {
+            console.log(`[DEBUG] Initializing: ${name}`);
+            fn();
+        } catch (err) {
+            console.error(`[ERROR] Failed to initialize ${name}:`, err);
+        }
+    };
+
+    safeInit('Theme', initTheme);
+    safeInit('Navigation', initNavigation);
+    safeInit('MobileSidebar', initMobileSidebar);
+    safeInit('Watchlist', renderWatchlist);
+    safeInit('MacroIndicators', renderMacroIndicators);
+    safeInit('Auth', initAuth);
 
     if (searchInput) {
         searchInput.focus();
-    } else {
-        console.warn('[DEBUG] searchInput not found during init');
     }
 
     document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
     renderRecentSearches();
     document.getElementById('clearRecent')?.addEventListener('click', clearRecentSearches);
 
-    // Watchlist & Macro init
-    renderWatchlist();
-    renderMacroIndicators();
-    updateWatchlistBtn();
-
-    // Unified Favorite Button Listener (for all sections)
+    // Unified Favorite Button Listener
     document.addEventListener('click', (e) => {
         const favBtn = e.target.closest('.favorite-btn');
         if (favBtn) {
@@ -3036,11 +3048,7 @@ function startApp() {
     document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
 
-    // Core UI Init
-    initNavigation();
-    initMobileSidebar();
-
-    // Search Button Listener (Moved outside initNavigation for robustness)
+    // Search Button Listener
     const searchBtn = document.getElementById('searchBtn');
     searchBtn?.addEventListener('click', () => {
         const query = searchInput.value.trim();
@@ -3063,9 +3071,6 @@ function startApp() {
             searchBtn?.click();
         }
     });
-
-    // Auth & Session Init
-    initAuth();
 }
 
 if (document.readyState === 'loading') {
