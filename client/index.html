@@ -1134,8 +1134,23 @@
                 document.getElementById('pwaInstallBanner').style.display = 'none';
                 localStorage.setItem(PWA_DISMISSED_KEY, String(Date.now()));
             });
-        })();
-    </script>
+    <!-- ── 전역 커스텀 모달 (Themed Modal) ── -->
+    <div id="customModal" class="modal-overlay hidden">
+        <div class="modal-content animate-pop">
+            <div class="modal-header">
+                <i id="modalIcon" class="ph ph-warning-circle"></i>
+                <h3 id="modalTitle">알림</h3>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">내용이 들어갑니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="modalCancelBtn" class="btn-cancel">취소</button>
+                <button id="modalConfirmBtn" class="btn-confirm">확인</button>
+            </div>
+        </div>
+    </div>
+
     <script src="./static/app.js?v=20260405_v40"></script>
 </body>
 

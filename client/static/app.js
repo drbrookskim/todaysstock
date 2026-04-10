@@ -3100,23 +3100,23 @@ async function initAuth() {
     let isLoginMode = true;
 
     // 모달 열기/닫기 로직
-    const showModal = () => {
+    const showAuthModal = () => {
         authModalOverlay.classList.add('show');
         authModal.classList.add('show');
     };
 
-    const hideModal = () => {
+    const hideAuthModal = () => {
         authModalOverlay.classList.remove('show');
         authModal.classList.remove('show');
         authErrorMsg.textContent = '';
     };
 
     sidebarUserSection?.addEventListener('click', () => {
-        if (!authUser || !authUser.logged_in) showModal();
+        if (!authUser || !authUser.logged_in) showAuthModal();
     });
 
-    closeAuthModal?.addEventListener('click', hideModal);
-    authModalOverlay?.addEventListener('click', hideModal);
+    closeAuthModal?.addEventListener('click', hideAuthModal);
+    authModalOverlay?.addEventListener('click', hideAuthModal);
 
     sidebarLogoutBtn?.addEventListener('click', async () => {
             await fetch(API_BASE_URL + '/api/logout', { method: 'POST', headers: getAuthHeaders() });
@@ -3144,9 +3144,9 @@ async function initAuth() {
 
     // ── Google OAuth ──
     googleAuthBtn?.addEventListener('click', async () => {
-        if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
+        if (!sbClient) { await window.showModal('인증 오류', '구글 로그인을 사용할 수 없습니다.', 'error'); return; }
         if (oauthConfirmOverlay && oauthConfirmModal) {
-            hideModal();
+            hideAuthModal();
             oauthConfirmOverlay.classList.add('active');
             oauthConfirmModal.classList.add('active');
         }
@@ -3155,11 +3155,11 @@ async function initAuth() {
     oauthCancelBtn?.addEventListener('click', () => {
         oauthConfirmOverlay.classList.remove('active');
         oauthConfirmModal.classList.remove('active');
-        showModal();
+        showAuthModal();
     });
 
     oauthContinueBtn?.addEventListener('click', async () => {
-        if (!sbClient) { alert('구글 로그인을 사용할 수 없습니다.'); return; }
+        if (!sbClient) { await window.showModal('인증 오류', '구글 로그인을 사용할 수 없습니다.', 'error'); return; }
         try {
             if (oauthContinueBtn) {
                 oauthContinueBtn.disabled = true;
@@ -3173,7 +3173,7 @@ async function initAuth() {
             if (error) throw error;
             // Supabase redirects the browser — nothing more to do here
         } catch (err) {
-            alert('Google 로그인 오류: ' + (err.message || '알 수 없는 오류'));
+            await showModal('인증 오류', 'Google 로그인 오류: ' + (err.message || '알 수 없는 오류'), 'error');
             oauthConfirmOverlay?.classList.remove('active');
             oauthConfirmModal?.classList.remove('active');
         } finally {
@@ -3215,12 +3215,12 @@ async function initAuth() {
                         const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
                         if (error) throw error;
                         setSupaToken(data.session.access_token);
-                        hideModal();
+                        hideAuthModal();
                         await fetchUserSession();
                     } else {
                         const { error } = await sbClient.auth.signUp({ email, password });
                         if (error) throw error;
-                        alert('회원가입 성공! 이제 로그인할 수 있습니다.');
+                        await showModal('가입 성공', '회원가입 성공! 이제 로그인할 수 있습니다.', 'success');
                         authSwitchBtn.click();
                     }
                 } else {
@@ -3234,10 +3234,10 @@ async function initAuth() {
                     if (data.success) {
                         if (isLoginMode) {
                             setSupaToken(data.access_token);
-                            hideModal();
+                            hideAuthModal();
                             await fetchUserSession();
                         } else {
-                            alert(data.message);
+                            await showModal('오류', data.message, 'error');
                             authSwitchBtn.click();
                         }
                     } else {
@@ -3346,7 +3346,7 @@ async function initAuth() {
             const restricted = ['watchlistSection', 'analysisSection', 'valueChainSection'];
             if (restricted.includes(currentActiveSectionId)) {
                 navigateToSection('navHome');
-                showModal(); // 로그인 유도 모달 노출
+                showAuthModal(); // 로그인 유도 모달 노출
             }
             
             // Clear or hide watchlist for guest if needed
@@ -4093,7 +4093,8 @@ async function renderAdminDashboard() {
 }
 
 async function approveUser(userId) {
-    if (!confirm('정말 이 사용자를 승인하시겠습니까?')) return;
+    const confirmed = await showConfirm('사용자 승인', '정말 이 사용자를 승인하시겠습니까?');
+    if (!confirmed) return;
 
     try {
         const token = getSupaToken();
@@ -4123,10 +4124,10 @@ async function approveUser(userId) {
  * [NEW] 회원 탈퇴 처리 (withdrawal)
  */
 async function withdrawAccount() {
-    const confirm1 = confirm("정말 회원 탈퇴를 진행하시겠습니까?\n모든 관심종목과 데이터가 복구 불가능하게 영구 삭제됩니다.");
+    const confirm1 = await showConfirm("회원 탈퇴", "정말 회원 탈퇴를 진행하시겠습니까?\n모든 관심종목과 데이터가 복구 불가능하게 영구 삭제됩니다.");
     if (!confirm1) return;
 
-    const confirm2 = confirm("마지막 확인입니다. 탈퇴하시겠습니까?");
+    const confirm2 = await showConfirm("최종 확인", "마지막 확인입니다. 탈퇴하시겠습니까?");
     if (!confirm2) return;
 
     try {
@@ -4138,7 +4139,7 @@ async function withdrawAccount() {
         const data = await res.json();
 
         if (data.success) {
-            alert("회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.");
+            await showModal("탈퇴 완료", "회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.", "success");
             // 세션 정리 및 페이지 새로고침
             localStorage.removeItem('supabase_token');
             window.location.reload();
@@ -4150,3 +4151,69 @@ async function withdrawAccount() {
         showToast("서버 통신 오류가 발생했습니다.", "error");
     }
 }
+
+/**
+ * [NEW] 전역 커스텀 모달 시스템 (Themed Modal Engine)
+ */
+window.showModal = function(title, message, type = 'info') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customModal');
+        const titleEl = document.getElementById('modalTitle');
+        const messageEl = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        const iconEl = document.getElementById('modalIcon');
+
+        if (!modal) return resolve(true);
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        cancelBtn.style.display = 'none'; // Alert는 취소 버튼 없음
+        confirmBtn.textContent = '확인';
+
+        // 타입별 아이콘 설정
+        iconEl.className = 'ph'; 
+        if (type === 'success') iconEl.classList.add('ph-check-circle');
+        else if (type === 'error') iconEl.classList.add('ph-warning-circle');
+        else iconEl.classList.add('ph-info');
+
+        modal.classList.remove('hidden');
+
+        confirmBtn.onclick = () => {
+            modal.classList.add('hidden');
+            resolve(true);
+        };
+    });
+};
+
+window.showConfirm = function(title, message, type = 'warning') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customModal');
+        const titleEl = document.getElementById('modalTitle');
+        const messageEl = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        const iconEl = document.getElementById('modalIcon');
+
+        if (!modal) return resolve(false);
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        cancelBtn.style.display = 'block';
+        confirmBtn.textContent = '확인';
+        cancelBtn.textContent = '취소';
+
+        iconEl.className = 'ph ph-warning-circle';
+
+        modal.classList.remove('hidden');
+
+        confirmBtn.onclick = () => {
+            modal.classList.add('hidden');
+            resolve(true);
+        };
+        cancelBtn.onclick = () => {
+            modal.classList.add('hidden');
+            resolve(false);
+        };
+    });
+};

@@ -7002,3 +7002,115 @@ body.vc-fullscreen-active .main-content {
     color: var(--text-muted);
 }
 
+/* ──────────────────────────────────────────────────
+   Custom Themed Modal
+   ────────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 420px;
+    padding: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.animate-pop {
+    animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-header i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.modal-header i.ph-warning-circle { color: #f59e0b; }
+.modal-header i.ph-info { color: #5154ee; }
+.modal-header i.ph-check-circle { color: #10b981; }
+
+.modal-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.modal-body {
+    margin-bottom: 30px;
+}
+
+.modal-body p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    white-space: pre-line; /* Support \n in messages */
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-footer button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-soft);
+    color: var(--text-muted);
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.btn-confirm {
+    background: var(--primary);
+    border: none;
+    color: white;
+    box-shadow: 0 4px 15px rgba(81, 84, 238, 0.3);
+}
+
+.btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(81, 84, 238, 0.4);
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+}
+
