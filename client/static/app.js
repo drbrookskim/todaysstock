@@ -3010,23 +3010,24 @@ function toggleTheme() {
 function startApp() {
     console.log('[DEBUG] startApp() executing. readyState:', document.readyState);
     
-    // ── Safe Init Sequence (supports both sync and async fns) ──
-    const safeInit = async (name, fn) => {
+    // ── Sync Init (blocking is fine, these are instant DOM operations) ──
+    const safeRun = (name, fn) => {
         try {
             console.log(`[DEBUG] Initializing: ${name}`);
-            await fn();
+            fn();
         } catch (err) {
             console.error(`[ERROR] Failed to initialize ${name}:`, err);
         }
     };
 
-    safeInit('Theme', initTheme);
-    safeInit('Navigation', initNavigation);
-    safeInit('MobileSidebar', initMobileSidebar);
-    safeInit('Watchlist', renderWatchlist);
-    // MacroIndicators: run without awaiting so it doesn't block other init
-    safeInit('MacroIndicators', renderMacroIndicators);
-    safeInit('Auth', initAuth);
+    safeRun('Theme', initTheme);
+    safeRun('Navigation', initNavigation);
+    safeRun('MobileSidebar', initMobileSidebar);
+    safeRun('Watchlist', renderWatchlist);
+
+    // ── Async Init (fire-and-forget, must NOT block UI rendering) ──
+    renderMacroIndicators().catch(err => console.error('[ERROR] MacroIndicators failed:', err));
+    initAuth().catch(err => console.error('[ERROR] initAuth failed:', err));
 
     if (searchInput) {
         searchInput.focus();
