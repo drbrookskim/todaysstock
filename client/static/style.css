@@ -7003,9 +7003,9 @@ body.vc-fullscreen-active .main-content {
 }
 
 /* ──────────────────────────────────────────────────
-   Custom Themed Modal
+   Custom Themed Modal (System Alerts)
    ────────────────────────────────────────────────── */
-.modal-overlay {
+.system-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -7019,6 +7019,10 @@ body.vc-fullscreen-active .main-content {
     z-index: 9999;
     opacity: 1;
     transition: opacity 0.3s ease;
+}
+
+.system-modal-overlay.hidden {
+    display: none !important;
 }
 
 .modal-content {
@@ -7108,9 +7112,5 @@ body.vc-fullscreen-active .main-content {
 .btn-confirm:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(81, 84, 238, 0.4);
-}
-
-.modal-overlay.hidden {
-    display: none !important;
 }
 

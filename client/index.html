@@ -3,6 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H36GJE20EL"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-H36GJE20EL');
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting for the Peak | Stock Search</title>
     <meta name="description" content="코스피, 코스닥 종목을 검색하고 주가 및 이동평균선 정보를 확인하세요.">
@@ -1135,7 +1144,7 @@
                 localStorage.setItem(PWA_DISMISSED_KEY, String(Date.now()));
             });
     <!-- ── 전역 커스텀 모달 (Themed Modal) ── -->
-    <div id="customModal" class="modal-overlay hidden">
+    <div id="customModal" class="system-modal-overlay hidden">
         <div class="modal-content animate-pop">
             <div class="modal-header">
                 <i id="modalIcon" class="ph ph-warning-circle"></i>
