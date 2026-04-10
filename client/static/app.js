@@ -705,7 +705,7 @@ function renderWatchlist() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 
     // Click behavior for tiles
     container.querySelectorAll('.watchlist-tile').forEach(tile => {
