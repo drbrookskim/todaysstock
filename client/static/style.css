@@ -1917,16 +1917,52 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ma-item {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--bg-app-alt, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--border-soft);
     border-radius: var(--radius-md);
     padding: 16px;
     transition: all 0.2s ease;
 }
 
 .ma-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--bg-app-hover, rgba(255, 255, 255, 0.05));
+    border-color: var(--border-heavy);
+}
+
+/* ATR Note styling */
+.atr-note {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    padding: 10px;
+    background: var(--bg-app-alt, rgba(255, 255, 255, 0.03));
+    border-radius: 8px;
+    border: 1px dashed var(--border-soft);
+    line-height: 1.4;
+    color: var(--text-sub);
+}
+
+/* Themed Card Header for consistency */
+.themed-card-header {
+    background: var(--bg-app-alt, rgba(255, 255, 255, 0.03)) !important;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+/* Light mode specific adjustments for these components */
+[data-theme="light"] :root {
+    --bg-app-alt: #f8fafc;
+    --bg-app-hover: #f1f5f9;
+}
+
+[data-theme="light"] .atr-note {
+    background: #f0fdf4; /* Very light green hint for ATR node in light mode */
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+[data-theme="dark"] :root {
+    --bg-app-alt: rgba(255, 255, 255, 0.03);
+    --bg-app-hover: rgba(255, 255, 255, 0.05);
 }
 
 .ma-period {

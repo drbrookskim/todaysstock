@@ -2959,7 +2959,7 @@ function renderSellReport(report, atrTargets) {
     if (atrTargets) {
         const patternSL = typeof report.stop_loss === 'number' ? report.stop_loss : null;
         const atrSL = atrTargets.stop_loss;
-        const noteHtml = `<div id="sellAtrNote" style="margin-top: 12px; font-size: 0.8rem; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed var(--border-soft); line-height: 1.4; color: var(--text-muted);">`
+        const noteHtml = `<div id="sellAtrNote" class="atr-note">`
             + `<i class="ph ph-info" style="margin-right:4px;"></i>`
             + `<strong>ATR 기준 손절가:</strong> ${atrSL ? atrSL.toLocaleString() + '원' : '-'}`;
         
@@ -4103,7 +4103,11 @@ async function renderAdminDashboard() {
                 ? '<span style="color:var(--accent); font-size: 1.2rem; margin-right: 8px;"><i class="ph ph-check-circle-fill"></i></span>'
                 : `<button class="btn-approve" onclick="approveUser('${u.id}')" style="margin-right: 8px;"><i class="ph ph-check"></i> 승인</button>`;
                 
-            const deleteBtn = `<button onclick="deleteUser('${u.id}')" style="background:var(--color-down); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size: 0.8rem;" class="btn-approve"><i class="ph ph-trash"></i> 삭제</button>`;
+            // 관리자(nelcome9)는 삭제 버튼을 표시하지 않음
+            const isAdmin = email.includes('nelcome9') || u.role === 'admin';
+            const deleteBtn = isAdmin 
+                ? '<span style="color:var(--text-muted); font-size: 0.8rem;">(관리자)</span>'
+                : `<button onclick="deleteUser('${u.id}')" style="background:var(--color-down); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size: 0.8rem;" class="btn-approve"><i class="ph ph-trash"></i> 삭제</button>`;
 
             return `
                 <tr>
