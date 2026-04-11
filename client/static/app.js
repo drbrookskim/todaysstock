@@ -1320,32 +1320,53 @@ async function renderMacroIndicators() {
         console.log('[DEBUG] Fetching macro data from:', url);
         const resp = await fetchWithTimeout(url, { timeout: 45000 });
         if (!resp.ok) throw new Error(`HTTP Error: ${resp.status}`);
-        const data = await resp.json();
+        const data = await resp.json() || {};
         if (data.error) console.warn('[DEBUG] Server reported error:', data.error);
         console.log('[DEBUG] Macro data received:', Object.keys(data));
 
+        // [SAFEGUARD] Ensure data is handled even if partial
+        const getVal = (key, format = 'num', decimals = 2) => {
+            const val = data[key];
+            if (val === undefined || val === null) return '-';
+            if (format === 'num') return val.toLocaleString();
+            if (format === 'fixed') return val.toFixed(decimals);
+            return val;
+        };
+
+        const getChg = (key) => {
+            const val = data[`${key}_chg`];
+            if (val === undefined || val === null) return { text: '-', up: false };
+            return { 
+                text: `${val > 0 ? '+' : ''}${val.toFixed(2)}%`, 
+                up: val > 0 
+            };
+        };
+
         // Data Mapping (시장 지수 대시보드용)
         const indexData = [
-            { id: 'KOSPI', name: 'KOSPI', price: data.kospi?.toLocaleString() || '-', change: `${data.kospi_chg > 0 ? '+' : ''}${data.kospi_chg != null ? data.kospi_chg.toFixed(2) : '-'}%`, up: data.kospi_chg > 0 },
-            { id: 'KOSDAQ', name: 'KOSDAQ', price: data.kosdaq?.toLocaleString() || '-', change: `${data.kosdaq_chg > 0 ? '+' : ''}${data.kosdaq_chg != null ? data.kosdaq_chg.toFixed(2) : '-'}%`, up: data.kosdaq_chg > 0 },
-            { id: 'S&P 500', name: 'S&P 500', price: data.sp500?.toLocaleString() || '-', change: `${data.sp500_chg > 0 ? '+' : ''}${data.sp500_chg != null ? data.sp500_chg.toFixed(2) : '-'}%`, up: data.sp500_chg > 0 },
-            { id: 'NASDAQ', name: 'NASDAQ', price: data.nasdaq?.toLocaleString() || '-', change: `${data.nasdaq_chg > 0 ? '+' : ''}${data.nasdaq_chg != null ? data.nasdaq_chg.toFixed(2) : '-'}%`, up: data.nasdaq_chg > 0 },
-            { id: 'PHLX SEMI', name: '필라델피아 반도체', price: data.sox?.toLocaleString() || '-', change: `${data.sox_chg > 0 ? '+' : ''}${data.sox_chg != null ? data.sox_chg.toFixed(2) : '-'}%`, up: data.sox_chg > 0 },
-            { id: 'DXY', name: '달러 인덱스', price: data.dxy?.toLocaleString() || '-', change: `${data.dxy_chg > 0 ? '+' : ''}${data.dxy_chg != null ? data.dxy_chg.toFixed(2) : '-'}%`, up: data.dxy_chg > 0 },
-            { id: 'WTI', name: 'WTI 유가', price: data.wti?.toLocaleString() || '-', change: `${data.wti_chg > 0 ? '+' : ''}${data.wti_chg != null ? data.wti_chg.toFixed(2) : '-'}%`, up: data.wti_chg > 0 }
+            { id: 'KOSPI', name: 'KOSPI', price: getVal('kospi'), ...getChg('kospi') },
+            { id: 'KOSDAQ', name: 'KOSDAQ', price: getVal('kosdaq'), ...getChg('kosdaq') },
+            { id: 'S&P 500', name: 'S&P 500', price: getVal('sp500'), ...getChg('sp500') },
+            { id: 'NASDAQ', name: 'NASDAQ', price: getVal('nasdaq'), ...getChg('nasdaq') },
+            { id: 'PHLX SEMI', name: '필라델피아 반도체', price: getVal('sox'), ...getChg('sox') },
+            { id: 'DXY', name: '달러 인덱스', price: getVal('dxy'), ...getChg('dxy') },
+            { id: 'WTI', name: 'WTI 유가', price: getVal('wti'), ...getChg('wti') }
         ];
 
         // 주요 경제 지표 (환율, 국채 등)
+        const us10yVal = data.us10y != null ? `${data.us10y.toFixed(2)}%` : '-';
+        const us10yChg = data.us10y_chg != null ? `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg.toFixed(3)}` : '-';
+
         const economyData = [
-            { name: 'USD/KRW 환율', price: data.usd_krw?.toLocaleString() || '-', change: `${data.usd_krw_chg > 0 ? '+' : ''}${data.usd_krw_chg != null ? data.usd_krw_chg.toFixed(2) : '-'}%`, up: data.usd_krw_chg > 0 },
-            { name: '미 국채 10년물', price: `${data.us10y != null ? data.us10y.toFixed(2) : '-'}%`, change: `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg != null ? data.us10y_chg.toFixed(3) : '-'}`, up: data.us10y_chg > 0 },
-            { name: '공포지수 (VIX)', price: data.vix?.toLocaleString() || '-', change: `${data.vix_chg > 0 ? '+' : ''}${data.vix_chg != null ? data.vix_chg.toFixed(2) : '-'}%`, up: data.vix_chg > 0 }
+            { name: 'USD/KRW 환율', price: getVal('usd_krw'), ...getChg('usd_krw') },
+            { name: '미 국채 10년물', price: us10yVal, change: us10yChg, up: data.us10y_chg > 0 },
+            { name: '공포지수 (VIX)', price: getVal('vix'), ...getChg('vix') }
         ];
 
         const cryptoData = [
-            { name: '비트코인 (BTC)', price: data.btc?.toLocaleString() || '-', change: `${data.btc_chg > 0 ? '+' : ''}${data.btc_chg != null ? data.btc_chg.toFixed(2) : '-'}%`, up: data.btc_chg > 0 },
-            { name: '이더리움 (ETH)', price: data.eth?.toLocaleString() || '-', change: `${data.eth_chg > 0 ? '+' : ''}${data.eth_chg != null ? data.eth_chg.toFixed(2) : '-'}%`, up: data.eth_chg > 0 },
-            { name: '테더 (USDT)', price: data.usdt?.toLocaleString() || '-', change: `${data.usdt_chg > 0 ? '+' : ''}${data.usdt_chg != null ? data.usdt_chg.toFixed(2) : '-'}%`, up: data.usdt_chg > 0 }
+            { name: '비트코인 (BTC)', price: getVal('btc'), ...getChg('btc') },
+            { name: '이더리움 (ETH)', price: getVal('eth'), ...getChg('eth') },
+            { name: '테더 (USDT)', price: getVal('usdt'), ...getChg('usdt') }
         ];
 
         const fearGreedValue = data.fear_greed || 50;

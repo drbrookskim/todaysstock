@@ -361,7 +361,7 @@ def get_macro(ecos_key: str) -> dict:
         "us10y":   "^TNX",
         "vix":     "^VIX",
         "wti":     "CL=F",
-        "dxy":     "DX=F",
+        "dxy":     "DX-Y.NYB",
         "sox":     "^SOX",
         "btc":     "BTC-USD",
         "eth":     "ETH-USD",
