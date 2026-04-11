@@ -2513,6 +2513,7 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     background: transparent;
 }
 
+/* Candle Chart Floating Legend */
 .chart-legend {
     position: absolute;
     top: 12px;
@@ -2523,25 +2524,29 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     font-size: 0.8rem;
     font-weight: 700;
     line-height: 1.5;
-    color: var(--text-main);
-    background: var(--surface-hover, rgba(10, 12, 18, 0.45)); /* 라이트모드 호환 가능하도록 변수형으로 보완 */
+    
+    /* Default Dark Theme / No attribute theme */
+    color: #f8fafc;
+    background: rgba(15, 23, 42, 0.85); 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
     backdrop-filter: blur(8px);
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     max-width: calc(100% - 24px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     transition: opacity 0.2s ease;
 }
 
-html[data-theme="light"] .chart-legend,
-html:not([data-theme="dark"]) .chart-legend {
-    background: rgba(255, 255, 255, 0.85); /* 라이트모드 전용 밝고 반투명한 화이트 */
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+/* Explicit Light Mode Override */
+html[data-theme="light"] .chart-legend {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .legend-item {
@@ -2567,10 +2572,16 @@ html:not([data-theme="dark"]) .chart-legend {
 .legend-val.bearish { color: #2962ff; } /* TradingView Blue */
 
 /* MA Label Colors (Matching the actual chart lines) */
-.ma5-label { color: #FFD700; }   /* Gold */
-.ma20-label { color: #FF00FF; }  /* Magenta */
-.ma60-label { color: #00FFFF; }  /* Cyan */
-.ma120-label { color: #ADFF2F; } /* GreenYellow */
+.ma5-label { color: #F59E0B; }   /* Amber/Gold */
+.ma20-label { color: #EC4899; }  /* Pink/Magenta */
+.ma60-label { color: #06B6D4; }  /* Cyan */
+.ma120-label { color: #8B5CF6; } /* Purple/Violet */
+
+/* Light Mode specific darken for light background legibility */
+html[data-theme="light"] .ma5-label { color: #D97706; } /* Darker Amber */
+html[data-theme="light"] .ma20-label { color: #BE185D; } /* Darker Pink */
+html[data-theme="light"] .ma60-label { color: #0891B2; } /* Darker Cyan */
+html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 
 @media (max-width: 768px) {
     .chart-legend {
@@ -5193,7 +5204,8 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 /* ── Chart Legend (Phase 2) ── */
-.chart-legend {
+/* ── Macro Chart Legend ── */
+.macro-chart-legend {
     display: flex;
     justify-content: space-between;
     align-items: center;
