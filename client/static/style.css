@@ -2488,7 +2488,7 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     font-weight: 700;
     line-height: 1.5;
     color: var(--text-main);
-    background: rgba(10, 12, 18, 0.45);
+    background: var(--surface-hover, rgba(10, 12, 18, 0.45)); /* 라이트모드 호환 가능하도록 변수형으로 보완 */
     backdrop-filter: blur(8px);
     padding: 8px 12px;
     border-radius: 8px;
@@ -2499,6 +2499,13 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     max-width: calc(100% - 24px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.25);
     transition: opacity 0.2s ease;
+}
+
+html[data-theme="light"] .chart-legend,
+html:not([data-theme="dark"]) .chart-legend {
+    background: rgba(255, 255, 255, 0.85); /* 라이트모드 전용 밝고 반투명한 화이트 */
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .legend-item {

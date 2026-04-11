@@ -280,7 +280,6 @@ function resetDashboardHome(force = false) {
             // Ensure section is visible through animation frame for state stability
             requestAnimationFrame(() => {
                 const resSecMem = document.getElementById('resultSection');
-                const heroMem = document.getElementById('mainSearchHero');
                 
                 if (resSecMem) {
                     resSecMem.classList.remove('hidden');
@@ -289,10 +288,10 @@ function resetDashboardHome(force = false) {
                     resSecMem.style.setProperty('visibility', 'visible', 'important');
                     resSecMem.style.setProperty('opacity', '1', 'important');
                 }
-                if (heroMem) {
-                    heroMem.classList.add('hidden');
-                    heroMem.style.setProperty('display', 'none', 'important');
-                }
+                // if (heroMem) {
+                //     heroMem.classList.add('hidden');
+                //     heroMem.style.setProperty('display', 'none', 'important');
+                // }
             });
             
             if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
