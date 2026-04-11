@@ -866,6 +866,30 @@ def admin_approve_user():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route("/api/admin/user/<target_user_id>", methods=["DELETE"])
+def admin_delete_user(target_user_id):
+    """특정 사용자 강제 삭제 (관리자 전용, Supabase Admin API 이용)"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    
+    if not token or not supabase_global or not target_user_id:
+        return jsonify({"success": False, "message": "잘못된 요청입니다."}), 400
+        
+    try:
+        # 1. 요청자의 권한 확인
+        req_user = supabase_global.auth.get_user(token)
+        req_profile = supabase_global.table("profiles").select("role").eq("id", req_user.user.id).execute()
+        
+        if not req_profile.data or req_profile.data[0].get("role") != "admin":
+            return jsonify({"success": False, "message": "관리자 전용 기능입니다."}), 403
+            
+        # 2. 대상 사용자 삭제 (profiles, watchlists 자동 CASCADE 됨)
+        supabase_global.auth.admin.delete_user(target_user_id)
+        
+        return jsonify({"success": True, "message": "계정이 영구적으로 삭제되었습니다."})
+    except Exception as e:
+        print(f"[ADMIN] User deletion error: {e}")
+        return jsonify({"success": False, "message": f"삭제 중 오류 발생: {str(e)}"}), 500
+
 @app.route("/api/auth/withdrawal", methods=["DELETE"])
 def withdraw_account():
     """사용자 본인 계정 탈퇴 처리 (Supabase Admin API 이용)"""

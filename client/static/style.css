@@ -2064,19 +2064,20 @@ html:not([data-theme="light"]) .ma-bar-current-price {
     gap: 8px;
     margin-top: 16px;
     font-size: 0.85rem;
-    color: var(--text-muted);
+    color: var(--text-sub); /* text-muted에서 text-sub로 변경하여 가독성 상향 */
+    font-weight: 500;
 }
 
 .ma-visual-legend-line {
     display: inline-block;
     width: 2px;
     height: 14px;
-    background-color: #111827;
+    background-color: var(--text-sub); /* 텍스트와 동일한 계열로 일치 */
 }
 
 [data-theme="dark"] .ma-visual-legend-line,
 html:not([data-theme="light"]) .ma-visual-legend-line {
-    background-color: #F3F4F6;
+    background-color: #e2e8f0; /* 다크 모드 시 밝은 회색으로 변경 */
 }
 
 .ma-bar-diff {

@@ -426,11 +426,11 @@ function showSection(id) {
                     resSecMem.style.setProperty('visibility', 'visible', 'important');
                     resSecMem.style.setProperty('opacity', '1', 'important');
                 }
-                const searchHero = document.getElementById('mainSearchHero');
-                if (searchHero) {
-                    searchHero.classList.add('hidden');
-                    searchHero.style.setProperty('display', 'none', 'important');
-                }
+                // const searchHero = document.getElementById('mainSearchHero');
+                // if (searchHero) {
+                //     searchHero.classList.add('hidden');
+                //     searchHero.style.setProperty('display', 'none', 'important');
+                // }
                 // Robust scroll position restoration
                 window.scrollTo({ top: 0, behavior: 'instant' });
             });
@@ -4101,15 +4101,17 @@ async function renderAdminDashboard() {
                 : '<span class="status-badge status-pending">승인 대기</span>';
             
             const actionBtn = u.is_approved 
-                ? '<span style="color:var(--accent); font-size: 1.2rem;"><i class="ph ph-check-circle-fill"></i></span>'
-                : `<button class="btn-approve" onclick="approveUser('${u.id}')"><i class="ph ph-check"></i> 승인</button>`;
+                ? '<span style="color:var(--accent); font-size: 1.2rem; margin-right: 8px;"><i class="ph ph-check-circle-fill"></i></span>'
+                : `<button class="btn-approve" onclick="approveUser('${u.id}')" style="margin-right: 8px;"><i class="ph ph-check"></i> 승인</button>`;
+                
+            const deleteBtn = `<button onclick="deleteUser('${u.id}')" style="background:var(--color-down); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size: 0.8rem;" class="btn-approve"><i class="ph ph-trash"></i> 삭제</button>`;
 
             return `
                 <tr>
                     <td>${email}</td>
                     <td>${dateStr}</td>
                     <td>${statusBadge}</td>
-                    <td>${actionBtn}</td>
+                    <td style="white-space: nowrap;">${actionBtn}${deleteBtn}</td>
                 </tr>
             `;
         }).join('');
@@ -4147,6 +4149,33 @@ async function approveUser(userId) {
         showToast('네트워크 오류가 발생했습니다.', 'error');
     }
 }
+
+async function deleteUser(userId) {
+    const confirmed = await showConfirm('회원 강제탈퇴', `<span style='color:var(--color-down); font-weight:bold;'>정말로 이 회원을 영구적으로 삭제하시겠습니까?</span><br><br>이 작업은 되돌릴 수 없으며, 데이터베이스 상의 모든 연관 데이터가 파기됩니다.`);
+    if (!confirmed) return;
+
+    try {
+        const token = getSupaToken();
+        const res = await fetch(`${API_BASE_URL}/api/admin/user/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            showToast('회원 강제탈퇴가 완료되었습니다.', 'success');
+            renderAdminDashboard(); // 목록 갱신
+        } else {
+            showToast(data.message || '삭제에 실패했습니다.', 'error');
+        }
+    } catch (e) {
+        console.error('[ADMIN] Delete error', e);
+        showToast('네트워크 오류가 발생했습니다.', 'error');
+    }
+}
+
 
 /**
  * [NEW] 회원 탈퇴 처리 (withdrawal)
