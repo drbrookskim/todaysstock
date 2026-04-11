@@ -303,19 +303,11 @@ function resetDashboardHome(force = false) {
         }
     }
 
-    // [CRITICAL] Show Hero UI ONLY if we have NO active stock AND it's a force reset (like logo click)
-    if (force || !currentStock) {
-        if (searchHero) {
-            searchHero.classList.remove('hidden');
-            searchHero.style.setProperty('display', 'flex', 'important');
-            searchHero.style.opacity = '1';
-        }
-    } else {
-        // Double-down on ensuring hero is hidden if currentStock exists
-        if (searchHero) {
-            searchHero.classList.add('hidden');
-            searchHero.style.setProperty('display', 'none', 'important');
-        }
+    // [CRITICAL] Search Bar stays visible always (Removed old hiding logic)
+    if (searchHero) {
+        searchHero.classList.remove('hidden');
+        searchHero.style.setProperty('display', 'flex', 'important');
+        searchHero.style.opacity = '1';
     }
 
     // Refresh macro/market state (cache handles heavy lifting)
