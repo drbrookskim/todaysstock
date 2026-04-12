@@ -2611,6 +2611,34 @@ function renderCycleTimelineChart(cyc) {
 
 let currentChart = null;
 
+function calculateRSI(data, period = 14) {
+    if (data.length <= period) return [];
+    const rsi = [];
+    let gains = 0;
+    let losses = 0;
+
+    for (let i = 1; i <= period; i++) {
+        const change = data[i].close - data[i - 1].close;
+        if (change > 0) gains += change;
+        else losses -= change;
+    }
+
+    let avgGain = gains / period;
+    let avgLoss = losses / period;
+
+    for (let i = period; i < data.length; i++) {
+        if (i > period) {
+            const change = data[i].close - data[i - 1].close;
+            avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
+            avgLoss = (avgLoss * (period - 1) + (change < 0 ? -change : 0)) / period;
+        }
+        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+        const val = 100 - (100 / (1 + rs));
+        rsi.push({ time: data[i].time, value: val });
+    }
+    return rsi;
+}
+
 function renderCandleChart(candles) {
     const container = document.getElementById('candleChart');
     if (!candles || candles.length === 0) {
@@ -2634,7 +2662,7 @@ function renderCandleChart(candles) {
     
     const chartOptions = {
         width: containerWidth,
-        height: 320,
+        height: 600,
         layout: {
             background: { type: 'solid', color: 'transparent' },
             textColor: isLight ? '#1e293b' : '#f8fafc',
@@ -2677,22 +2705,60 @@ function renderCandleChart(candles) {
         borderVisible: false,
         wickUpColor: '#ef4444',
         wickDownColor: '#3b82f6',
+        priceScaleId: 'right',
     });
 
-    // 2. Moving Averages (Colors matched with top legend)
-    const ma5Series = chart.addLineSeries({ color: '#FFD700', lineWidth: 1.5, title: '5' });
-    const ma20Series = chart.addLineSeries({ color: '#FF00FF', lineWidth: 1.5, title: '20' });
-    const ma60Series = chart.addLineSeries({ color: '#00FFFF', lineWidth: 1.5, title: '60' });
-    const ma120Series = chart.addLineSeries({ color: '#ADFF2F', lineWidth: 1.5, title: '120' });
+    candleSeries.priceScale().applyOptions({
+        scaleMargins: { top: 0.05, bottom: 0.35 },
+    });
 
-    // 3. Volume Series (Overlay)
+    const ma5Options = { color: '#FFD700', lineWidth: 1.5, title: '5', priceScaleId: 'right' };
+    const ma20Options = { color: '#FF00FF', lineWidth: 1.5, title: '20', priceScaleId: 'right' };
+    const ma60Options = { color: '#00FFFF', lineWidth: 1.5, title: '60', priceScaleId: 'right' };
+    const ma120Options = { color: '#ADFF2F', lineWidth: 1.5, title: '120', priceScaleId: 'right' };
+
+    const ma5Series = chart.addLineSeries(ma5Options);
+    const ma20Series = chart.addLineSeries(ma20Options);
+    const ma60Series = chart.addLineSeries(ma60Options);
+    const ma120Series = chart.addLineSeries(ma120Options);
+
+    // 3. Volume Series (Pane 2)
     const volumeSeries = chart.addHistogramSeries({
         color: '#71717a',
         priceFormat: { type: 'volume' },
-        priceScaleId: '', // Overlay over main price scale
+        priceScaleId: 'volume', 
     });
-    volumeSeries.priceScale().applyOptions({
-        scaleMargins: { top: 0.8, bottom: 0 },
+    chart.priceScale('volume').applyOptions({
+        scaleMargins: { top: 0.65, bottom: 0.20 },
+    });
+
+    // 4. RSI Series (Pane 3)
+    const rsiSeries = chart.addLineSeries({
+        color: '#818cf8',
+        lineWidth: 2,
+        priceScaleId: 'rsi',
+        title: 'RSI(14)',
+    });
+    chart.priceScale('rsi').applyOptions({
+        scaleMargins: { top: 0.80, bottom: 0.02 },
+    });
+
+    // Add RSI Levels
+    rsiSeries.createPriceLine({
+        price: 70,
+        color: 'rgba(239, 68, 68, 0.4)',
+        lineWidth: 1,
+        lineStyle: 2, // Dashed
+        axisLabelVisible: true,
+        title: 'OVERBOUGHT',
+    });
+    rsiSeries.createPriceLine({
+        price: 30,
+        color: 'rgba(59, 130, 246, 0.4)',
+        lineWidth: 1,
+        lineStyle: 2, // Dashed
+        axisLabelVisible: true,
+        title: 'OVERSOLD',
     });
 
     // Prepare data
@@ -2718,14 +2784,17 @@ function renderCandleChart(candles) {
         if (c.ma120) ma120Data.push({ time, value: c.ma120 });
     });
 
-    // ── Lazy Unfolding Logic ──
-    // Set ALL data immediately for stability
+    // ── Data Application ──
     candleSeries.setData(candleData);
     volumeSeries.setData(volData);
     ma5Series.setData(ma5Data);
     ma20Series.setData(ma20Data);
     ma60Series.setData(ma60Data);
     ma120Series.setData(ma120Data);
+
+    // Calculate and set RSI data
+    const rsiData = calculateRSI(candleData, 14);
+    rsiSeries.setData(rsiData);
 
     const totalCount = candleData.length;
     let isInitialAnimating = true;
@@ -2819,7 +2888,8 @@ function renderCandleChart(candles) {
                 ma5: param.seriesData.get(ma5Series),
                 ma20: param.seriesData.get(ma20Series),
                 ma60: param.seriesData.get(ma60Series),
-                ma120: param.seriesData.get(ma120Series)
+                ma120: param.seriesData.get(ma120Series),
+                rsi: param.seriesData.get(rsiSeries)
             };
         } else {
             // Default to last data point
@@ -2835,7 +2905,8 @@ function renderCandleChart(candles) {
                     ma5: ma5Data.find(d => d.time === c.time)?.value,
                     ma20: ma20Data.find(d => d.time === c.time)?.value,
                     ma60: ma60Data.find(d => d.time === c.time)?.value,
-                    ma120: ma120Data.find(d => d.time === c.time)?.value
+                    ma120: ma120Data.find(d => d.time === c.time)?.value,
+                    rsi: rsiData.find(d => d.time === c.time)?.value
                 };
             }
         }
@@ -2851,6 +2922,7 @@ function renderCandleChart(candles) {
                 <div class="legend-item"><span class="legend-label">종가</span> <span class="legend-val ${colorClass}">${fmt(data.close)}</span></div>
                 <div class="legend-item"><span class="legend-label">고가</span> <span class="legend-val ${colorClass}">${fmt(data.high)}</span></div>
                 <div class="legend-item"><span class="legend-label">저가</span> <span class="legend-val ${colorClass}">${fmt(data.low)}</span></div>
+                <div class="legend-item"><span class="legend-label">RSI(14)</span> <span class="legend-val" style="color:#818cf8;">${data.rsi ? data.rsi.toFixed(1) : '—'}</span></div>
                 <div class="legend-item"><span class="legend-label ma5-label">5일선</span> <span class="legend-val ma5-label">${fmt(data.ma5)}</span></div>
                 <div class="legend-item"><span class="legend-label ma20-label">20일선</span> <span class="legend-val ma20-label">${fmt(data.ma20)}</span></div>
                 <div class="legend-item"><span class="legend-label ma60-label">60일선</span> <span class="legend-val ma60-label">${fmt(data.ma60)}</span></div>
