@@ -7224,7 +7224,7 @@ body.vc-fullscreen-active .main-content {
     max-width: 800px;
     width: 95%;
     background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-heavy);
     border-radius: 32px;
     display: flex;
     flex-direction: column;
@@ -7241,7 +7241,7 @@ body.vc-fullscreen-active .main-content {
 
 .help-modal .modal-header {
     padding: 24px 32px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-soft);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -7268,7 +7268,7 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .modal-close {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-app);
     border: none;
     color: var(--text-muted);
     width: 36px;
@@ -7325,8 +7325,8 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--bg-app);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
@@ -7365,8 +7365,8 @@ body.vc-fullscreen-active .main-content {
 
 .help-modal .table-wrapper {
     margin: 20px 0;
-    background: rgba(255, 255, 255, 0.01);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--bg-app);
+    border: 1px solid var(--border-soft);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -7377,7 +7377,7 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal th {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-card);
     padding: 12px;
     text-align: left;
     font-size: 0.85rem;
@@ -7386,7 +7386,7 @@ body.vc-fullscreen-active .main-content {
 
 .help-modal td {
     padding: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    border-top: 1px solid var(--border-soft);
     font-size: 0.9rem;
     color: var(--text-secondary);
 }
