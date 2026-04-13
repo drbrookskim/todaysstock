@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 분석 플랫폼 - 한미반도체 가이드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* 헤더 */
+        header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            color: #2563eb;
+        }
+
+        nav a.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 2px;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 히어로 섹션 */
+        .hero {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .company-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .cta-button {
+            background: #2563eb;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .cta-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        /* 사이드바 네비게이션 */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 80px;
+            z-index: 10;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: #1e293b;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #999;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: #666;
+            border-radius: 6px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar a:hover {
+            background: #f0f4f8;
+            color: #2563eb;
+            border-left-color: #2563eb;
+        }
+
+        .sidebar a.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-left-color: #2563eb;
+            font-weight: 600;
+        }
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: none;
+            min-height: 600px;
+            overflow: visible;
+        }
+
+        .main-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .lesson-content {
+            display: none;
+            width: 100%;
+        }
+
+        .lesson-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* 카드 스타일 */
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card.highlight {
+            background: #eff6ff;
+            border-color: #2563eb;
+            border-left: 4px solid #2563eb;
+        }
+
+        .card.warning {
+            background: #fef9e7;
+            border-color: #f59e0b;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .card.success {
+            background: #ecfdf5;
+            border-color: #10b981;
+            border-left: 4px solid #10b981;
+        }
+
+        .card.danger {
+            background: #fef2f2;
+            border-color: #ef4444;
+            border-left: 4px solid #ef4444;
+        }
+
+        .card h3 {
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+
+        .card p {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        /* 테이블 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f0f4f8;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        /* 인포그래픽 박스 */
+        .infographic {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .infographic-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .infographic-item.blue {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        .infographic-item.green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .infographic-item.orange {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .infographic-item.red {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .infographic-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .infographic-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* 체크리스트 */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #666;
+        }
+
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* 비교 섹션 */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-item h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comparison-item h3:before {
+            font-size: 1.5rem;
+        }
+
+        .comparison-item.positive h3:before {
+            content: "✓";
+            color: #10b981;
+        }
+
+        .comparison-item.negative h3:before {
+            content: "✗";
+            color: #ef4444;
+        }
+
+        /* 단계별 가이드 */
+        .steps {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 2rem;
+            gap: 1.5rem;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .step-content h3 {
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+
+        .step-content p {
+            color: #666;
+        }
+
+        /* 푸터 */
+        footer {
+            background: white;
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+            margin-top: 3rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                margin-bottom: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                gap: 1rem;
+            }
+
+            .lesson-content {
+                padding: 0;
+            }
+        }
+
+        /* 스크롤 버튼 */
+        .scroll-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: space-between;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: 2px solid #2563eb;
+            background: white;
+            color: #2563eb;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn.primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stock-code {
+            color: #2563eb;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header>
+        <div class="header-content">
+            <div class="logo">📈 StockAnalysis Pro</div>
+            <nav>
+                <a onclick="switchTab('home')" class="nav-link active">홈</a>
+                <a onclick="switchTab('guide')" class="nav-link">학습</a>
+                <a onclick="switchTab('checklist')" class="nav-link">체크리스트</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 홈 섹션 -->
+        <section id="home-section" class="main-content active">
+            <div class="hero">
+                <div class="company-badge">한미반도체 (042700)</div>
+                <h1>주식 분석 플랫폼 - 초심자 가이드</h1>
+                <p>반도체 업계의 유망주 한미반도체를 분석해보세요</p>
+                <button class="cta-button" onclick="switchTab('guide')">학습 시작하기 →</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <h3>🤖 AI 분석</h3>
+                    <p>머신러닝으로 주가 추세를 예측합니다</p>
+                </div>
+                <div class="card">
+                    <h3>📊 패턴 인식</h3>
+                    <p>차트 패턴을 자동으로 감지합니다</p>
+                </div>
+                <div class="card">
+                    <h3>💰 재무 분석</h3>
+                    <p>회사의 수익성과 안정성을 확인합니다</p>
+                </div>
+                <div class="card">
+                    <h3>⚡ 실시간 신호</h3>
+                    <p>매매 신호를 즉시 알려줍니다</p>
+                </div>
+            </div>
+
+            <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin-bottom: 1.5rem; color: #1e293b;">한미반도체란?</h3>
+                <p style="margin-bottom: 1rem; color: #666;">
+                    한미반도체는 반도체 생산에 필요한 초임계 건식식각 장비를 제조하는 전문 기업입니다. 
+                    Logic과 NAND 플래시 메모리 분야에서 핵심 부품을 공급하며, 국내 및 해외 반도체 제조업체들의 주요 공급업체입니다.
+                </p>
+                <p style="color: #666;">
+                    반도체 산업의 성장과 함께 높은 성장률을 기록하고 있는 유망 소부장 기업입니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- 가이드 섹션 -->
+        <section id="guide-section" class="main-content">
+            <div class="content-wrapper">
+                <!-- 사이드바 -->
+                <aside class="sidebar">
+                    <h3>📚 학습 가이드</h3>
+                    <ul>
+                        <li><a onclick="switchLesson('lesson1')" class="sidebar-link active" id="lesson1-link">1. AI 추세 분석</a></li>
+                        <li><a onclick="switchLesson('lesson2')" class="sidebar-link" id="lesson2-link">2. 캔들 패턴</a></li>
+                        <li><a onclick="switchLesson('lesson3')" class="sidebar-link" id="lesson3-link">3. 수익성 지표</a></li>
+                        <li><a onclick="switchLesson('lesson4')" class="sidebar-link" id="lesson4-link">4. 안정성 지표</a></li>
+                        <li><a onclick="switchLesson('lesson5')" class="sidebar-link" id="lesson5-link">5. 종합 분석</a></li>
+                    </ul>
+                </aside>
+
+                <!-- 메인 콘텐츠 -->
+                <div id="lesson1" class="lesson-content active">
+                    <h2 class="section-title">1️⃣ AI 추세 분석이란?</h2>
+                    <p class="section-subtitle">머신러닝이 주가의 상승/하강을 예측하는 원리</p>
+
+                    <div class="card highlight">
+                        <h3>💡 핵심 개념</h3>
+                        <p>AI 추세 분석은 과거 주가 데이터(가격, 거래량, 시간)를 학습한 인공지능이 "주가가 앞으로 올라갈 확률"을 계산하는 기술입니다.</p>
+                        <p><strong>간단히 말하면: 과거 패턴을 보고 미래를 예측하는 "똑똑한 통계"</strong></p>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">어떻게 작동할까?</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>단계</th>
+                                <th>설명</th>
+                            </tr>
+                            <tr>
+                                <td><strong>수집</strong></td>
+                                <td>매일의 주가, 거래량 기록</td>
+                            </tr>
+                            <tr>
+                                <td><strong>학습</strong></td>
+                                <td>AI가 패턴 찾기 (상승 전 신호)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>예측</strong></td>
+                                <td>현재 신호로 미래 방향 예측</td>
+                            </tr>
+                            <tr>
+                                <td><strong>신뢰도</strong></td>
+                                <td>% 로 표시 (높을수록 확실)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">실제 예시</h3>
+                    <div class="card highlight">
+                        <h3>📌 한미반도체 <span class="stock-code">(042700)</span>: 65% 강세</h3>
+                        <p>과거 패턴 분석 결과, 현재 차트 형태가 "주가가 올라갔던 경우"와 65% 일치한다는 뜻입니다. 즉, 100번 중 65번은 올라갔고, 35번은 떨어졌다는 의미입니다.</p>
+                    </div>
+
+                    <div class="card warning">
+                        <h3>⚠️ 중요한 주의사항</h3>
+                        <p>65%는 <strong>"반드시 올라간다"는 뜻이 아닙니다!</strong> 항상 반대 신호도 고려하고, 다른 지표와 함께 검토해야 합니다.</p>
+                    </div>
+
+                    <div class="infographic">
+                        <div class="infographic-item blue">
+                            <div class="infographic-number">70%+</div>
+                            <div class="infographic-label">강한 신호</div>
+                        </div>
+                        <div class="infographic-item orange">
+                            <div class="infographic-number">50~70%</div>
+                            <div class="infographic-label">중간 신호</div>
+                        </div>
+                        <div class="infographic-item red">
+                            <div class="infographic-number">50% 미만</div>
+                            <div class="infographic-label">약한 신호</div>
+                        </div>
+                    </div>
+
+                    <div class="scroll-buttons">
+                        <button class="btn" onclick="switchLesson('lesson1')" disabled>← 이전</button>
+                        <button class="btn primary" onclick="switchLesson('lesson2')">다음 →</button>
+                    </div>
+                </div>
+
+                <div id="lesson2" class="lesson-content">
+                    <h2 class="section-title">2️⃣ 캔들 패턴이란?</h2>
+                    <p class="section-subtitle">차트 모양으로 주가 흐름을 읽기</p>
+
+                    <div class="card highlight">
+                        <h3>💡 패턴이란?</h3>
+                        <p>캔들 패턴은 "봉" 모양이 특정 형태를 반복하면, 그 다음 가격이 움직이는 방향이 비슷하다는 관찰입니다. AI가 이를 자동으로 인식합니다.</p>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">4가지 대표 패턴</h3>
+
+                    <div class="card success">
+                        <h3>🔺 1️⃣ 망치형 (Hammer) - 80% 신뢰도</h3>
+                        <p><strong>모양:</strong> 긴 아래꼬리, 작은 몸통 (망치 같음)</p>
+                        <p><strong>의미:</strong> 저점에서 반등 신호</p>
+                        <p><strong>✓ 이때 매수하면 수익 가능성 높음</strong></p>
+                    </div>
+
+                    <div class="card success">
+                        <h3>🔺 2️⃣ 원형 바닥형 (Rounding Bottom) - 95% 신뢰도</h3>
+                        <p><strong>모양:</strong> 밥그릇 같은 둥근 바닥 (∪)</p>
+                        <p><strong>의미:</strong> 상승 전환 신호</p>
+                        <p><strong>✓ 저점 확인 후 매수 기회</strong></p>
+                    </div>
+
+                    <div class="card danger">
+                        <h3>🔻 3️⃣ 심중 천정형 (Triple Top) - 98% 신뢰도</h3>
+                        <p><strong>모양:</strong> 산봉우리 3개 (∧∧∧)</p>
+                        <p><strong>의미:</strong> 강한 매도 신호</p>
+                        <p><strong>🔴 이때 매도하거나 보유 중단하는 게 좋음</strong></p>
+                    </div>
+
+                    <div class="card danger">
+                        <h3>🔻 4️⃣ 헤드 앤 숄더 (Head & Shoulders) - 100% 신뢰도</h3>
+                        <p><strong>모양:</strong> 사람의 어깨와 머리 모양 (∧ ∧∧ ∧)</p>
+                        <p><strong>의미:</strong> 매우 강한 하락 신호</p>
+                        <p><strong>🔴 가장 위험한 신호, 즉시 조치 필요</strong></p>
+                    </div>
+
+                    <div class="card highlight">
+                        <h3>💡 팁</h3>
+                        <p>신뢰도가 높을수록 (90% 이상) 신호가 정확합니다!</p>
+                    </div>
+
+                    <div class="scroll-buttons">
+                        <button class="btn" onclick="switchLesson('lesson1')">← 이전</button>
+                        <button class="btn primary" onclick="switchLesson('lesson3')">다음 →</button>
+                    </div>
+                </div>
+
+                <div id="lesson3" class="lesson-content">
+                    <h2 class="section-title">3️⃣ 수익성 지표</h2>
+                    <p class="section-subtitle">회사가 돈을 잘 버는지 확인하기</p>
+
+                    <div class="card highlight">
+                        <h3>💡 왜 중요할까?</h3>
+                        <p>좋은 차트 신호라도 회사가 적자면 위험합니다. 실제 수익성을 확인하는 것이 중요합니다.</p>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">ROE (자기자본 수익률)</h3>
+                    <p>회사가 투자받은 돈 100원으로 얼마의 순이익을 벌었는가?</p>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>ROE</th>
+                                <th>평가</th>
+                            </tr>
+                            <tr>
+                                <td>20% 이상</td>
+                                <td><strong style="color: #10b981;">✓✓ 탁월함</strong></td>
+                            </tr>
+                            <tr>
+                                <td>15~20%</td>
+                                <td><strong style="color: #10b981;">✓ 우수</strong></td>
+                            </tr>
+                            <tr>
+                                <td>10~15%</td>
+                                <td><strong style="color: #10b981;">✓ 양호</strong></td>
+                            </tr>
+                            <tr>
+                                <td>5~10%</td>
+                                <td><strong style="color: #f59e0b;">△ 평범</strong></td>
+                            </tr>
+                            <tr>
+                                <td>5% 미만</td>
+                                <td><strong style="color: #ef4444;">✗ 약함</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="card success">
+                        <h3>📌 예: 한미반도체 ROE 약 36~40% (2024 예상)</h3>
+                        <p>100원 투자 → 약 36~40원의 이익<br/>→ <strong>매우 우수한 수익성입니다! ✓✓</strong></p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem; color: #10b981;">
+                            반도체 업계의 특성상 높은 ROE를 유지하는 우량 기업입니다.
+                        </p>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">영업이익률 (Operating Margin)</h3>
+                    <p>매출 100원에서 실제 사업으로 버는 이익이 얼마인가?</p>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>영업이익률</th>
+                                <th>평가</th>
+                            </tr>
+                            <tr>
+                                <td>30% 이상</td>
+                                <td><strong style="color: #10b981;">매우 우수</strong></td>
+                            </tr>
+                            <tr>
+                                <td>20~30%</td>
+                                <td><strong style="color: #10b981;">우수</strong></td>
+                            </tr>
+                            <tr>
+                                <td>10~20%</td>
+                                <td><strong style="color: #10b981;">양호</strong></td>
+                            </tr>
+                            <tr>
+                                <td>5~10%</td>
+                                <td><strong style="color: #f59e0b;">평균</strong></td>
+                            </tr>
+                            <tr>
+                                <td>5% 미만</td>
+                                <td><strong style="color: #ef4444;">약함</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="card success">
+                        <h3>📌 예: 한미반도체 영업이익률 약 45~50% (2024 예상)</h3>
+                        <p>매출 100만원 → 약 45~50만원의 영업이익<br/>→ <strong>반도체 업계에서 최상위 수준입니다! ✓✓</strong></p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem; color: #10b981;">
+                            업계 평균이 15~20%인 것을 감안하면, 탁월한 마진율입니다.
+                        </p>
+                    </div>
+
+                    <div class="card success">
+                        <h3>🎯 조합 평가</h3>
+                        <p>ROE 40% + 영업이익률 48%?<br/><strong>= 반도체 소부장 업계의 최고 우량주!</strong></p>
+                        <p style="margin-top: 1rem; color: #666;">
+                            높은 수익성과 함께 탄탄한 영업 구조를 가지고 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="scroll-buttons">
+                        <button class="btn" onclick="switchLesson('lesson2')">← 이전</button>
+                        <button class="btn primary" onclick="switchLesson('lesson4')">다음 →</button>
+                    </div>
+                </div>
+
+                <div id="lesson4" class="lesson-content">
+                    <h2 class="section-title">4️⃣ 안정성 지표</h2>
+                    <p class="section-subtitle">회사의 안정성과 미래 전망 읽기</p>
+
+                    <h3 style="margin-top: 0;">부채비율 (Debt-to-Equity Ratio)</h3>
+                    <p>회사가 빌린 돈이 투자받은 돈의 몇 배인가? 낮을수록 안전합니다.</p>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>부채비율</th>
+                                <th>평가</th>
+                            </tr>
+                            <tr>
+                                <td>50% 이하</td>
+                                <td><strong style="color: #10b981;">✓✓ 매우 안전</strong></td>
+                            </tr>
+                            <tr>
+                                <td>50~100%</td>
+                                <td><strong style="color: #10b981;">✓ 안전</strong></td>
+                            </tr>
+                            <tr>
+                                <td>100~200%</td>
+                                <td><strong style="color: #f59e0b;">△ 평균</strong></td>
+                            </tr>
+                            <tr>
+                                <td>200% 이상</td>
+                                <td><strong style="color: #ef4444;">⚠️ 위험</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="card success">
+                        <h3>📌 예: 한미반도체 부채비율 약 30~40% (추정)</h3>
+                        <p>100원 투자 → 30~40원 빌림<br/>→ <strong>매우 안정적입니다! ✓✓</strong></p>
+                        <p style="margin-top: 1rem; color: #666;">
+                            적정 수준 이하의 부채로 재무 위험이 낮습니다.
+                        </p>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">성장성 (Growth Rate)</h3>
+                    <p>지난해 대비 매출이 얼마나 증가했는가? 높을수록 회사가 성장하는 것입니다.</p>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <tr>
+                                <th>성장률</th>
+                                <th>평가</th>
+                            </tr>
+                            <tr>
+                                <td>+30% 이상</td>
+                                <td>매우 빠른 성장</td>
+                            </tr>
+                            <tr>
+                                <td>+15~30%</td>
+                                <td>급성장 중</td>
+                            </tr>
+                            <tr>
+                                <td>+5~15%</td>
+                                <td>정상 성장</td>
+                            </tr>
+                            <tr>
+                                <td>-5~+5%</td>
+                                <td>보합</td>
+                            </tr>
+                            <tr>
+                                <td>-20% 이상</td>
+                                <td><strong style="color: #ef4444;">심각 약화</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="card success">
+                        <h3>📌 예: 한미반도체 연간 매출 성장률 약 +30~50% (추정)</h3>
+                        <p>지난해 매출 대비 30~50% 증가<br/>→ <strong>급성장 중인 회사입니다! ✓✓</strong></p>
+                        <p style="margin-top: 1rem; color: #666;">
+                            반도체 업계의 호황과 함께 가파른 성장을 기록하고 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="card highlight">
+                        <h3>🎯 안정성 + 성장성 조합</h3>
+                        <p>
+                            <strong>낮은 부채 + 높은 성장</strong><br/>
+                            = 가장 이상적인 투자 대상입니다! 📈
+                        </p>
+                    </div>
+
+                    <div class="scroll-buttons">
+                        <button class="btn" onclick="switchLesson('lesson3')">← 이전</button>
+                        <button class="btn primary" onclick="switchLesson('lesson5')">다음 →</button>
+                    </div>
+                </div>
+
+                <div id="lesson5" class="lesson-content">
+                    <h2 class="section-title">5️⃣ 종합 분석</h2>
+                    <p class="section-subtitle">모든 지표를 종합하여 투자 결정하기</p>
+
+                    <h3 style="margin-top: 0;">구매 전 5단계 확인 체크리스트</h3>
+                    <ul class="checklist">
+                        <li>AI 추세 신호가 60% 이상인가?</li>
+                        <li>캔들 패턴이 긍정적인가? (망치형, 원형바닥 등)</li>
+                        <li>ROE가 15% 이상인가?</li>
+                        <li>부채비율이 100% 이하인가?</li>
+                        <li>연간 매출이 양의 성장을 하는가?</li>
+                    </ul>
+
+                    <h3 style="margin-top: 2rem;">한미반도체 종합 평가</h3>
+
+                    <div class="comparison">
+                        <div class="comparison-item positive">
+                            <h3>✓ 긍정 신호</h3>
+                            <ul class="checklist">
+                                <li>AI 추세 65% 신호</li>
+                                <li>ROE 36~40% (우수)</li>
+                                <li>영업이익률 45~50% (탁월)</li>
+                                <li>부채비율 30~40% (안정)</li>
+                                <li>성장률 +30~50% (급성장)</li>
+                            </ul>
+                        </div>
+                        <div class="comparison-item negative">
+                            <h3>✗ 위험 신호</h3>
+                            <ul class="checklist">
+                                <li>반도체 사이클 변동 가능성</li>
+                                <li>고객 집중도 위험</li>
+                                <li>글로벌 경제 변수</li>
+                                <li>기술 변화 리스크</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card success">
+                        <h3>📊 최종 판단</h3>
+                        <p><strong>"매우 우량한 투자 대상입니다!"</strong></p>
+                        <p style="margin-top: 1rem;">
+                            높은 수익성, 안정적 재무, 강한 성장성을 모두 갖춘 반도체 소부장 기업입니다.
+                            다만 반도체 산업의 사이클 변동에 주의가 필요합니다.
+                        </p>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">투자 결정 단계별 가이드</h3>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>차트 신호 확인</h3>
+                                <p>AI 추세가 60% 이상인지 확인하고, 캔들 패턴이 긍정적인지 검토</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>재무 지표 검토</h3>
+                                <p>ROE, 영업이익률, 부채비율을 확인하여 회사 건강도 판단</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>성장성 분석</h3>
+                                <p>연간 및 분기별 매출 성장률을 확인하여 미래 전망 검토</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>위험 평가</h3>
+                                <p>긍정/부정 신호의 균형을 평가하고 리스크 판단</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h3>실행 결정</h3>
+                                <p>위험이 수용 가능한 수준이면 투자 실행, 아니면 보류</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card success">
+                        <h3>🎓 학습 완료!</h3>
+                        <p>
+                            이제 기본을 배웠습니다! 한미반도체는 좋은 사례 분석 대상입니다.
+                            다음 단계로 실제 매매 신호를 추적하거나, 거래량 분석, 이동평균선, 지지선/저항선 등 
+                            더 깊이 있는 주제를 배울 수 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="scroll-buttons">
+                        <button class="btn" onclick="switchLesson('lesson4')">← 이전</button>
+                        <button class="btn primary" onclick="switchTab('checklist')">체크리스트 보기 →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 체크리스트 섹션 -->
+        <section id="checklist-section" class="main-content">
+            <h2 class="section-title">투자 체크리스트</h2>
+            <p class="section-subtitle">한미반도체 종목 분석 시 참고할 종합 체크리스트</p>
+
+            <h3>한미반도체 <span class="stock-code">(042700)</span> 검토 전 확인 사항</h3>
+            <div class="card">
+                <h3>1단계: 차트 분석</h3>
+                <ul class="checklist">
+                    <li>AI 추세 신호: _____ % (60% 이상 필요)</li>
+                    <li>캔들 패턴: □ 망치형  □ 원형바닥  □ 헤드앤숄더  □ 기타</li>
+                    <li>패턴 신뢰도: _____ % (80% 이상 권장)</li>
+                    <li>추세 방향: □ 상승  □ 하락  □ 보합</li>
+                </ul>
+            </div>
+
+            <div class="card success">
+                <h3>2단계: 재무 분석</h3>
+                <ul class="checklist">
+                    <li>ROE: _____ % (현재 기준: 약 36~40%, 15% 이상 필요) ✓</li>
+                    <li>영업이익률: _____ % (현재 기준: 약 45~50%, 20% 이상 권장) ✓</li>
+                    <li>부채비율: _____ % (현재 기준: 약 30~40%, 100% 이하 필요) ✓</li>
+                    <li>부채비율 판정: □ 안전  □ 평균  □ 위험</li>
+                </ul>
+            </div>
+
+            <div class="card success">
+                <h3>3단계: 성장성 분석</h3>
+                <ul class="checklist">
+                    <li>연간 매출 성장률: _____ % (현재 기준: 약 +30~50%) ✓</li>
+                    <li>분기 매출 성장률: _____ %</li>
+                    <li>성장성 판정: □ 우수  □ 양호  □ 평균  □ 약함</li>
+                    <li>산업 전망: □ 성장 중  □ 성숙기  □ 침체기</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>4단계: 위험 요소 분석</h3>
+                <ul class="checklist">
+                    <li>반도체 사이클 위험: □ 높음  □ 중간  □ 낮음</li>
+                    <li>고객 집중도: □ 높음  □ 중간  □ 낮음</li>
+                    <li>기술 변화 리스크: □ 높음  □ 중간  □ 낮음</li>
+                    <li>경제 변수: □ 호황  □ 정상  □ 침체</li>
+                </ul>
+            </div>
+
+            <div class="card highlight">
+                <h3>5단계: 최종 판정</h3>
+                <ul class="checklist">
+                    <li>긍정 신호 개수: _____ 개 / 5개</li>
+                    <li>부정 신호 개수: _____ 개</li>
+                    <li>전체 위험도: □ 낮음  □ 중간  □ 높음</li>
+                    <li>투자 결정: □ 매수  □ 보류  □ 매도</li>
+                </ul>
+            </div>
+
+            <div class="card warning">
+                <h3>⚠️ 투자 시 주의사항</h3>
+                <ul class="checklist">
+                    <li>절대로 한 지표만 믿지 마세요</li>
+                    <li>과거 성과는 미래를 보장하지 않습니다</li>
+                    <li>반도체 사이클의 변동성을 항상 고려하세요</li>
+                    <li>항상 손절매 계획을 미리 세우세요</li>
+                    <li>여유 자금으로만 투자하세요</li>
+                    <li>정기적으로 포트폴리오를 점검하세요</li>
+                    <li>글로벌 경제 지표를 모니터링하세요</li>
+                </ul>
+            </div>
+
+            <div class="scroll-buttons">
+                <button class="btn" onclick="switchTab('guide')">← 학습으로 돌아가기</button>
+                <button class="btn primary" onclick="alert('프린트 기능은 브라우저의 인쇄 기능을 이용하세요 (Ctrl+P)')">🖨️ 인쇄하기</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- 푸터 -->
+    <footer>
+        <p>&copy; 2024 StockAnalysis Pro - 한미반도체 분석 가이드</p>
+        <p style="font-size: 0.9rem; margin-top: 1rem; color: #999;">
+            ⚠️ 본 자료는 교육 목적입니다. 투자 결정은 신중하게 하세요. 모든 투자에는 위험이 따릅니다.
+        </p>
+    </footer>
+
+    <script>
+        function switchTab(tab) {
+            // 모든 섹션 숨기기
+            document.querySelectorAll('.main-content').forEach(el => el.classList.remove('active'));
+            
+            // 선택한 섹션 표시
+            document.getElementById(tab + '-section').classList.add('active');
+            
+            // 네비게이션 업데이트
+            document.querySelectorAll('nav a').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 페이지 상단으로 스크롤
+            window.scrollTo(0, 0);
+            
+            // 가이드 탭에서는 첫 번째 레슨 표시
+            if (tab === 'guide') {
+                switchLesson('lesson1');
+            }
+        }
+
+        function switchLesson(lesson) {
+            // 모든 레슨 숨기기
+            document.querySelectorAll('.lesson-content').forEach(el => el.classList.remove('active'));
+            
+            // 선택한 레슨 표시
+            document.getElementById(lesson).classList.add('active');
+            
+            // 사이드바 활성화 표시 업데이트
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            document.getElementById(lesson + '-link').classList.add('active');
+            
+            // 페이지 상단으로 스크롤
+            window.scrollTo(0, 200);
+        }
+    </script>
+</body>
+</html>

@@ -4362,3 +4362,166 @@ window.showConfirm = function(title, message, type = 'warning') {
         };
     });
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Help Modal Controller (v25)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const HELP_CONTENT = {
+    'lesson1': {
+        title: 'AI 추세 분석 가이드',
+        body: `
+            <h2 class="section-title">AI 추세 분석이란?</h2>
+            <p class="section-subtitle">머신러닝이 주가의 상승/하강을 예측하는 원리</p>
+            <div class="card highlight">
+                <h3>💡 핵심 개념</h3>
+                <p>AI 추세 분석은 과거 주가 데이터(가격, 거래량, 시간)를 학습한 인공지능이 "주가가 앞으로 올라갈 확률"을 계산하는 기술입니다.</p>
+                <p><strong>간단히 말하면: 과거 패턴을 보고 미래를 예측하는 "똑똑한 통계"</strong></p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>단계</th><th>설명</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>수집</strong></td><td>매일의 주가, 거래량 기록</td></tr>
+                        <tr><td><strong>학습</strong></td><td>AI가 패턴 찾기 (상승 전 신호)</td></tr>
+                        <tr><td><strong>예측</strong></td><td>현재 신호로 미래 방향 예측</td></tr>
+                        <tr><td><strong>신뢰도</strong></td><td>% 로 표시 (높을수록 확실)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="infographic">
+                <div class="infographic-item blue"><div class="infographic-number">70%+</div><div class="infographic-label">강한 신호</div></div>
+                <div class="infographic-item orange"><div class="infographic-number">50~70%</div><div class="infographic-label">중간 신호</div></div>
+                <div class="infographic-item red"><div class="infographic-number">50% 미만</div><div class="infographic-label">약한 신호</div></div>
+            </div>
+            <div class="card warning">
+                <h3>⚠️ 주의사항</h3>
+                <p>신뢰도 수치는 "반드시 그렇게 된다"는 뜻이 아닙니다. 확률 기반의 예측이므로 다른 보조 지표와 함께 판단해야 합니다.</p>
+            </div>
+        `
+    },
+    'lesson2': {
+        title: '캔들 패턴 & 시각적 매핑',
+        body: `
+            <h2 class="section-title">캔들 패턴 가이드</h2>
+            <p class="section-subtitle">차트 모양으로 주가 흐름을 읽는 방법</p>
+            <div class="card highlight">
+                <h3>💡 패턴이란?</h3>
+                <p>캔들 패턴은 특정 봉 형태가 반복될 때 이후의 주가 방향성을 예측하는 관찰법입니다. AI가 실시간으로 이를 자동 감지합니다.</p>
+            </div>
+            <div class="card success">
+                <h3>🔺 망치형 (Hammer)</h3>
+                <p><strong>의미:</strong> 저점에서 강력한 반등 신호. 아래꼬리가 길수록 저가 매수세가 강함을 뜻합니다.</p>
+            </div>
+            <div class="card success">
+                <h3>🔺 원형 바닥형 (Rounding Bottom)</h3>
+                <p><strong>의미:</strong> 장기간 소강 상태 이후 점진적 상승 전환. 안정적인 매수 기회로 평가됩니다.</p>
+            </div>
+            <div class="card danger">
+                <h3>🔻 삼중 천정형 (Triple Top)</h3>
+                <p><strong>의미:</strong> 고점에서 3번의 저항을 확인한 후 하락하는 강력 매도 신호입니다.</p>
+            </div>
+            <div class="card danger">
+                <h3>🔻 헤드 앤 숄더 (Head & Shoulders)</h3>
+                <p><strong>의미:</strong> 추세 하락의 전형적 징후. 머리(최고점)와 양 어깨를 형성한 뒤 급락 위험이 큽니다.</p>
+            </div>
+        `
+    },
+    'lesson3_4': {
+        title: '재무 건전성 및 가치 분석',
+        body: `
+            <h2 class="section-title">수익성 & 안정성 지표</h2>
+            <p class="section-subtitle">회사가 돈을 잘 버는지, 튼튼한지 확인하기</p>
+            
+            <div class="card highlight">
+                <h3>📊 ROE (자기자본 수익률)</h3>
+                <p>회사가 자기 돈을 써서 얼마나 벌었는지 보여주는 수익성 끝판왕 지표입니다. (15% 이상 우수)</p>
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>ROE 수준</th><th>평가</th></tr></thead>
+                    <tbody>
+                        <tr><td>20% 이상</td><td><strong style="color: #10b981;">✓✓ 탁월함</strong></td></tr>
+                        <tr><td>10~15%</td><td><strong style="color: #10b981;">✓ 양호</strong></td></tr>
+                        <tr><td>5% 미만</td><td><strong style="color: #ef4444;">✗ 약함</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card highlight" style="margin-top:24px;">
+                <h3>🛡️ 부채비율</h3>
+                <p>회사가 빌린 돈이 투자받은 돈의 몇 배인지 나타냅니다. 낮을수록 재무적으로 안전합니다.</p>
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>부채비율</th><th>평가</th></tr></thead>
+                    <tbody>
+                        <tr><td>50% 이하</td><td><strong style="color: #10b981;">✓✓ 매우 안전</strong></td></tr>
+                        <tr><td>100~200%</td><td><strong style="color: #f59e0b;">△ 평균</strong></td></tr>
+                        <tr><td>200% 이상</td><td><strong style="color: #ef4444;">⚠️ 위험</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        `
+    },
+    'lesson5': {
+        title: '종합 분석 가이드',
+        body: `
+            <h2 class="section-title">투자 결정 체크리스트</h2>
+            <p class="section-subtitle">모든 지표를 종합하여 최종 판단하기</p>
+            
+            <div class="card success">
+                <h3>✅ 구매 전 필수 확인 사항</h3>
+                <ul class="checklist">
+                    <li>AI 추세 신호가 60% 이상인가?</li>
+                    <li>긍정적 캔들 패턴(망치형 등)이 감지되었는가?</li>
+                    <li>ROE가 15% 이상으로 수익성이 좋은가?</li>
+                    <li>부채비율 100% 이하로 재무가 안정적인가?</li>
+                    <li>매출 성장률이 전년 대비 증가세인가?</li>
+                </ul>
+            </div>
+
+            <div class="card warning">
+                <h3>⚠️ 리스크 관리</h3>
+                <p>아무리 지표가 좋아도 거시 경제 상황, 산업 사이클, 돌발 악재 등은 항상 존재합니다. 분할 매수와 손절가 준수가 필수입니다.</p>
+            </div>
+        `
+    }
+};
+
+function openHelpModal(topic) {
+    const modal = document.getElementById('helpModal');
+    const titleEl = document.getElementById('helpModalTitle');
+    const bodyEl = document.getElementById('helpModalBody');
+    
+    const content = HELP_CONTENT[topic];
+    if (content) {
+        titleEl.textContent = content.title;
+        bodyEl.innerHTML = content.body;
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Scroll lock
+        
+        // Modal animation reset
+        const container = modal.querySelector('.modal-container');
+        container.style.animation = 'none';
+        container.offsetHeight; /* trigger reflow */
+        container.style.animation = null;
+    }
+}
+
+function closeHelpModal() {
+    const modal = document.getElementById('helpModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = ''; // Scroll unlock
+}
+
+// Global escape key to close modals
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeHelpModal();
+        closeModal(); // System modal check
+    }
+});

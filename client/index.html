@@ -618,6 +618,7 @@
                                         <div class="workout-header themed-card-header">
                                             <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                                 <i class="ph ph-lightning"></i> AI 매수 리포트 (Buy)
+                                                <button class="help-trigger" onclick="openHelpModal('lesson1')"><i class="ph ph-question"></i></button>
                                             </div>
                                         </div>
                                         <div class="workout-body" style="padding: 24px;">
@@ -687,6 +688,7 @@
                                         <div class="workout-header themed-card-header">
                                             <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                                 <i class="ph ph-lightning"></i> AI 매도 리포트 (Sell)
+                                                <button class="help-trigger" onclick="openHelpModal('lesson1')"><i class="ph ph-question"></i></button>
                                             </div>
                                         </div>
                                         <div class="workout-body" style="padding: 24px;">
@@ -758,6 +760,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-magic-wand"></i> 캔들 패턴 감지
+                                            <button class="help-trigger" onclick="openHelpModal('lesson2')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -775,6 +778,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-chart-line-up"></i> 시각적 패턴 매핑
+                                            <button class="help-trigger" onclick="openHelpModal('lesson2')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -795,6 +799,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-clipboard-text"></i> 주간 캔들 인사이트 요약
+                                            <button class="help-trigger" onclick="openHelpModal('lesson2')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -813,6 +818,7 @@
                                 <div class="workout-header themed-card-header">
                                     <div class="workout-title" style="font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                         <i class="ph ph-brain"></i> AI 통합 분석 총평
+                                        <button class="help-trigger" onclick="openHelpModal('lesson5')"><i class="ph ph-question"></i></button>
                                     </div>
                                 </div>
                                 <div class="workout-body" style="padding: 24px;">
@@ -828,6 +834,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-chart-pie-slice"></i> 재무 건전성 및 가치
+                                            <button class="help-trigger" onclick="openHelpModal('lesson3_4')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -842,6 +849,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-megaphone"></i> 주요 공시 및 모멘텀
+                                            <button class="help-trigger" onclick="openHelpModal('lesson5')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -856,6 +864,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-buildings"></i> 업종 및 시장 지위
+                                            <button class="help-trigger" onclick="openHelpModal('lesson5')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -870,6 +879,7 @@
                                     <div class="workout-header themed-card-header">
                                         <div class="workout-title" style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-target"></i> 적정 가치 및 목표가
+                                            <button class="help-trigger" onclick="openHelpModal('lesson5')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
@@ -1176,7 +1186,27 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=20260412_v24"></script>
+    <!-- ── Help Modal for Deep Analysis ── -->
+    <div id="helpModal" class="modal help-modal hidden">
+        <div class="modal-overlay" onclick="closeHelpModal()"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="ph ph-book-open"></i>
+                    <span id="helpModalTitle">도움말</span>
+                </div>
+                <button class="modal-close" onclick="closeHelpModal()" aria-label="닫기"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="helpModalBody" class="modal-body custom-scrollbar">
+                <!-- Content injected via app.js -->
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-primary" onclick="closeHelpModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./static/app.js?v=20260413_v25"></script>
 </body>
 
 </html>
