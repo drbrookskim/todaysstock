@@ -7451,3 +7451,11 @@ body.vc-fullscreen-active .main-content {
         grid-template-columns: 1fr;
     }
 }
+
+.help-modal .guide-highlight {
+    background: rgba(81, 84, 238, 0.15) !important;
+    border: 2px solid var(--primary) !important;
+    transform: scale(1.02);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 30px rgba(81, 84, 238, 0.2);
+}

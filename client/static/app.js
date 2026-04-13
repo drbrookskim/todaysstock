@@ -4364,14 +4364,14 @@ window.showConfirm = function(title, message, type = 'warning') {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ── Help Modal Controller (v25)
+// ── Help Modal Controller (v27)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const HELP_CONTENT = {
     'lesson1': {
-        title: 'AI 추세 분석 가이드',
+        title: 'AI 주가 추세 분석 가이드',
         body: `
-            <h2 class="section-title">AI 추세 분석이란?</h2>
+            <h2 class="section-title">AI 주가 추세 분석이란?</h2>
             <p class="section-subtitle">머신러닝이 주가의 상승/하강을 예측하는 원리</p>
             <div class="card highlight">
                 <h3>💡 핵심 개념</h3>
@@ -4409,21 +4409,29 @@ const HELP_CONTENT = {
                 <h3>💡 패턴이란?</h3>
                 <p>캔들 패턴은 특정 봉 형태가 반복될 때 이후의 주가 방향성을 예측하는 관찰법입니다. AI가 실시간으로 이를 자동 감지합니다.</p>
             </div>
-            <div class="card success">
+            <div class="card" data-pattern-match="망치">
                 <h3>🔺 망치형 (Hammer)</h3>
                 <p><strong>의미:</strong> 저점에서 강력한 반등 신호. 아래꼬리가 길수록 저가 매수세가 강함을 뜻합니다.</p>
             </div>
-            <div class="card success">
+            <div class="card" data-pattern-match="원형 바닥">
                 <h3>🔺 원형 바닥형 (Rounding Bottom)</h3>
                 <p><strong>의미:</strong> 장기간 소강 상태 이후 점진적 상승 전환. 안정적인 매수 기회로 평가됩니다.</p>
             </div>
-            <div class="card danger">
+            <div class="card" data-pattern-match="삼중 천정">
                 <h3>🔻 삼중 천정형 (Triple Top)</h3>
                 <p><strong>의미:</strong> 고점에서 3번의 저항을 확인한 후 하락하는 강력 매도 신호입니다.</p>
             </div>
-            <div class="card danger">
+            <div class="card" data-pattern-match="헤드 앤 숄더">
                 <h3>🔻 헤드 앤 숄더 (Head & Shoulders)</h3>
                 <p><strong>의미:</strong> 추세 하락의 전형적 징후. 머리(최고점)와 양 어깨를 형성한 뒤 급락 위험이 큽니다.</p>
+            </div>
+            <div class="card" data-pattern-match="샛별">
+                <h3>🔺 샛별형 (Morning Star)</h3>
+                <p><strong>의미:</strong> 하락 추세 끝에서 나타나는 강력한 반전 패턴입니다. 첫 번째 장대음향, 두 번째 짧은 봉, 세 번째 장대양봉이 결합된 형태입니다.</p>
+            </div>
+            <div class="card" data-pattern-match="석별">
+                <h3>🔻 석별형 (Evening Star)</h3>
+                <p><strong>의미:</strong> 상승 추세 끝에서 하락 반전을 알리는 신호입니다. 고점에서 나타나면 주의가 필요합니다.</p>
             </div>
         `
     },
@@ -4466,6 +4474,85 @@ const HELP_CONTENT = {
             </div>
         `
     },
+    'lesson_event': {
+        title: '주요 공시 및 모멘텀 가이드',
+        body: `
+            <h2 class="section-title">공시 및 모멘텀 분석</h2>
+            <p class="section-subtitle">DART 공시와 최근 뉴스를 통한 재료 분석</p>
+            <div class="card highlight">
+                <h3>📢 공시 분석이란?</h3>
+                <p>금융감독원 전자공시시스템(DART)에 올라오는 기업의 주요 결정을 분석하여 호재나 악재를 파악하는 과정입니다.</p>
+            </div>
+            <div class="card success">
+                <h3>🔺 주요 호재성 재료</h3>
+                <ul class="checklist">
+                    <li>대규모 공급 계약 체결 (매출 대비 비중 확인)</li>
+                    <li>무상증자 결정 (주주 환원 및 자신감)</li>
+                    <li>자사주 매입 및 소각</li>
+                    <li>신규 사업 진출 및 대규모 투자 유치</li>
+                </ul>
+            </div>
+            <div class="card danger">
+                <h3>🔻 주요 악재성 재료</h3>
+                <ul class="checklist">
+                    <li>유상증자 (운영자금 조달 목적 시 악재)</li>
+                    <li>최대주주 변경 (경영권 불안)</li>
+                    <li>횡령 및 배임 혐의 발생</li>
+                    <li>공급 계약 해지 및 정정 공시</li>
+                </ul>
+            </div>
+        `
+    },
+    'lesson_sector': {
+        title: '업종 및 시장 지위 가이드',
+        body: `
+            <h2 class="section-title">업종 및 시장 지위 분석</h2>
+            <p class="section-subtitle">산업 내 경쟁력과 지배력 확인</p>
+            <div class="card highlight">
+                <h3>🏢 시장 점유율의 중요성</h3>
+                <p>업계 1위 기업(대장주)은 불황에도 견디는 힘이 강하며, 호황기에는 수익성이 가장 크게 개선됩니다.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>시장 지위</th><th>특징</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>시장 주도주</strong></td><td>가격 결정권 보유, 브랜드 가치 높음</td></tr>
+                        <tr><td><strong>기술 선도자</strong></td><td>높은 진입 장벽, 특허/원천 기술 보유</td></tr>
+                        <tr><td><strong>규모의 경제</strong></td><td>생산 원가 절감 가능, 시장 점유율 1위</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card info">
+                <h3>🌐 ECOS 데이터 활용</h3>
+                <p>한국은행 경제통계시스템(ECOS)의 산업 통계를 바탕으로 해당 업종의 성장 주기를 함께 분석합니다.</p>
+            </div>
+        `
+    },
+    'lesson_target': {
+        title: '적정 가치 및 목표가 가이드',
+        body: `
+            <h2 class="section-title">적정 가치 산출 원리</h2>
+            <p class="section-subtitle">적당한 주가가 얼마인지 계산하는 방법</p>
+            <div class="card highlight">
+                <h3>🎯 목표가 산정 방식</h3>
+                <p>과거의 벨류에이션(P/E, P/B)과 향후 3개년 성장률 예측(PEG)을 결산하여 산출합니다.</p>
+            </div>
+            <div class="comparison">
+                <div class="comparison-item card">
+                    <h3>성장주 가치</h3>
+                    <p>미래 이익(Earnings)에 비중을 둡니다. 꿈이 크지만 변동성도 큽니다.</p>
+                </div>
+                <div class="comparison-item card">
+                    <h3>가치주 가치</h3>
+                    <p>현재 자산(Asset)에 비중을 둡니다. 안전마진이 확보되어 있습니다.</p>
+                </div>
+            </div>
+            <div class="card warning">
+                <h3>⚠️ 목표가 도달 확률</h3>
+                <p>목표가는 이론적인 수치입니다. 시장 상황이나 수급에 따라 괴리가 발생할 수 있으므로 보수적으로 접근해야 합니다.</p>
+            </div>
+        `
+    },
     'lesson5': {
         title: '종합 분석 가이드',
         body: `
@@ -4503,6 +4590,33 @@ function openHelpModal(topic) {
         
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden'; // Scroll lock
+        
+        // ── 캔들 패턴 강조 로직 (v27) ──
+        if (topic === 'lesson2') {
+            const detectedPattern = document.getElementById('buyPattern')?.textContent || 
+                                    document.getElementById('sellPattern')?.textContent || "";
+            
+            if (detectedPattern && detectedPattern !== "-") {
+                // 특정 패턴 매칭 (예: "망치형"이 포함된 카드 찾기)
+                const cards = bodyEl.querySelectorAll('.card[data-pattern-match]');
+                let targetCard = null;
+                
+                cards.forEach(card => {
+                    const matchText = card.getAttribute('data-pattern-match');
+                    if (detectedPattern.includes(matchText)) {
+                        targetCard = card;
+                    }
+                });
+                
+                if (targetCard) {
+                    targetCard.classList.add('guide-highlight');
+                    // 해당 카드로 스크롤 (약간의 딜레이 후 실행)
+                    setTimeout(() => {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            }
+        }
         
         // Modal animation reset
         const container = modal.querySelector('.modal-container');
