@@ -7380,19 +7380,31 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card.highlight {
-    background: rgba(81, 84, 238, 0.08);
-    border-color: rgba(81, 84, 238, 0.2);
-    border-left: 4px solid var(--primary);
+    background: rgba(81, 84, 238, 0.1);
+    border-color: rgba(81, 84, 238, 0.3);
+    border-top: 3px solid var(--primary);
+    box-shadow: 0 4px 24px rgba(81, 84, 238, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.help-modal .card.warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+    border-top: 3px solid #f59e0b;
+    box-shadow: 0 4px 24px rgba(245, 158, 11, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .help-modal .card.success {
     background: rgba(16, 185, 129, 0.08);
-    border-color: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+    border-top: 3px solid #10b981;
+    box-shadow: 0 4px 24px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .help-modal .card.danger {
     background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    border-top: 3px solid #ef4444;
+    box-shadow: 0 4px 24px rgba(239, 68, 68, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .help-modal .card h3 {

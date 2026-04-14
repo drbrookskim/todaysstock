@@ -4139,6 +4139,28 @@ window.toggleVcFullscreen = function() {
 // ── 관리자 대시보드 (Admin Dashboard)
 // ──────────────────────────────────────────────────────────────────
 
+/**
+ * Supabase JS SDK로 최신 유효 토큰을 가져옵니다.
+ * 세션이 만료된 경우 SDK가 자동 갱신하며, 로컬스토리지를 최신 상태로 유지합니다.
+ */
+async function getValidToken() {
+    // 1) Supabase JS SDK가 사용 가능하면 SDK의 getSession으로 최신 토큰 획득
+    if (window._supabaseClient) {
+        try {
+            const { data, error } = await window._supabaseClient.auth.getSession();
+            if (!error && data?.session?.access_token) {
+                const freshToken = data.session.access_token;
+                setSupaToken(freshToken); // 로컬스토리지도 갱신
+                return freshToken;
+            }
+        } catch (e) {
+            console.warn('[AUTH] SDK getSession failed, falling back to localStorage token', e);
+        }
+    }
+    // 2) 폴백: 로컬스토리지에 저장된 토큰 사용
+    return getSupaToken();
+}
+
 async function renderAdminDashboard() {
     const listContainer = document.getElementById('adminUserList');
     if (!listContainer) return;
@@ -4147,7 +4169,7 @@ async function renderAdminDashboard() {
     listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">사용자 목록을 불러오는 중...</td></tr>';
 
     try {
-        const token = getSupaToken();
+        const token = await getValidToken();
         if (!token) {
             listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg">인증 토큰이 없습니다. 다시 로그인해 주세요.</td></tr>';
             return;
@@ -4158,6 +4180,14 @@ async function renderAdminDashboard() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
+        if (res.status === 401) {
+            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg" style="color:var(--color-down);">세션이 만료되었습니다. 다시 로그인해 주세요.</td></tr>';
+            return;
+        }
+        if (res.status === 403) {
+            listContainer.innerHTML = '<tr><td colspan="4" class="empty-msg" style="color:var(--color-down);">관리자 권한이 필요합니다.</td></tr>';
+            return;
+        }
         if (!res.ok) {
             throw new Error(`HTTP Error: ${res.status}`);
         }
@@ -4215,7 +4245,7 @@ async function approveUser(userId) {
     if (!confirmed) return;
 
     try {
-        const token = getSupaToken();
+        const token = await getValidToken();
         const res = await fetch(`${API_BASE_URL}/api/admin/approve`, {
             method: 'POST',
             headers: {
@@ -4243,7 +4273,7 @@ async function deleteUser(userId) {
     if (!confirmed) return;
 
     try {
-        const token = getSupaToken();
+        const token = await getValidToken();
         const res = await fetch(`${API_BASE_URL}/api/admin/user/${userId}`, {
             method: 'DELETE',
             headers: {
