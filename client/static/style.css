@@ -5196,11 +5196,9 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 /* Dynamic Fill colors based on state are applied via JS, but we define bases here if needed */
-.trend-strength-text {
-    font-size: 1rem;
+.trend-strength-pct {
+    font-size: 1.8rem;
     font-weight: 700;
-    font-family: 'Space Grotesk', monospace;
-    color: var(--text-main);
 }
 
 /* ── Chart Legend (Phase 2) ── */
@@ -5578,11 +5576,45 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     opacity: 0.3;
 }
 
-.analysis-section .section-desc {
-    font-size: 1rem;
-    color: var(--primary);
-    font-weight: 700;
-    margin-top: 4px;
+.pattern-desc {
+    font-size: 1.5rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.report-note {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+.report-tip {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-main);
+}
+
+.price-val {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.stat-val {
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.fund-signal-reason {
+    font-size: 1.8rem;
+    line-height: 1.8;
+    color: var(--text-main);
+}
+
+.fund-axis-content {
+    font-size: 1.5rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
 }
 
 .analysis-section #analysisContentWrapper {
@@ -7223,15 +7255,22 @@ body.vc-fullscreen-active .main-content {
 .help-modal .modal-container {
     max-width: 800px;
     width: 95%;
-    background: var(--bg-card);
-    border: 1px solid var(--border-heavy);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 32px;
     display: flex;
     flex-direction: column;
     max-height: 85vh;
     animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+}
+
+[data-theme="light"] .help-modal .modal-container {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes modalSlideUp {
@@ -7262,7 +7301,7 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .modal-header-title span {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: var(--text-main);
 }
@@ -7325,11 +7364,17 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card {
-    background: var(--bg-app);
+    background: rgba(var(--primary-rgb), 0.03);
     border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+[data-theme="light"] .help-modal .card {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .help-modal .card.highlight {
@@ -7358,8 +7403,8 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card p {
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 1.05rem;
+    line-height: 1.7;
     color: var(--text-secondary);
 }
 
@@ -7387,7 +7432,7 @@ body.vc-fullscreen-active .main-content {
 .help-modal td {
     padding: 12px;
     border-top: 1px solid var(--border-soft);
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--text-secondary);
 }
 
