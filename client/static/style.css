@@ -7335,22 +7335,19 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .modal-btn-primary {
-    background: rgba(81, 84, 238, 0.2);
-    color: var(--primary);
-    border: 1px solid rgba(81, 84, 238, 0.4);
+    background: var(--primary);
+    color: white;
+    border: none;
     padding: 12px 32px;
     border-radius: 16px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
 }
 
 .help-modal .modal-btn-primary:hover {
     transform: translateY(-2px);
-    background: rgba(81, 84, 238, 0.3);
-    box-shadow: 0 8px 32px rgba(81, 84, 238, 0.2);
+    box-shadow: 0 8px 20px rgba(81, 84, 238, 0.3);
 }
 
 /* ── Content Styles within Modal (extracted from guide.html) ── */
@@ -7367,43 +7364,35 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card {
-    background: rgba(16, 24, 39, 0.4);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(16px) saturate(120%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 [data-theme="light"] .help-modal .card {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.6);
     border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 8px 32px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .help-modal .card.highlight {
-    background: linear-gradient(135deg, rgba(81, 84, 238, 0.15), rgba(81, 84, 238, 0.05));
-    border: 1px solid rgba(81, 84, 238, 0.3);
+    background: rgba(81, 84, 238, 0.08);
+    border-color: rgba(81, 84, 238, 0.2);
     border-left: 4px solid var(--primary);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), inset 0 0 20px rgba(81, 84, 238, 0.05), 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-[data-theme="light"] .help-modal .card.highlight {
-    background: linear-gradient(135deg, rgba(81, 84, 238, 0.1), rgba(81, 84, 238, 0.02));
-    border-color: rgba(81, 84, 238, 0.3);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 0 20px rgba(81, 84, 238, 0.05), 0 8px 32px rgba(81, 84, 238, 0.1);
 }
 
 .help-modal .card.success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.2);
 }
 
 .help-modal .card.danger {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
 .help-modal .card h3 {
@@ -7422,18 +7411,18 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .table-wrapper {
-    margin: 20px 0;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    margin: 24px 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     overflow: hidden;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="light"] .help-modal .table-wrapper {
-    background: rgba(0, 0, 0, 0.02);
-    border-color: rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.7);
 }
 
 .help-modal table {
@@ -7442,21 +7431,21 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal th {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 16px;
     text-align: left;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: var(--text-muted);
 }
 
 [data-theme="light"] .help-modal th {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .help-modal td {
-    padding: 12px;
+    padding: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: var(--text-secondary);
 }
 
@@ -7505,40 +7494,23 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .infographic-item {
-    padding: 16px;
-    border-radius: 16px;
+    padding: 20px;
+    border-radius: 20px;
     text-align: center;
-    color: var(--text-main);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(140%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.help-modal .infographic-number { font-size: 1.5rem; font-weight: 800; color: inherit; }
-.help-modal .infographic-label { font-size: 0.8rem; opacity: 0.9; color: inherit; }
+.help-modal .infographic-number { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.help-modal .infographic-label { font-size: 1.1rem; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
-.help-modal .blue { 
-    background: rgba(59, 130, 246, 0.15); 
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #60a5fa;
-}
-.help-modal .orange { 
-    background: rgba(245, 158, 11, 0.15); 
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #fbbf24;
-}
-.help-modal .red { 
-    background: rgba(239, 68, 68, 0.15); 
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #f87171;
-}
-
-[data-theme="light"] .help-modal .blue { color: #2563eb; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); }
-[data-theme="light"] .help-modal .orange { color: #d97706; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
-[data-theme="light"] .help-modal .red { color: #dc2626; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
+.help-modal .blue { background: rgba(37, 99, 235, 0.3); border-color: rgba(37, 99, 235, 0.5); }
+.help-modal .orange { background: rgba(245, 158, 11, 0.3); border-color: rgba(245, 158, 11, 0.5); }
+.help-modal .red { background: rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.5); }
 
 @media (max-width: 600px) {
     .help-modal .comparison,
