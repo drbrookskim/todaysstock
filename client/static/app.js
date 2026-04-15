@@ -4394,10 +4394,102 @@ window.showConfirm = function(title, message, type = 'warning') {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ── Help Modal Controller (v27)
+// ── Help Modal Controller (v32 — Dynamic Live-Data Guide)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * 현재 DOM에서 실제 분석 수치를 읽어 동적 배너를 생성합니다.
+ * topic별로 관련 지표를 읽어 가이드 상단에 "현재 분석 결과" 카드를 주입합니다.
+ */
+function _buildLiveBanner(topic) {
+    const safe = (id) => {
+        const el = document.getElementById(id);
+        return el ? (el.textContent.trim() || '-') : '-';
+    };
+
+    let bannerHTML = '';
+
+    if (topic === 'lesson1') {
+        const trendLabel = safe('trendLabel');
+        const trendPct   = safe('trendStrengthText');
+        bannerHTML = `
+            <div class="card highlight" style="margin-bottom:20px;">
+                <h3>📡 현재 AI 추세 분석 결과</h3>
+                <div class="table-wrapper" style="margin:12px 0 0;">
+                    <table>
+                        <tbody>
+                            <tr><td><strong>추세 방향</strong></td><td>${trendLabel}</td></tr>
+                            <tr><td><strong>추세 강도</strong></td><td>${trendPct}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+    } else if (topic === 'lesson_buy') {
+        const pattern  = safe('buyPattern');
+        const strength = safe('buyStrengthPct');
+        const aggressive = safe('buyAggressive');
+        const conservative = safe('buyConservative');
+        const target   = safe('buyTarget');
+        const stopLoss = safe('buyStopLoss');
+        const rr       = safe('buyRiskReward');
+        bannerHTML = `
+            <div class="card highlight" style="margin-bottom:20px;">
+                <h3>📡 현재 AI 매수 리포트 수치</h3>
+                <div class="table-wrapper" style="margin:12px 0 0;">
+                    <table>
+                        <tbody>
+                            <tr><td><strong>감지 패턴</strong></td><td>${pattern}</td></tr>
+                            <tr><td><strong>시그널 강도</strong></td><td>${strength}</td></tr>
+                            <tr><td><strong>공격적 진입가</strong></td><td>${aggressive}</td></tr>
+                            <tr><td><strong>보수적 진입가</strong></td><td>${conservative}</td></tr>
+                            <tr><td><strong>목표가</strong></td><td>${target}</td></tr>
+                            <tr><td><strong>손절가</strong></td><td>${stopLoss}</td></tr>
+                            <tr><td><strong>손익비</strong></td><td>${rr}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+    } else if (topic === 'lesson_sell') {
+        const pattern  = safe('sellPattern');
+        const strength = safe('sellStrengthPct');
+        const sellPrice = safe('sellPrice');
+        const conservative = safe('sellConservative');
+        const target   = safe('sellTarget');
+        const stopLoss = safe('sellStopLoss');
+        const rr       = safe('sellRiskReward');
+        bannerHTML = `
+            <div class="card highlight" style="margin-bottom:20px;">
+                <h3>📡 현재 AI 매도 리포트 수치</h3>
+                <div class="table-wrapper" style="margin:12px 0 0;">
+                    <table>
+                        <tbody>
+                            <tr><td><strong>감지 패턴</strong></td><td>${pattern}</td></tr>
+                            <tr><td><strong>시그널 강도</strong></td><td>${strength}</td></tr>
+                            <tr><td><strong>매도가</strong></td><td>${sellPrice}</td></tr>
+                            <tr><td><strong>보수적 매도가</strong></td><td>${conservative}</td></tr>
+                            <tr><td><strong>목표가</strong></td><td>${target}</td></tr>
+                            <tr><td><strong>손절가</strong></td><td>${stopLoss}</td></tr>
+                            <tr><td><strong>손익비</strong></td><td>${rr}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+    } else if (topic === 'lesson2') {
+        const buyPat  = safe('buyPattern');
+        const sellPat = safe('sellPattern');
+        const detected = [buyPat, sellPat].filter(p => p && p !== '-').join(' / ');
+        bannerHTML = `
+            <div class="card highlight" style="margin-bottom:20px;">
+                <h3>📡 현재 감지된 캔들 패턴</h3>
+                <p>${detected ? `<strong>${detected}</strong> 패턴이 감지되었습니다. 아래에서 해당 패턴 설명을 확인하세요.` : '현재 특이 패턴이 감지되지 않았습니다.'}</p>
+            </div>`;
+    }
+
+    return bannerHTML;
+}
+
 const HELP_CONTENT = {
+    // ── 1. AI 추세 분석 ──────────────────────────────────────────────
     'lesson1': {
         title: 'AI 주가 추세 분석 가이드',
         body: `
@@ -4405,17 +4497,18 @@ const HELP_CONTENT = {
             <p class="section-subtitle">머신러닝이 주가의 상승/하강을 예측하는 원리</p>
             <div class="card highlight">
                 <h3>💡 핵심 개념</h3>
-                <p>AI 추세 분석은 과거 주가 데이터(가격, 거래량, 시간)를 학습한 인공지능이 "주가가 앞으로 올라갈 확률"을 계산하는 기술입니다.</p>
-                <p><strong>간단히 말하면: 과거 패턴을 보고 미래를 예측하는 "똑똑한 통계"</strong></p>
+                <p>AI 추세 분석은 과거 주가 데이터(가격, 거래량, 시간)를 학습한 인공지능이 <strong>"주가가 앞으로 올라갈 확률"</strong>을 계산하는 기술입니다.<br><br>
+                간단히 말하면: <strong>과거 패턴을 보고 미래를 예측하는 "똑똑한 통계"</strong></p>
             </div>
             <div class="table-wrapper">
                 <table>
                     <thead><tr><th>단계</th><th>설명</th></tr></thead>
                     <tbody>
-                        <tr><td><strong>수집</strong></td><td>매일의 주가, 거래량 기록</td></tr>
-                        <tr><td><strong>학습</strong></td><td>AI가 패턴 찾기 (상승 전 신호)</td></tr>
-                        <tr><td><strong>예측</strong></td><td>현재 신호로 미래 방향 예측</td></tr>
-                        <tr><td><strong>신뢰도</strong></td><td>% 로 표시 (높을수록 확실)</td></tr>
+                        <tr><td><strong>수집</strong></td><td>매일의 주가, 거래량, 이동평균 기록</td></tr>
+                        <tr><td><strong>학습</strong></td><td>AI가 상승 직전에 반복되는 패턴 자동 감지</td></tr>
+                        <tr><td><strong>예측</strong></td><td>현재 신호로 향후 방향 확률 계산</td></tr>
+                        <tr><td><strong>방향 표시</strong></td><td>상승(Bullish) / 하락(Bearish) / 중립(Neutral)</td></tr>
+                        <tr><td><strong>강도 %</strong></td><td>신호가 얼마나 확실한지를 0~100% 로 표현</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -4426,84 +4519,244 @@ const HELP_CONTENT = {
             </div>
             <div class="card warning">
                 <h3>⚠️ 주의사항</h3>
-                <p>신뢰도 수치는 "반드시 그렇게 된다"는 뜻이 아닙니다. 확률 기반의 예측이므로 다른 보조 지표와 함께 판단해야 합니다.</p>
+                <p>신뢰도 수치는 <strong>"반드시 그렇게 된다"</strong>는 뜻이 아닙니다. 확률 기반의 예측이므로 캔들 패턴·재무 지표와 함께 종합 판단해야 합니다.</p>
             </div>
         `
     },
+
+    // ── 2. AI 매수 리포트 ─────────────────────────────────────────────
+    'lesson_buy': {
+        title: 'AI 매수 리포트 지표 설명',
+        body: `
+            <h2 class="section-title">AI 매수 리포트 지표 해설</h2>
+            <p class="section-subtitle">각 수치가 무엇을 의미하는지 정확히 알아봅니다</p>
+            <div class="card highlight">
+                <h3>⚡ 시그널 강도 / 신뢰도 (%)</h3>
+                <p>AI가 현재 차트에서 매수 신호가 얼마나 강한지를 나타냅니다. <strong>70% 이상이면 강한 매수 신호</strong>로 볼 수 있습니다.</p>
+            </div>
+            <div class="card">
+                <h3>🎯 공격적 진입가</h3>
+                <p>현재 시점에서 즉시 진입할 수 있는 가격대입니다. <strong>모멘텀이 강할 때 적합</strong>하지만, 리스크가 상대적으로 높습니다.</p>
+            </div>
+            <div class="card">
+                <h3>🛡️ 보수적 진입가</h3>
+                <p>일정 조정 이후 더 안전한 가격에 진입하는 전략입니다. <strong>리스크를 최소화</strong>하고 싶을 때 권장합니다.</p>
+            </div>
+            <div class="card success">
+                <h3>🚀 목표가</h3>
+                <p>AI가 추정하는 <strong>단기 ~ 중기 상승 목표 가격</strong>입니다. 이 수준에서 분할 매도를 고려할 수 있습니다.</p>
+            </div>
+            <div class="card danger">
+                <h3>✂️ 손절가</h3>
+                <p>이 가격 아래로 떨어지면 <strong>반드시 손실 한도를 지켜 매도</strong>해야 하는 기준선입니다. 지키지 않으면 큰 손실로 이어질 수 있습니다.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>손익비 (Risk/Reward)</th><th>의미</th></tr></thead>
+                    <tbody>
+                        <tr><td>3:1 이상</td><td><strong style="color:#10b981;">✓ 우수</strong> — 손실 1에 수익 3 이상 기대</td></tr>
+                        <tr><td>2:1</td><td><strong style="color:#f59e0b;">△ 양호</strong> — 표준적인 매매 수준</td></tr>
+                        <tr><td>1:1 미만</td><td><strong style="color:#ef4444;">✗ 비추천</strong> — 손익 구조가 불리함</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card warning">
+                <h3>⚠️ 거래량 핵심 원칙</h3>
+                <p>매수 시그널이 강하더라도 <strong>평균 거래량의 1.5배 이상</strong>이 수반되면 더욱 신뢰할 수 있습니다. 거래량 없는 상승은 지속되기 어렵습니다.</p>
+            </div>
+        `
+    },
+
+    // ── 3. AI 매도 리포트 ─────────────────────────────────────────────
+    'lesson_sell': {
+        title: 'AI 매도 리포트 지표 설명',
+        body: `
+            <h2 class="section-title">AI 매도 리포트 지표 해설</h2>
+            <p class="section-subtitle">매도 타이밍과 각 수치의 의미를 정확히 이해합니다</p>
+            <div class="card highlight">
+                <h3>⚡ 시그널 강도 / 신뢰도 (%)</h3>
+                <p>AI가 현재 차트에서 매도 신호가 얼마나 강한지를 나타냅니다. <strong>70% 이상이면 강한 매도 신호</strong>로 볼 수 있습니다.</p>
+            </div>
+            <div class="card danger">
+                <h3>📉 매도가 (즉시 매도 기준)</h3>
+                <p>현재 시점에서 가장 빠르게 포지션을 정리할 수 있는 가격입니다. 신호가 강할 때 <strong>즉각적인 리스크 차단</strong>에 유효합니다.</p>
+            </div>
+            <div class="card">
+                <h3>🔄 보수적 매도가</h3>
+                <p>약간의 반등을 기다려 더 유리한 가격에 매도하는 전략입니다. 단, <strong>추가 하락 리스크가 있으므로 주의</strong>가 필요합니다.</p>
+            </div>
+            <div class="card success">
+                <h3>🎯 목표가 (공매도/숏 목표)</h3>
+                <p>하락 흐름이 지속될 경우 AI가 예상하는 <strong>주가 저점 구간</strong>입니다.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>손절가의 역할</th><th>설명</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>숏/공매도용</strong></td><td>이 가격 위로 반등 시 즉시 포지션 청산</td></tr>
+                        <tr><td><strong>보유 주식 용</strong></td><td>이 가격 아래로 하락 시 추가 손실 방지를 위해 매도</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card warning">
+                <h3>⚠️ 매도 신호 활용 팁</h3>
+                <p>매도 신호는 <strong>단독으로 사용하지 않고</strong> 재무 지표 악화, 거시경제 악재, 거래량 이상 급증 등 복합적 요인과 함께 판단해야 합니다.</p>
+            </div>
+        `
+    },
+
+    // ── 4. 캔들 패턴 감지 + 시각적 매핑 ──────────────────────────────
     'lesson2': {
-        title: '캔들 패턴 & 시각적 매핑',
+        title: '캔들 패턴 & 시각적 매핑 가이드',
         body: `
             <h2 class="section-title">캔들 패턴 가이드</h2>
             <p class="section-subtitle">차트 모양으로 주가 흐름을 읽는 방법</p>
             <div class="card highlight">
-                <h3>💡 패턴이란?</h3>
-                <p>캔들 패턴은 특정 봉 형태가 반복될 때 이후의 주가 방향성을 예측하는 관찰법입니다. AI가 실시간으로 이를 자동 감지합니다.</p>
+                <h3>💡 캔들 패턴이란?</h3>
+                <p>캔들 패턴은 특정 봉 형태가 반복될 때 이후 주가 방향성을 예측하는 관찰법입니다. AI가 실시간으로 자동 감지합니다.</p>
             </div>
+
+            <h3 style="margin:20px 0 12px; color:var(--text-main); font-size:1.1rem;">🔺 상승 반전 패턴</h3>
             <div class="card" data-pattern-match="망치">
                 <h3>🔺 망치형 (Hammer)</h3>
-                <p><strong>의미:</strong> 저점에서 강력한 반등 신호. 아래꼬리가 길수록 저가 매수세가 강함을 뜻합니다.</p>
+                <p><strong>의미:</strong> 저점에서 나타나는 강력한 반등 신호. 아래꼬리가 길수록 저가에서의 매수세가 강력함을 의미합니다.</p>
+                <p><strong>해석:</strong> 저점 부근에서 발생 시 매수 기회, 단기 바닥 형성 가능성 높음.</p>
             </div>
-            <div class="card" data-pattern-match="원형 바닥">
-                <h3>🔺 원형 바닥형 (Rounding Bottom)</h3>
-                <p><strong>의미:</strong> 장기간 소강 상태 이후 점진적 상승 전환. 안정적인 매수 기회로 평가됩니다.</p>
-            </div>
-            <div class="card" data-pattern-match="삼중 천정">
-                <h3>🔻 삼중 천정형 (Triple Top)</h3>
-                <p><strong>의미:</strong> 고점에서 3번의 저항을 확인한 후 하락하는 강력 매도 신호입니다.</p>
-            </div>
-            <div class="card" data-pattern-match="헤드 앤 숄더">
-                <h3>🔻 헤드 앤 숄더 (Head & Shoulders)</h3>
-                <p><strong>의미:</strong> 추세 하락의 전형적 징후. 머리(최고점)와 양 어깨를 형성한 뒤 급락 위험이 큽니다.</p>
+            <div class="card" data-pattern-match="역망치">
+                <h3>🔺 역망치형 (Inverted Hammer)</h3>
+                <p><strong>의미:</strong> 하락 추세 끝에 나타나며 위꼬리가 긴 형태. 매수세가 유입되기 시작함을 암시합니다.</p>
+                <p><strong>해석:</strong> 다음 봉이 양봉으로 확인되면 매수 신호.</p>
             </div>
             <div class="card" data-pattern-match="샛별">
                 <h3>🔺 샛별형 (Morning Star)</h3>
-                <p><strong>의미:</strong> 하락 추세 끝에서 나타나는 강력한 반전 패턴입니다. 첫 번째 장대음향, 두 번째 짧은 봉, 세 번째 장대양봉이 결합된 형태입니다.</p>
+                <p><strong>의미:</strong> 하락 추세 끝 3봉 패턴(음봉 → 짧은 봉 → 장대 양봉). 강력한 추세 반전 신호입니다.</p>
+                <p><strong>해석:</strong> 3일째 양봉이 길수록 반전 신뢰도 높음.</p>
             </div>
+            <div class="card" data-pattern-match="원형 바닥">
+                <h3>🔺 원형 바닥형 (Rounding Bottom)</h3>
+                <p><strong>의미:</strong> 장기간 완만하게 하락 후 U자 형태로 반전하는 패턴. 안정적이고 지속적인 반등을 예고합니다.</p>
+                <p><strong>해석:</strong> 안정적인 매수 기회로 기관 투자자 선호 패턴.</p>
+            </div>
+            <div class="card" data-pattern-match="관통형">
+                <h3>🔺 관통형 (Piercing Line)</h3>
+                <p><strong>의미:</strong> 하락 후 다음 봉 양봉이 전 봉 음봉의 50% 이상 회복하는 패턴. 단기 반등 신호입니다.</p>
+            </div>
+            <div class="card" data-pattern-match="상승장악형">
+                <h3>🔺 상승장악형 (Bullish Engulfing)</h3>
+                <p><strong>의미:</strong> 전 봉 음봉을 완전히 감싸는 큰 양봉. 매수 세력이 매도 세력을 압도하는 강한 신호.</p>
+            </div>
+
+            <h3 style="margin:24px 0 12px; color:var(--text-main); font-size:1.1rem;">🔻 하락 반전 패턴</h3>
             <div class="card" data-pattern-match="석별">
                 <h3>🔻 석별형 (Evening Star)</h3>
-                <p><strong>의미:</strong> 상승 추세 끝에서 하락 반전을 알리는 신호입니다. 고점에서 나타나면 주의가 필요합니다.</p>
+                <p><strong>의미:</strong> 상승 추세 끝 3봉 패턴(양봉 → 짧은 봉 → 장대 음봉). 상승세 종료 경고 신호입니다.</p>
+                <p><strong>해석:</strong> 고점에서 나타날수록 신뢰도가 높으므로 주의가 필요합니다.</p>
+            </div>
+            <div class="card" data-pattern-match="삼중 천정">
+                <h3>🔻 삼중 천정형 (Triple Top)</h3>
+                <p><strong>의미:</strong> 같은 고점에서 3번 저항받고 하락하는 패턴. 강력한 매도 신호입니다.</p>
+                <p><strong>해석:</strong> 넥라인(지지선) 하향 돌파 시 하락폭 크게 확대 가능.</p>
+            </div>
+            <div class="card" data-pattern-match="헤드 앤 숄더">
+                <h3>🔻 헤드 앤 숄더 (Head & Shoulders)</h3>
+                <p><strong>의미:</strong> 중앙 고점(머리)과 양 어깨를 형성 후 하락하는 전형적인 추세 전환 패턴.</p>
+                <p><strong>해석:</strong> 추세 전환 패턴 중 가장 신뢰도가 높으며, 넥라인 이탈 시 목표 하락폭이 명확합니다.</p>
+            </div>
+            <div class="card" data-pattern-match="유성형">
+                <h3>🔻 유성형 (Shooting Star)</h3>
+                <p><strong>의미:</strong> 상승 추세 고점에서 나타나는 긴 위꼬리 봉. 고점 매도세 유입을 의미합니다.</p>
+            </div>
+            <div class="card" data-pattern-match="하락장악형">
+                <h3>🔻 하락장악형 (Bearish Engulfing)</h3>
+                <p><strong>의미:</strong> 전 봉 양봉을 완전히 삼키는 큰 음봉. 매도 압력이 급격히 증가하는 신호.</p>
+            </div>
+
+            <h3 style="margin:24px 0 12px; color:var(--text-main); font-size:1.1rem;">📊 시각적 패턴 매핑이란?</h3>
+            <div class="card highlight">
+                <h3>🗺️ 차트 위 패턴 시각화</h3>
+                <p>감지된 캔들 패턴은 시각적 패턴 매핑 섹션에서 <strong>실제 차트 위에 직접 표시</strong>됩니다. 색상 코딩: <strong style="color:#10b981;">초록=상승</strong>, <strong style="color:#ef4444;">빨강=하락</strong>, <strong style="color:#f59e0b;">주황=중립</strong>.</p>
             </div>
         `
     },
+
+    // ── 5. 재무 건전성 및 가치 ──────────────────────────────────────
     'lesson3_4': {
-        title: '재무 건전성 및 가치 분석',
+        title: '재무 건전성 및 가치 분석 가이드',
         body: `
-            <h2 class="section-title">수익성 & 안정성 지표</h2>
-            <p class="section-subtitle">회사가 돈을 잘 버는지, 튼튼한지 확인하기</p>
-            
+            <h2 class="section-title">수익성 & 안정성 & 가치 지표</h2>
+            <p class="section-subtitle">회사가 돈을 잘 버는지, 튼튼한지, 저평가인지 확인하기</p>
+
             <div class="card highlight">
                 <h3>📊 ROE (자기자본 수익률)</h3>
-                <p>회사가 자기 돈을 써서 얼마나 벌었는지 보여주는 수익성 끝판왕 지표입니다. (15% 이상 우수)</p>
+                <p>회사가 주주 자본으로 <strong>얼마나 효율적으로 이익을 창출</strong>하는지 보여줍니다. 수익성 핵심 지표.</p>
             </div>
-            
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ROE 수준</th><th>평가</th></tr></thead>
+                    <thead><tr><th>ROE 수준</th><th>평가</th><th>의미</th></tr></thead>
                     <tbody>
-                        <tr><td>20% 이상</td><td><strong style="color: #10b981;">✓✓ 탁월함</strong></td></tr>
-                        <tr><td>10~15%</td><td><strong style="color: #10b981;">✓ 양호</strong></td></tr>
-                        <tr><td>5% 미만</td><td><strong style="color: #ef4444;">✗ 약함</strong></td></tr>
+                        <tr><td>20% 이상</td><td><strong style="color:#10b981;">✓✓ 탁월</strong></td><td>워런 버핏이 선호하는 수준</td></tr>
+                        <tr><td>15~20%</td><td><strong style="color:#10b981;">✓ 우수</strong></td><td>업계 평균 이상</td></tr>
+                        <tr><td>10~15%</td><td><strong style="color:#f59e0b;">△ 양호</strong></td><td>전반적으로 무난한 수준</td></tr>
+                        <tr><td>5% 미만</td><td><strong style="color:#ef4444;">✗ 약함</strong></td><td>수익 창출 효율 낮음</td></tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="card highlight" style="margin-top:24px;">
-                <h3>🛡️ 부채비율</h3>
-                <p>회사가 빌린 돈이 투자받은 돈의 몇 배인지 나타냅니다. 낮을수록 재무적으로 안전합니다.</p>
+                <h3>📊 PER (주가수익비율)</h3>
+                <p>현재 주가가 <strong>주당순이익 대비 몇 배에 거래</strong>되는지 나타냅니다. 낮을수록 저평가를 의미합니다.</p>
             </div>
-            
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>PER</th><th>평가</th></tr></thead>
+                    <tbody>
+                        <tr><td>10배 이하</td><td><strong style="color:#10b981;">✓ 저평가</strong> 가능성</td></tr>
+                        <tr><td>10~20배</td><td><strong style="color:#f59e0b;">△ 적정</strong> 수준</td></tr>
+                        <tr><td>30배 이상</td><td><strong style="color:#ef4444;">⚠ 고평가</strong> 주의 필요</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card highlight" style="margin-top:24px;">
+                <h3>📊 PBR (주가순자산비율)</h3>
+                <p>현재 주가가 <strong>장부가치(자산-부채) 대비 몇 배</strong>인지 나타냅니다. 1배 미만이면 이론적으로 저평가.</p>
+            </div>
+
+            <div class="card highlight" style="margin-top:24px;">
+                <h3>🛡️ 부채비율</h3>
+                <p>회사의 <strong>자기자본 대비 부채 규모</strong>입니다. 낮을수록 재무적으로 안전합니다.</p>
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead><tr><th>부채비율</th><th>평가</th></tr></thead>
                     <tbody>
-                        <tr><td>50% 이하</td><td><strong style="color: #10b981;">✓✓ 매우 안전</strong></td></tr>
-                        <tr><td>100~200%</td><td><strong style="color: #f59e0b;">△ 평균</strong></td></tr>
-                        <tr><td>200% 이상</td><td><strong style="color: #ef4444;">⚠️ 위험</strong></td></tr>
+                        <tr><td>50% 이하</td><td><strong style="color:#10b981;">✓✓ 매우 안전</strong></td></tr>
+                        <tr><td>50~100%</td><td><strong style="color:#10b981;">✓ 안전</strong></td></tr>
+                        <tr><td>100~200%</td><td><strong style="color:#f59e0b;">△ 평균</strong></td></tr>
+                        <tr><td>200% 이상</td><td><strong style="color:#ef4444;">⚠️ 위험</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card highlight" style="margin-top:24px;">
+                <h3>💰 매출 성장률</h3>
+                <p>전년 동기 대비 <strong>매출이 얼마나 성장했는지</strong>를 보여줍니다. 지속적인 매출 성장은 기업 경쟁력의 핵심 지표입니다.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>성장률</th><th>평가</th></tr></thead>
+                    <tbody>
+                        <tr><td>20% 이상</td><td><strong style="color:#10b981;">✓✓ 고성장</strong></td></tr>
+                        <tr><td>5~20%</td><td><strong style="color:#f59e0b;">△ 안정 성장</strong></td></tr>
+                        <tr><td>0~5%</td><td><strong style="color:#f59e0b;">△ 정체</strong></td></tr>
+                        <tr><td>마이너스</td><td><strong style="color:#ef4444;">✗ 역성장</strong></td></tr>
                     </tbody>
                 </table>
             </div>
         `
     },
+
+    // ── 6. 주요 공시 및 모멘텀 ──────────────────────────────────────
     'lesson_event': {
         title: '주요 공시 및 모멘텀 가이드',
         body: `
@@ -4511,98 +4764,187 @@ const HELP_CONTENT = {
             <p class="section-subtitle">DART 공시와 최근 뉴스를 통한 재료 분석</p>
             <div class="card highlight">
                 <h3>📢 공시 분석이란?</h3>
-                <p>금융감독원 전자공시시스템(DART)에 올라오는 기업의 주요 결정을 분석하여 호재나 악재를 파악하는 과정입니다.</p>
+                <p>금융감독원 전자공시시스템(DART)에 올라오는 기업의 주요 결정을 분석하여 <strong>호재(주가 상승 재료)와 악재(주가 하락 재료)</strong>를 파악하는 과정입니다.</p>
             </div>
             <div class="card success">
-                <h3>🔺 주요 호재성 재료</h3>
+                <h3>🔺 주요 호재성 공시 유형</h3>
                 <ul class="checklist">
-                    <li>대규모 공급 계약 체결 (매출 대비 비중 확인)</li>
-                    <li>무상증자 결정 (주주 환원 및 자신감)</li>
-                    <li>자사주 매입 및 소각</li>
-                    <li>신규 사업 진출 및 대규모 투자 유치</li>
+                    <li><strong>대규모 공급 계약</strong> — 매출 대비 비중 10% 이상 시 강력 호재</li>
+                    <li><strong>무상증자</strong> — 주주 환원 의지 표명, 주가 상승 기대감 유발</li>
+                    <li><strong>자사주 매입·소각</strong> — 주당 가치 상승 효과</li>
+                    <li><strong>신규 사업·투자 유치</strong> — 미래 성장성 부각</li>
+                    <li><strong>배당 증가</strong> — 이익의 주주 환원 강화 신호</li>
                 </ul>
             </div>
             <div class="card danger">
-                <h3>🔻 주요 악재성 재료</h3>
+                <h3>🔻 주요 악재성 공시 유형</h3>
                 <ul class="checklist">
-                    <li>유상증자 (운영자금 조달 목적 시 악재)</li>
-                    <li>최대주주 변경 (경영권 불안)</li>
-                    <li>횡령 및 배임 혐의 발생</li>
-                    <li>공급 계약 해지 및 정정 공시</li>
+                    <li><strong>유상증자</strong> — 운영자금 조달 목적 시 주식 가치 희석</li>
+                    <li><strong>최대주주 변경</strong> — 경영권 불안정으로 주가 변동성 확대</li>
+                    <li><strong>횡령·배임 혐의</strong> — 기업 신뢰도 급격 하락</li>
+                    <li><strong>계약 해지·정정 공시</strong> — 실적 기대치 하락</li>
+                    <li><strong>대규모 손상차손</strong> — 자산 가치 하락 인식</li>
                 </ul>
+            </div>
+            <div class="card highlight">
+                <h3>📈 모멘텀이란?</h3>
+                <p>모멘텀은 <strong>주가의 방향성과 속도</strong>를 의미합니다. 긍정적 모멘텀(뉴스·실적 기대)이 강할 때는 추세에 올라타는 전략이 유효합니다.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>모멘텀 유형</th><th>설명</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>실적 모멘텀</strong></td><td>어닝 서프라이즈, 가이던스 상향</td></tr>
+                        <tr><td><strong>정책 모멘텀</strong></td><td>정부 지원·규제 완화</td></tr>
+                        <tr><td><strong>산업 모멘텀</strong></td><td>업황 사이클 회복기 진입</td></tr>
+                        <tr><td><strong>수급 모멘텀</strong></td><td>외국인·기관 연속 순매수</td></tr>
+                    </tbody>
+                </table>
             </div>
         `
     },
+
+    // ── 7. 업종 및 시장 지위 ────────────────────────────────────────
     'lesson_sector': {
         title: '업종 및 시장 지위 가이드',
         body: `
             <h2 class="section-title">업종 및 시장 지위 분석</h2>
-            <p class="section-subtitle">산업 내 경쟁력과 지배력 확인</p>
+            <p class="section-subtitle">산업 내 경쟁력과 지배력이 왜 중요한가</p>
             <div class="card highlight">
-                <h3>🏢 시장 점유율의 중요성</h3>
-                <p>업계 1위 기업(대장주)은 불황에도 견디는 힘이 강하며, 호황기에는 수익성이 가장 크게 개선됩니다.</p>
+                <h3>🏢 시장 지위의 중요성</h3>
+                <p>업계 1위 기업(대장주)은 <strong>불황에도 견디는 힘</strong>이 강하며, 호황기에는 수익성이 가장 크게 개선됩니다. 진입 장벽이 높아 경쟁자가 쉽게 따라오지 못합니다.</p>
             </div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>시장 지위</th><th>특징</th></tr></thead>
+                    <thead><tr><th>시장 지위</th><th>특징</th><th>투자 관점</th></tr></thead>
                     <tbody>
-                        <tr><td><strong>시장 주도주</strong></td><td>가격 결정권 보유, 브랜드 가치 높음</td></tr>
-                        <tr><td><strong>기술 선도자</strong></td><td>높은 진입 장벽, 특허/원천 기술 보유</td></tr>
-                        <tr><td><strong>규모의 경제</strong></td><td>생산 원가 절감 가능, 시장 점유율 1위</td></tr>
+                        <tr><td><strong>시장 주도주</strong></td><td>가격 결정권 보유, 브랜드 가치</td><td>프리미엄 벨류에이션 부여</td></tr>
+                        <tr><td><strong>기술 선도자</strong></td><td>핵심 특허·원천 기술 보유</td><td>진입 장벽으로 장기 성장성 우위</td></tr>
+                        <tr><td><strong>규모의 경제</strong></td><td>시장 점유율 1위, 원가 우위</td><td>불황기 경쟁력 유지</td></tr>
+                        <tr><td><strong>틈새 강자</strong></td><td>특정 분야 독점적 입지</td><td>M&A 타깃 가능성 → 프리미엄</td></tr>
                     </tbody>
                 </table>
             </div>
-            <div class="card info">
-                <h3>🌐 ECOS 데이터 활용</h3>
-                <p>한국은행 경제통계시스템(ECOS)의 산업 통계를 바탕으로 해당 업종의 성장 주기를 함께 분석합니다.</p>
+            <div class="card highlight">
+                <h3>🌐 산업 사이클 분석</h3>
+                <p>업종은 <strong>확장 → 정점 → 침체 → 회복</strong> 사이클을 반복합니다. 어느 단계인지에 따라 투자 전략이 완전히 달라집니다.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>사이클 단계</th><th>특징</th><th>투자 판단</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>회복기</strong></td><td>재고 감소, 신규 수주 증가</td><td><strong style="color:#10b981;">✓ 매수 최적 시기</strong></td></tr>
+                        <tr><td><strong>확장기</strong></td><td>실적 급성장, 설비 투자</td><td><strong style="color:#10b981;">✓ 보유 유지</strong></td></tr>
+                        <tr><td><strong>정점기</strong></td><td>재고 급증, 마진 압박 시작</td><td><strong style="color:#f59e0b;">△ 분할 매도 고려</strong></td></tr>
+                        <tr><td><strong>침체기</strong></td><td>감산, 영업손실 발생</td><td><strong style="color:#ef4444;">✗ 매도/관망</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>🔬 ECOS 데이터 활용</h3>
+                <p>한국은행 경제통계시스템(ECOS)의 산업 생산·재고 통계를 바탕으로 현재 해당 업종이 <strong>어느 사이클 단계</strong>에 있는지 분석합니다.</p>
             </div>
         `
     },
+
+    // ── 8. 적정 가치 및 목표가 ──────────────────────────────────────
     'lesson_target': {
         title: '적정 가치 및 목표가 가이드',
         body: `
-            <h2 class="section-title">적정 가치 산출 원리</h2>
-            <p class="section-subtitle">적당한 주가가 얼마인지 계산하는 방법</p>
+            <h2 class="section-title">적정 가치 & 목표가 산출 원리</h2>
+            <p class="section-subtitle">이 주식이 지금 '비싼지 싼지' 판단하는 방법</p>
             <div class="card highlight">
-                <h3>🎯 목표가 산정 방식</h3>
-                <p>과거의 벨류에이션(P/E, P/B)과 향후 3개년 성장률 예측(PEG)을 결산하여 산출합니다.</p>
+                <h3>🎯 목표가 산정 4가지 방식</h3>
+                <ul class="checklist">
+                    <li><strong>PER 밸류에이션</strong> — 업종 평균 PER × 예상 EPS</li>
+                    <li><strong>PBR 밸류에이션</strong> — 업종 평균 PBR × BPS</li>
+                    <li><strong>DCF (현금흐름 할인)</strong> — 미래 현금흐름의 현재 가치</li>
+                    <li><strong>PEG 비율</strong> — PER ÷ 이익 성장률 (성장주 판단)</li>
+                </ul>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>밸류에이션 방식</th><th>적합한 주식 유형</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>PER</strong></td><td>이익이 안정적인 성숙 기업</td></tr>
+                        <tr><td><strong>PBR</strong></td><td>자산 규모가 중요한 금융·제조업</td></tr>
+                        <tr><td><strong>DCF</strong></td><td>미래 이익 예측이 중요한 성장주</td></tr>
+                        <tr><td><strong>PSR (주가매출비율)</strong></td><td>아직 이익이 없는 초기 성장 기업</td></tr>
+                    </tbody>
+                </table>
             </div>
             <div class="comparison">
                 <div class="comparison-item card">
-                    <h3>성장주 가치</h3>
-                    <p>미래 이익(Earnings)에 비중을 둡니다. 꿈이 크지만 변동성도 큽니다.</p>
+                    <h3>📈 성장주 목표가</h3>
+                    <p>미래 이익(Earnings) 성장에 비중을 둡니다. 꿈이 크지만 변동성도 큽니다. PEG < 1이면 성장 대비 저평가.</p>
                 </div>
                 <div class="comparison-item card">
-                    <h3>가치주 가치</h3>
-                    <p>현재 자산(Asset)에 비중을 둡니다. 안전마진이 확보되어 있습니다.</p>
+                    <h3>🏦 가치주 목표가</h3>
+                    <p>현재 자산(Asset) 가치에 비중을 둡니다. PBR < 1인 경우 청산 가치 이하로 거래 중을 의미합니다.</p>
                 </div>
             </div>
+            <div class="card success">
+                <h3>📐 안전마진 (Margin of Safety)</h3>
+                <p>워런 버핏이 강조하는 개념으로, <strong>산출된 적정 가치보다 30% 이상 낮을 때 매수</strong>하는 원칙입니다. 예상치 못한 리스크에 대한 완충 역할을 합니다.</p>
+            </div>
             <div class="card warning">
-                <h3>⚠️ 목표가 도달 확률</h3>
-                <p>목표가는 이론적인 수치입니다. 시장 상황이나 수급에 따라 괴리가 발생할 수 있으므로 보수적으로 접근해야 합니다.</p>
+                <h3>⚠️ 목표가의 한계</h3>
+                <p>목표가는 이론적 수치입니다. 시황, 수급, 금리 변화에 따라 실제와 괴리가 발생할 수 있으므로 <strong>보수적·분할 접근</strong>이 필수입니다.</p>
             </div>
         `
     },
+
+    // ── 9. AI 통합 총평 ─────────────────────────────────────────────
     'lesson5': {
-        title: '종합 분석 가이드',
+        title: '종합 분석 & 투자 결정 가이드',
         body: `
             <h2 class="section-title">투자 결정 체크리스트</h2>
-            <p class="section-subtitle">모든 지표를 종합하여 최종 판단하기</p>
-            
+            <p class="section-subtitle">4개 축의 분석을 종합해 최종 판단하는 방법</p>
+            <div class="card highlight">
+                <h3>🧠 AI 총평은 어떻게 만들어지나?</h3>
+                <p>AI 통합 분석 총평은 다음 4개 축의 점수를 종합하여 산출됩니다:</p>
+                <ol style="margin-top:12px; padding-left:20px; line-height:2;">
+                    <li><strong>퀀트 분석축</strong> — ROE, PER, 부채비율, 성장률</li>
+                    <li><strong>이벤트 분석축</strong> — 최근 공시, 뉴스 모멘텀</li>
+                    <li><strong>섹터 분석축</strong> — 업종 사이클, 시장 지위</li>
+                    <li><strong>가치 분석축</strong> — 적정 가치 대비 현재가 위치</li>
+                </ol>
+            </div>
             <div class="card success">
-                <h3>✅ 구매 전 필수 확인 사항</h3>
+                <h3>✅ 매수 전 필수 확인 (황금 조건)</h3>
                 <ul class="checklist">
-                    <li>AI 추세 신호가 60% 이상인가?</li>
-                    <li>긍정적 캔들 패턴(망치형 등)이 감지되었는가?</li>
-                    <li>ROE가 15% 이상으로 수익성이 좋은가?</li>
-                    <li>부채비율 100% 이하로 재무가 안정적인가?</li>
-                    <li>매출 성장률이 전년 대비 증가세인가?</li>
+                    <li>AI 추세 신호 강도 <strong>60% 이상</strong></li>
+                    <li>긍정적 캔들 패턴 (망치형, 샛별형 등) <strong>감지</strong></li>
+                    <li>ROE <strong>15% 이상</strong>, 부채비율 <strong>100% 이하</strong></li>
+                    <li>현재가가 AI 산출 적정가 <strong>이하</strong></li>
+                    <li>매출 성장률 <strong>플러스(+)</strong> 유지</li>
+                    <li>최근 공시 중 <strong>호재성 재료 존재</strong></li>
                 </ul>
             </div>
-
+            <div class="card danger">
+                <h3>🚫 매수 회피 신호 (위험 조건)</h3>
+                <ul class="checklist">
+                    <li>AI 신호 강도 <strong>50% 미만</strong> 지속</li>
+                    <li>하락 캔들 패턴 (헤드앤숄더, 삼중천정 등) 감지</li>
+                    <li>부채비율 <strong>200% 초과</strong></li>
+                    <li>최근 유상증자·횡령 등 <strong>악재 공시</strong> 발생</li>
+                    <li>업종 침체기 진입</li>
+                </ul>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>종합 점수</th><th>투자 판단</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>4/4 충족</strong></td><td><strong style="color:#10b981;">✓✓ 강한 매수 고려</strong></td></tr>
+                        <tr><td><strong>3/4 충족</strong></td><td><strong style="color:#10b981;">✓ 분할 매수 고려</strong></td></tr>
+                        <tr><td><strong>2/4 충족</strong></td><td><strong style="color:#f59e0b;">△ 관망 또는 소량 접근</strong></td></tr>
+                        <tr><td><strong>1/4 이하</strong></td><td><strong style="color:#ef4444;">✗ 회피 권장</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
             <div class="card warning">
-                <h3>⚠️ 리스크 관리</h3>
-                <p>아무리 지표가 좋아도 거시 경제 상황, 산업 사이클, 돌발 악재 등은 항상 존재합니다. 분할 매수와 손절가 준수가 필수입니다.</p>
+                <h3>⚠️ 리스크 관리 원칙</h3>
+                <p>아무리 지표가 좋아도 <strong>거시 경제 충격, 돌발 지정학 리스크</strong>는 항상 존재합니다. 분할 매수와 손절가 기계적 준수가 필수입니다.</p>
             </div>
         `
     }
@@ -4614,47 +4956,46 @@ function openHelpModal(topic) {
     const bodyEl = document.getElementById('helpModalBody');
     
     const content = HELP_CONTENT[topic];
-    if (content) {
-        titleEl.textContent = content.title;
-        bodyEl.innerHTML = content.body;
+    if (!content) return;
+
+    titleEl.textContent = content.title;
+
+    // 동적 배너(현재 분석 수치) 삽입
+    const liveBanner = _buildLiveBanner(topic);
+    bodyEl.innerHTML = liveBanner + content.body;
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // ── 캔들 패턴 강조 로직 ──
+    if (topic === 'lesson2') {
+        const buyPat  = (document.getElementById('buyPattern')?.textContent || '').trim();
+        const sellPat = (document.getElementById('sellPattern')?.textContent || '').trim();
+        const detectedText = buyPat !== '-' ? buyPat : sellPat;
         
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Scroll lock
-        
-        // ── 캔들 패턴 강조 로직 (v27) ──
-        if (topic === 'lesson2') {
-            const detectedPattern = document.getElementById('buyPattern')?.textContent || 
-                                    document.getElementById('sellPattern')?.textContent || "";
-            
-            if (detectedPattern && detectedPattern !== "-") {
-                // 특정 패턴 매칭 (예: "망치형"이 포함된 카드 찾기)
-                const cards = bodyEl.querySelectorAll('.card[data-pattern-match]');
-                let targetCard = null;
-                
-                cards.forEach(card => {
-                    const matchText = card.getAttribute('data-pattern-match');
-                    if (detectedPattern.includes(matchText)) {
-                        targetCard = card;
-                    }
-                });
-                
-                if (targetCard) {
-                    targetCard.classList.add('guide-highlight');
-                    // 해당 카드로 스크롤 (약간의 딜레이 후 실행)
-                    setTimeout(() => {
-                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                }
+        if (detectedText && detectedText !== '-') {
+            const cards = bodyEl.querySelectorAll('.card[data-pattern-match]');
+            let targetCard = null;
+            cards.forEach(card => {
+                const matchText = card.getAttribute('data-pattern-match');
+                if (detectedText.includes(matchText)) targetCard = card;
+            });
+            if (targetCard) {
+                targetCard.classList.add('guide-highlight');
+                setTimeout(() => targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
             }
         }
-        
-        // Modal animation reset
-        const container = modal.querySelector('.modal-container');
-        container.style.animation = 'none';
-        container.offsetHeight; /* trigger reflow */
-        container.style.animation = null;
     }
+    
+    // Modal animation reset
+    const container = modal.querySelector('.modal-container');
+    container.style.animation = 'none';
+    container.offsetHeight;
+    container.style.animation = null;
 }
+
+
+
 
 function closeHelpModal() {
     const modal = document.getElementById('helpModal');

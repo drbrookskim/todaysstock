@@ -619,7 +619,7 @@
                                         <div class="workout-header themed-card-header">
                                             <div class="workout-title" style="font-size: 1.5rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                                 <i class="ph ph-lightning"></i> AI 매수 리포트 (Buy)
-                                                <button class="help-trigger" onclick="openHelpModal('lesson1')"><i class="ph ph-question"></i></button>
+                                                <button class="help-trigger" onclick="openHelpModal('lesson_buy')"><i class="ph ph-question"></i></button>
                                             </div>
                                         </div>
                                         <div class="workout-body" style="padding: 24px;">
@@ -628,7 +628,7 @@
                                                     <span class="report-type" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">상세 시그널 분석</span>
                                                     <span id="buySignalBadge" class="signal-badge"></span>
                                                 </div>
-                                                                                                <div class="report-time" id="buyReportTime" style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-muted);"></div>
+                                                <div class="report-time" id="buyReportTime" style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-muted);"></div>
 
                                                 <!-- 1. Signal Strength Bar -->
                                                 <div class="pattern-confidence" style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
@@ -689,16 +689,17 @@
                                         <div class="workout-header themed-card-header">
                                             <div class="workout-title" style="font-size: 1.5rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                                 <i class="ph ph-lightning"></i> AI 매도 리포트 (Sell)
-                                                <button class="help-trigger" onclick="openHelpModal('lesson1')"><i class="ph ph-question"></i></button>
+                                                <button class="help-trigger" onclick="openHelpModal('lesson_sell')"><i class="ph ph-question"></i></button>
                                             </div>
                                         </div>
                                         <div class="workout-body" style="padding: 24px;">
                                             <div id="sellReport" class="report-card sell hidden" style="border: none; box-shadow: none; padding: 0; margin: 0;">
                                                 <div class="report-header" style="margin-bottom: 20px;">
-                                                                                                        <span class="report-type" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">상세 시그널 분석</span>
+                                                    <span class="report-type" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">상세 시그널 분석</span>
                                                     <span id="sellSignalBadge" class="signal-badge"></span>
                                                 </div>
-                                                                                                <div class="report-time" id="sellReportTime" style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-muted);"></div>
+                                                <div class="report-time" id="sellReportTime" style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-muted);"></div>
+
 
                                                 <!-- 1. Signal Strength Bar -->
                                                 <div class="pattern-confidence" style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
@@ -1207,7 +1208,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=32"></script>
+    <script src="./static/app.js?v=33"></script>
 </body>
 
 </html>
