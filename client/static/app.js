@@ -4609,72 +4609,242 @@ const HELP_CONTENT = {
     'lesson2': {
         title: '캔들 패턴 & 시각적 매핑 가이드',
         body: `
-            <h2 class="section-title">캔들 패턴 가이드</h2>
-            <p class="section-subtitle">차트 모양으로 주가 흐름을 읽는 방법</p>
+            <h2 class="section-title">캔들 패턴 완전 가이드</h2>
+            <p class="section-subtitle">AI가 감지하는 모든 패턴의 의미와 투자 해석</p>
             <div class="card highlight">
                 <h3>💡 캔들 패턴이란?</h3>
-                <p>캔들 패턴은 특정 봉 형태가 반복될 때 이후 주가 방향성을 예측하는 관찰법입니다. AI가 실시간으로 자동 감지합니다.</p>
+                <p>캔들 패턴은 특정 봉 형태가 반복될 때 이후 주가 방향성을 예측하는 관찰법입니다. AI가 실시간으로 <strong>37가지 패턴</strong>을 자동 감지합니다. 감지된 패턴은 위 배너에 표시되며, 해당 패턴 카드가 자동으로 강조됩니다.</p>
             </div>
 
-            <h3 style="margin:20px 0 12px; color:var(--text-main); font-size:1.1rem;">🔺 상승 반전 패턴</h3>
-            <div class="card" data-pattern-match="망치">
+            <h3 style="margin:20px 0 12px; color:var(--color-up); font-size:1rem; font-weight:700;">🔺 단봉 상승 신호</h3>
+            <div class="card" data-pattern-match="망치형 (Hammer)">
                 <h3>🔺 망치형 (Hammer)</h3>
-                <p><strong>의미:</strong> 저점에서 나타나는 강력한 반등 신호. 아래꼬리가 길수록 저가에서의 매수세가 강력함을 의미합니다.</p>
-                <p><strong>해석:</strong> 저점 부근에서 발생 시 매수 기회, 단기 바닥 형성 가능성 높음.</p>
+                <p><strong>형태:</strong> 본체가 위쪽에 있고, 아래꼬리가 본체 길이의 2배 이상인 봉.</p>
+                <p><strong>의미:</strong> 저점에서 강력한 반등 신호. 매도세를 매수세가 되받아치며 종가를 고점 근처에서 마감.</p>
+                <p><strong>매매 판단:</strong> 저점 권역에서 발생 시 매수 관심. 다음 봉 양봉 확인 후 진입 권장.</p>
             </div>
-            <div class="card" data-pattern-match="역망치">
+            <div class="card" data-pattern-match="역망치형 (Inverted Hammer)">
                 <h3>🔺 역망치형 (Inverted Hammer)</h3>
-                <p><strong>의미:</strong> 하락 추세 끝에 나타나며 위꼬리가 긴 형태. 매수세가 유입되기 시작함을 암시합니다.</p>
-                <p><strong>해석:</strong> 다음 봉이 양봉으로 확인되면 매수 신호.</p>
+                <p><strong>형태:</strong> 본체가 아래쪽, 위꼬리가 긴 형태.</p>
+                <p><strong>의미:</strong> 하락 추세 끝에서 매수세 유입 시작을 암시.</p>
+                <p><strong>매매 판단:</strong> 다음 봉 양봉 확인 후 매수 진입.</p>
             </div>
-            <div class="card" data-pattern-match="샛별">
+            <div class="card" data-pattern-match="잠자리형 도지 (Dragonfly Doji)">
+                <h3>🔺 잠자리형 도지 (Dragonfly Doji)</h3>
+                <p><strong>형태:</strong> 시가=종가, 아래꼬리만 긴 T자형 봉.</p>
+                <p><strong>의미:</strong> 매도세가 강했으나 마감 직전 매수세가 완전히 회복. 강한 반전 신호.</p>
+                <p><strong>매매 판단:</strong> 지지선 근처에서 발생 시 매수 고려.</p>
+            </div>
+
+            <h3 style="margin:24px 0 12px; color:var(--color-up); font-size:1rem; font-weight:700;">🔺 복수봉 상승 패턴</h3>
+            <div class="card" data-pattern-match="샛별형 (Morning Star)">
                 <h3>🔺 샛별형 (Morning Star)</h3>
-                <p><strong>의미:</strong> 하락 추세 끝 3봉 패턴(음봉 → 짧은 봉 → 장대 양봉). 강력한 추세 반전 신호입니다.</p>
-                <p><strong>해석:</strong> 3일째 양봉이 길수록 반전 신뢰도 높음.</p>
+                <p><strong>형태:</strong> 음봉 → 짧은 봉(갭 하락) → 장대 양봉(하락폭 50% 이상 회복) 3봉 패턴.</p>
+                <p><strong>의미:</strong> 하락 추세 종료와 상승 반전 시작. 3일째 양봉이 길수록 신뢰도 상승.</p>
+                <p><strong>매매 판단:</strong> 하락 추세 바닥에서의 최적 매수 시점.</p>
             </div>
-            <div class="card" data-pattern-match="원형 바닥">
-                <h3>🔺 원형 바닥형 (Rounding Bottom)</h3>
-                <p><strong>의미:</strong> 장기간 완만하게 하락 후 U자 형태로 반전하는 패턴. 안정적이고 지속적인 반등을 예고합니다.</p>
-                <p><strong>해석:</strong> 안정적인 매수 기회로 기관 투자자 선호 패턴.</p>
+            <div class="card" data-pattern-match="상승 장악형 (Bullish Engulfing)">
+                <h3>🔺 상승 장악형 (Bullish Engulfing)</h3>
+                <p><strong>형태:</strong> 전날 음봉을 완전히 감싸는 큰 양봉.</p>
+                <p><strong>의미:</strong> 매수 세력이 매도 세력을 압도. 강한 전환 신호.</p>
+                <p><strong>매매 판단:</strong> 거래량 증가 동반 시 신뢰도 더욱 높음.</p>
             </div>
-            <div class="card" data-pattern-match="관통형">
+            <div class="card" data-pattern-match="관통형 (Piercing Line)">
                 <h3>🔺 관통형 (Piercing Line)</h3>
-                <p><strong>의미:</strong> 하락 후 다음 봉 양봉이 전 봉 음봉의 50% 이상 회복하는 패턴. 단기 반등 신호입니다.</p>
+                <p><strong>형태:</strong> 하락 후 양봉이 전날 음봉의 50% 이상 회복.</p>
+                <p><strong>의미:</strong> 약한 반전 신호. 상승 장악형보다 신뢰도 낮음.</p>
+                <p><strong>매매 판단:</strong> 3일봉 추가 확인 후 진입.</p>
             </div>
-            <div class="card" data-pattern-match="상승장악형">
-                <h3>🔺 상승장악형 (Bullish Engulfing)</h3>
-                <p><strong>의미:</strong> 전 봉 음봉을 완전히 감싸는 큰 양봉. 매수 세력이 매도 세력을 압도하는 강한 신호.</p>
+            <div class="card" data-pattern-match="적삼병 (Three White Soldiers)">
+                <h3>🔺 적삼병 (Three White Soldiers)</h3>
+                <p><strong>형태:</strong> 연속 3개의 장대 양봉이 계단식 상승.</p>
+                <p><strong>의미:</strong> 강한 상승 추세 진입. 매수세가 3일 연속 시장 지배.</p>
+                <p><strong>매매 판단:</strong> 추세 초기 발생 시 강한 매수 신호. 고점에서 발생 시 과열 주의.</p>
+            </div>
+            <div class="card" data-pattern-match="이중 바닥형 (Double Bottom / 쌍바닥)">
+                <h3>🔺 이중 바닥형 (Double Bottom / 쌍바닥)</h3>
+                <p><strong>형태:</strong> W자 형태로 같은 저점을 두 번 테스트 후 상승.</p>
+                <p><strong>의미:</strong> 강력한 지지선 확인 후 상승 반전. 넥라인(중간 고점) 돌파 시 매수 신호.</p>
+                <p><strong>매매 판단:</strong> 넥라인 돌파 + 거래량 증가 조합이 최고 신뢰도.</p>
+            </div>
+            <div class="card" data-pattern-match="삼중 바닥형 (Triple Bottom)">
+                <h3>🔺 삼중 바닥형 (Triple Bottom)</h3>
+                <p><strong>형태:</strong> 같은 저점을 3차례 테스트 후 반등.</p>
+                <p><strong>의미:</strong> 쌍바닥보다 강한 지지선 검증. 반전 신뢰도 최상.</p>
+                <p><strong>매매 판단:</strong> 3번째 저점 반등 확인 후 분할 매수.</p>
+            </div>
+            <div class="card" data-pattern-match="역 헤드 앤 숄더 (Inverse H&S)">
+                <h3>🔺 역 헤드 앤 숄더 (Inverse H&S)</h3>
+                <p><strong>형태:</strong> 중앙 저점(머리)이 양옆 저점(어깨)보다 아래 위치.</p>
+                <p><strong>의미:</strong> 강한 하락 추세 종료와 상승 반전 예고. 신뢰도 매우 높음.</p>
+                <p><strong>매매 판단:</strong> 넥라인(저항선) 돌파 시 강한 매수 신호.</p>
+            </div>
+            <div class="card" data-pattern-match="원형 바닥형 (Rounding Bottom)">
+                <h3>🔺 원형 바닥형 (Rounding Bottom)</h3>
+                <p><strong>형태:</strong> 장기간 완만하게 하락 후 U자 형태로 반전.</p>
+                <p><strong>의미:</strong> 안정적이고 지속적인 상승 반전 예고. 기관 투자자 선호 패턴.</p>
+                <p><strong>매매 판단:</strong> 분할 매수 최적 기회.</p>
+            </div>
+            <div class="card" data-pattern-match="상승 삼각형 (Ascending Triangle)">
+                <h3>🔺 상승 삼각형 (Ascending Triangle)</h3>
+                <p><strong>형태:</strong> 상단 수평 저항선, 하단 우상향 지지선 수렴.</p>
+                <p><strong>의미:</strong> 매수 압력이 점점 높아지며 상단 돌파 시 강한 상승.</p>
+                <p><strong>매매 판단:</strong> 저항선 돌파 + 거래량 급증 시 매수.</p>
+            </div>
+            <div class="card" data-pattern-match="대칭 삼각형 상방 돌파 (Symmetrical Triangle Breakout)">
+                <h3>🔺 대칭 삼각형 상방 돌파</h3>
+                <p><strong>의미:</strong> 방향성 불확실 압축 구간 해소 후 상방 돌파. 목표가 = 삼각형 최대폭 만큼 상승.</p>
+                <p><strong>매매 판단:</strong> 상방 돌파 확인 후 매수.</p>
+            </div>
+            <div class="card" data-pattern-match="박스권 상단 돌파 (Rectangle Breakout)">
+                <h3>🔺 박스권 상단 돌파 (Rectangle Breakout)</h3>
+                <p><strong>의미:</strong> 축적 완료 후 상승 추세 시작 신호.</p>
+                <p><strong>매매 판단:</strong> 돌파 당일 또는 다음날 풀백 시 매수.</p>
+            </div>
+            <div class="card" data-pattern-match="하락 쐐기형 돌파 (Falling Wedge Breakout)">
+                <h3>🔺 하락 쐐기형 돌파 (Falling Wedge Breakout)</h3>
+                <p><strong>의미:</strong> 하락 추세에서 힘이 빠지며 상방 반전 시작. 강한 매수 신호.</p>
+                <p><strong>매매 판단:</strong> 상단 저항 돌파 확인 후 매수.</p>
+            </div>
+            <div class="card" data-pattern-match="상승 깃발/페넌트형 (Bullish Flag/Pennant)">
+                <h3>🔺 상승 깃발/페넌트형 (Bullish Flag/Pennant)</h3>
+                <p><strong>의미:</strong> 급등 후 짧은 조정 이후 상승 추세 재개. 주요 추세 지속 패턴.</p>
+                <p><strong>매매 판단:</strong> 깃발 상방 돌파 확인 후 매수.</p>
+            </div>
+            <div class="card" data-pattern-match="V자형 반등 (V-Bottom)">
+                <h3>🔺 V자형 반등 (V-Bottom)</h3>
+                <p><strong>의미:</strong> 강한 매수세가 갑자기 유입되어 낙폭을 빠르게 회복.</p>
+                <p><strong>매매 판단:</strong> 반등 초기 포착 시 수익성 최고. 진입 타이밍이 핵심.</p>
+            </div>
+            <div class="card" data-pattern-match="잠재적 이중 바닥형 (Double Bottom 가능성)">
+                <h3>🔺 잠재적 이중 바닥형 (Double Bottom 가능성)</h3>
+                <p><strong>의미:</strong> 아직 넥라인을 돌파하지 않은 이중 바닥 형성 중. 확정 전.</p>
+                <p><strong>매매 판단:</strong> 넥라인 돌파 확인 후 진입. 섣부른 매수 금지.</p>
+            </div>
+            <div class="card" data-pattern-match="잠재적 헤드 앤 숄더 (H&S 가능성)">
+                <h3>🔺 잠재적 헤드 앤 숄더 (H&S 가능성)</h3>
+                <p><strong>의미:</strong> 헤드앤숄더 형성 중이나 아직 오른쪽 어깨 단계.</p>
+                <p><strong>매매 판단:</strong> 완전 형성 + 넥라인 이탈 확인 전까지 관망.</p>
+            </div>
+            <div class="card" data-pattern-match="피보나치 되돌림 (Fibonacci)">
+                <h3>📐 피보나치 되돌림 (Fibonacci)</h3>
+                <p><strong>의미:</strong> 주요 파동의 38.2%, 50%, 61.8% 구간에서 지지·저항 반응 감지.</p>
+                <p><strong>매매 판단:</strong> 61.8% 지지 반응 시 매수. 61.8% 저항 실패 시 추가 하락 주의.</p>
             </div>
 
-            <h3 style="margin:24px 0 12px; color:var(--text-main); font-size:1.1rem;">🔻 하락 반전 패턴</h3>
-            <div class="card" data-pattern-match="석별">
-                <h3>🔻 석별형 (Evening Star)</h3>
-                <p><strong>의미:</strong> 상승 추세 끝 3봉 패턴(양봉 → 짧은 봉 → 장대 음봉). 상승세 종료 경고 신호입니다.</p>
-                <p><strong>해석:</strong> 고점에서 나타날수록 신뢰도가 높으므로 주의가 필요합니다.</p>
+            <h3 style="margin:24px 0 12px; color:var(--color-down); font-size:1rem; font-weight:700;">🔻 단봉 하락 신호</h3>
+            <div class="card" data-pattern-match="교수형 (Hanging Man)">
+                <h3>🔻 교수형 (Hanging Man)</h3>
+                <p><strong>형태:</strong> 상승 추세 고점에서 나타나는 망치형 모양.</p>
+                <p><strong>의미:</strong> 매도 압력이 나타나기 시작한 경고 신호.</p>
+                <p><strong>매매 판단:</strong> 다음 봉 음봉 확인 후 익절/감량 고려.</p>
             </div>
-            <div class="card" data-pattern-match="삼중 천정">
-                <h3>🔻 삼중 천정형 (Triple Top)</h3>
-                <p><strong>의미:</strong> 같은 고점에서 3번 저항받고 하락하는 패턴. 강력한 매도 신호입니다.</p>
-                <p><strong>해석:</strong> 넥라인(지지선) 하향 돌파 시 하락폭 크게 확대 가능.</p>
-            </div>
-            <div class="card" data-pattern-match="헤드 앤 숄더">
-                <h3>🔻 헤드 앤 숄더 (Head & Shoulders)</h3>
-                <p><strong>의미:</strong> 중앙 고점(머리)과 양 어깨를 형성 후 하락하는 전형적인 추세 전환 패턴.</p>
-                <p><strong>해석:</strong> 추세 전환 패턴 중 가장 신뢰도가 높으며, 넥라인 이탈 시 목표 하락폭이 명확합니다.</p>
-            </div>
-            <div class="card" data-pattern-match="유성형">
+            <div class="card" data-pattern-match="유성형 (Shooting Star)">
                 <h3>🔻 유성형 (Shooting Star)</h3>
-                <p><strong>의미:</strong> 상승 추세 고점에서 나타나는 긴 위꼬리 봉. 고점 매도세 유입을 의미합니다.</p>
+                <p><strong>형태:</strong> 위꼬리가 길고 본체가 아래쪽에 위치하는 봉.</p>
+                <p><strong>의미:</strong> 상승 추세 고점에서 매도세 급증.</p>
+                <p><strong>매매 판단:</strong> 분할 매도 또는 손절선 하향 조정.</p>
             </div>
-            <div class="card" data-pattern-match="하락장악형">
-                <h3>🔻 하락장악형 (Bearish Engulfing)</h3>
-                <p><strong>의미:</strong> 전 봉 양봉을 완전히 삼키는 큰 음봉. 매도 압력이 급격히 증가하는 신호.</p>
+            <div class="card" data-pattern-match="비석형 도지 (Gravestone Doji)">
+                <h3>🔻 비석형 도지 (Gravestone Doji)</h3>
+                <p><strong>형태:</strong> 시가=종가, 위꼬리만 긴 역T자형.</p>
+                <p><strong>의미:</strong> 고점에서 매수세가 매도세에 완전히 막혔음을 나타냄.</p>
+                <p><strong>매매 판단:</strong> 강한 매도 신호. 익절 고려.</p>
             </div>
 
-            <h3 style="margin:24px 0 12px; color:var(--text-main); font-size:1.1rem;">📊 시각적 패턴 매핑이란?</h3>
+            <h3 style="margin:24px 0 12px; color:var(--color-down); font-size:1rem; font-weight:700;">🔻 복수봉 하락 패턴</h3>
+            <div class="card" data-pattern-match="석별형 (Evening Star)">
+                <h3>🔻 석별형 (Evening Star)</h3>
+                <p><strong>형태:</strong> 양봉 → 짧은 봉 → 장대 음봉 3봉 패턴. 샛별형의 반대.</p>
+                <p><strong>의미:</strong> 상승 추세 종료와 하락 반전을 강하게 알리는 신호.</p>
+                <p><strong>매매 판단:</strong> 보유 중이면 즉시 익절 또는 손절선 상향 조정.</p>
+            </div>
+            <div class="card" data-pattern-match="하락 장악형 (Bearish Engulfing)">
+                <h3>🔻 하락 장악형 (Bearish Engulfing)</h3>
+                <p><strong>형태:</strong> 전날 양봉을 완전히 감싸는 큰 음봉.</p>
+                <p><strong>의미:</strong> 매도 세력이 매수 세력을 완전히 압도. 강한 하락 신호.</p>
+                <p><strong>매매 판단:</strong> 거래량 동반 시 강도 높은 매도 신호.</p>
+            </div>
+            <div class="card" data-pattern-match="흑운형 (Dark Cloud Cover)">
+                <h3>🔻 흑운형 (Dark Cloud Cover)</h3>
+                <p><strong>형태:</strong> 갭 상승 후 전날 양봉의 50% 이상 침범하는 음봉.</p>
+                <p><strong>의미:</strong> 상승 모멘텀이 급격히 약화. 관통형의 반대 패턴.</p>
+                <p><strong>매매 판단:</strong> 이익 실현 또는 매도 포지션 고려.</p>
+            </div>
+            <div class="card" data-pattern-match="흑삼병 (Three Black Crows)">
+                <h3>🔻 흑삼병 (Three Black Crows)</h3>
+                <p><strong>형태:</strong> 연속 3개의 장대 음봉이 계단식 하락.</p>
+                <p><strong>의미:</strong> 강한 매도세가 3일 연속 지속. 하락 추세 강도 매우 높음.</p>
+                <p><strong>매매 판단:</strong> 보유 중이면 즉시 손절. 신규 매수 금지.</p>
+            </div>
+            <div class="card" data-pattern-match="이중 천장형 (Double Top / 쌍봉)">
+                <h3>🔻 이중 천장형 (Double Top / 쌍봉)</h3>
+                <p><strong>형태:</strong> M자 형태로 같은 고점을 두 번 테스트 후 하락.</p>
+                <p><strong>의미:</strong> 저항선 확인 후 하락 반전. 넥라인 이탈 시 하락 신호 확정.</p>
+                <p><strong>매매 판단:</strong> 넥라인 이탈 확인 후 손절/매도.</p>
+            </div>
+            <div class="card" data-pattern-match="삼중 천장형 (Triple Top)">
+                <h3>🔻 삼중 천장형 (Triple Top)</h3>
+                <p><strong>형태:</strong> 같은 고점에서 3번 저항받고 하락.</p>
+                <p><strong>의미:</strong> 쌍봉보다 강한 저항선 확인. 반전 신뢰도 최상.</p>
+                <p><strong>매매 판단:</strong> 3번째 저항 확인 후 즉시 매도 포지션 고려.</p>
+            </div>
+            <div class="card" data-pattern-match="헤드 앤 숄더 (Head & Shoulders)">
+                <h3>🔻 헤드 앤 숄더 (Head & Shoulders)</h3>
+                <p><strong>형태:</strong> 중앙 고점(머리)과 양 어깨 형성 후 하락.</p>
+                <p><strong>의미:</strong> 가장 신뢰도 높은 추세 전환 패턴.</p>
+                <p><strong>매매 판단:</strong> 넥라인 이탈 시 목표 하락폭 = 머리~넥라인 거리.</p>
+            </div>
+            <div class="card" data-pattern-match="원형 천장형 (Rounding Top)">
+                <h3>🔻 원형 천장형 (Rounding Top)</h3>
+                <p><strong>의미:</strong> 장기간 완만한 상승 후 역U자 형태로 반전. 점진적 하락 예고.</p>
+                <p><strong>매매 판단:</strong> 초기 반전 확인 후 분할 매도.</p>
+            </div>
+            <div class="card" data-pattern-match="하락 삼각형 (Descending Triangle)">
+                <h3>🔻 하락 삼각형 (Descending Triangle)</h3>
+                <p><strong>의미:</strong> 매도 압력이 높아지며 수평 지지선 이탈 시 급락.</p>
+                <p><strong>매매 판단:</strong> 지지선 이탈 + 거래량 급증 시 손절.</p>
+            </div>
+            <div class="card" data-pattern-match="대칭 삼각형 하방 이탈 (Symmetrical Triangle Breakdown)">
+                <h3>🔻 대칭 삼각형 하방 이탈</h3>
+                <p><strong>의미:</strong> 압축 구간이 하방으로 이탈. 하락 추세 지속 신호.</p>
+                <p><strong>매매 판단:</strong> 하방 이탈 확인 후 손절가 조정 또는 매도.</p>
+            </div>
+            <div class="card" data-pattern-match="박스권 하단 이탈 (Rectangle Breakdown)">
+                <h3>🔻 박스권 하단 이탈 (Rectangle Breakdown)</h3>
+                <p><strong>의미:</strong> 분산 완료 후 하락 추세 시작 신호.</p>
+                <p><strong>매매 판단:</strong> 이탈 확인 즉시 손절 또는 매도.</p>
+            </div>
+            <div class="card" data-pattern-match="상승 쐐기형 이탈 (Rising Wedge Breakdown)">
+                <h3>🔻 상승 쐐기형 이탈 (Rising Wedge Breakdown)</h3>
+                <p><strong>의미:</strong> 상승 추세 힘이 약해지며 반전. 하락폭이 큰 편.</p>
+                <p><strong>매매 판단:</strong> 하단 지지 이탈 확인 시 즉시 매도.</p>
+            </div>
+            <div class="card" data-pattern-match="하락 깃발/페넌트형 (Bearish Flag/Pennant)">
+                <h3>🔻 하락 깃발/페넌트형 (Bearish Flag/Pennant)</h3>
+                <p><strong>의미:</strong> 급락 후 짧은 반등 이후 재하락. 하락 추세 지속 패턴.</p>
+                <p><strong>매매 판단:</strong> 깃발 구간 이탈 후 추가 매도.</p>
+            </div>
+            <div class="card" data-pattern-match="잠재적 이중 천장형 (Double Top 가능성)">
+                <h3>🔻 잠재적 이중 천장형 (Double Top 가능성)</h3>
+                <p><strong>의미:</strong> 넥라인 이탈 전 이중 천장 형성 중. 아직 확정 아님.</p>
+                <p><strong>매매 판단:</strong> 익절 비중 조절 및 손절선 상향 준비.</p>
+            </div>
+
+            <h3 style="margin:24px 0 12px; color:var(--text-main); font-size:1rem; font-weight:700;">📊 시각적 패턴 매핑이란?</h3>
             <div class="card highlight">
                 <h3>🗺️ 차트 위 패턴 시각화</h3>
-                <p>감지된 캔들 패턴은 시각적 패턴 매핑 섹션에서 <strong>실제 차트 위에 직접 표시</strong>됩니다. 색상 코딩: <strong style="color:#10b981;">초록=상승</strong>, <strong style="color:#ef4444;">빨강=하락</strong>, <strong style="color:#f59e0b;">주황=중립</strong>.</p>
+                <p>감지된 캔들 패턴은 시각적 패턴 매핑 섹션에서 <strong>실제 차트 위에 직접 표시</strong>됩니다.</p>
+                <div class="table-wrapper" style="margin-top:12px;">
+                    <table>
+                        <thead><tr><th>색상</th><th>의미</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong style="color:#10b981;">초록</strong></td><td>상승 반전 패턴 (매수 관련)</td></tr>
+                            <tr><td><strong style="color:#ef4444;">빨강</strong></td><td>하락 반전 패턴 (매도 관련)</td></tr>
+                            <tr><td><strong style="color:#f59e0b;">주황</strong></td><td>중립 / 방향 미확정 패턴</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `
     },
@@ -4967,20 +5137,32 @@ function openHelpModal(topic) {
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    // ── 캔들 패턴 강조 로직 ──
+    // ── 캔들 패턴 강조 로직 (bidirectional match) ──
     if (topic === 'lesson2') {
         const buyPat  = (document.getElementById('buyPattern')?.textContent || '').trim();
         const sellPat = (document.getElementById('sellPattern')?.textContent || '').trim();
-        const detectedText = buyPat !== '-' ? buyPat : sellPat;
+        // 감지된 패턴 전체 (매수 우선, 없으면 매도)
+        const detectedText = (buyPat && buyPat !== '-') ? buyPat : sellPat;
         
         if (detectedText && detectedText !== '-') {
             const cards = bodyEl.querySelectorAll('.card[data-pattern-match]');
             let targetCard = null;
+            let bestScore = 0;
+            
             cards.forEach(card => {
                 const matchText = card.getAttribute('data-pattern-match');
-                if (detectedText.includes(matchText)) targetCard = card;
+                // 양방향 포함 매칭 + 정확도 스코어
+                const exactMatch = matchText === detectedText;
+                const forwardMatch = detectedText.includes(matchText);
+                const reverseMatch = matchText.includes(detectedText);
+                const score = exactMatch ? 3 : (forwardMatch && reverseMatch ? 2 : (forwardMatch || reverseMatch ? 1 : 0));
+                if (score > bestScore) {
+                    bestScore = score;
+                    targetCard = card;
+                }
             });
-            if (targetCard) {
+            
+            if (targetCard && bestScore > 0) {
                 targetCard.classList.add('guide-highlight');
                 setTimeout(() => targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
             }
