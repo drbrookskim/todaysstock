@@ -327,7 +327,7 @@ body {
     text-decoration: none;
     color: var(--text-sub);
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 0.77rem;
     border-radius: 12px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 4px 0;
@@ -597,7 +597,7 @@ html:not([data-theme="light"]) .nav-item.active i {
 }
 
 .section-header h3 {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     font-weight: 800;
     color: var(--text-main);
     letter-spacing: -0.02em;
@@ -1526,7 +1526,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .stock-name {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     font-weight: 700;
     word-break: keep-all;
     line-height: 1.2;
@@ -4518,7 +4518,7 @@ html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 }
 
 .fund-score-num {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     font-weight: 800;
 }
 
@@ -5577,19 +5577,19 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .pattern-desc {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     line-height: 1.7;
     color: var(--text-secondary);
 }
 
 .report-note {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     line-height: 1.6;
     color: var(--text-muted);
 }
 
 .report-tip {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     line-height: 1.6;
     color: var(--text-main);
 }
@@ -5612,7 +5612,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .fund-axis-content {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     line-height: 1.7;
     color: var(--text-secondary);
 }
