@@ -327,7 +327,7 @@ body {
     text-decoration: none;
     color: var(--text-sub);
     font-weight: 600;
-    font-size: 0.62rem;
+    font-size: 0.9rem;
     border-radius: 12px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 4px 0;
@@ -597,7 +597,7 @@ html:not([data-theme="light"]) .nav-item.active i {
 }
 
 .section-header h3 {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     font-weight: 800;
     color: var(--text-main);
     letter-spacing: -0.02em;
@@ -1526,7 +1526,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .stock-name {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     font-weight: 700;
     word-break: keep-all;
     line-height: 1.2;
@@ -4518,7 +4518,7 @@ html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 }
 
 .fund-score-num {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     font-weight: 800;
 }
 
@@ -5577,19 +5577,19 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .pattern-desc {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     line-height: 1.7;
     color: var(--text-secondary);
 }
 
 .report-note {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     line-height: 1.6;
     color: var(--text-muted);
 }
 
 .report-tip {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     line-height: 1.6;
     color: var(--text-main);
 }
@@ -5612,7 +5612,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .fund-axis-content {
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     line-height: 1.7;
     color: var(--text-secondary);
 }
@@ -7352,13 +7352,13 @@ body.vc-fullscreen-active .main-content {
 
 /* ── Content Styles within Modal (extracted from guide.html) ── */
 .help-modal .section-title {
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 8px;
     color: var(--text-main);
 }
 
 .help-modal .section-subtitle {
-    font-size: 12px;
+    font-size: 15px;
     color: var(--text-muted);
     margin-bottom: 24px;
 }
@@ -7408,7 +7408,7 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card h3 {
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 12px;
     color: var(--text-main);
     display: flex;
@@ -7417,7 +7417,7 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card p {
-    font-size: 12px;
+    font-size: 15px;
     line-height: 1.7;
     color: var(--text-secondary);
 }
@@ -7446,7 +7446,7 @@ body.vc-fullscreen-active .main-content {
     background: rgba(255, 255, 255, 0.03);
     padding: 16px;
     text-align: left;
-    font-size: 12px;
+    font-size: 15px;
     color: var(--text-muted);
 }
 
@@ -7457,7 +7457,7 @@ body.vc-fullscreen-active .main-content {
 .help-modal td {
     padding: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 12px;
+    font-size: 15px;
     color: var(--text-secondary);
 }
 
@@ -7473,7 +7473,7 @@ body.vc-fullscreen-active .main-content {
 .help-modal .checklist li {
     padding: 8px 0 8px 28px;
     position: relative;
-    font-size: 12px;
+    font-size: 15px;
     color: var(--text-secondary);
 }
 
@@ -7494,7 +7494,7 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .comparison-item h3 {
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 12px;
 }
 
