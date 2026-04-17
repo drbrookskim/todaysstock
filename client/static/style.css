@@ -61,6 +61,11 @@
     --accent-amber: #f59e0b;
     --accent-rose: #f43f5e;
     --accent-purple: #a78bfa;
+    /* ── [New] Glassmorphism System ── */
+    --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.4) 100%);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    --glass-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* ── Dark Theme Overrides ── */
@@ -78,6 +83,12 @@ html:not([data-theme="light"]) {
     --border-soft: rgba(255, 255, 255, 0.05);
     --border-heavy: rgba(255, 255, 255, 0.1);
     --shadow-premium: 0 10px 20px rgba(0, 0, 0, 0.5);
+
+    /* ── [New] Dark Glassmorphism (Bluish) ── */
+    --glass-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%);
+    --glass-border: rgba(51, 65, 85, 0.3);
+    --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    --glass-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="light"] .bg-glow {
@@ -1268,19 +1279,25 @@ html[data-theme="light"] .theme-icon-btn i {
         inset 0 1px 1px 0 rgba(255, 255, 255, 0.15); /* Top specular highlight */
 }
 
-/* ── Neutral Glass Tints for Analysis Blocks (Unified Slate) ── */
+/* ── Unified Glass Tints for Analysis Blocks ── */
 .ai-summary,
 .fundamental,
 .fundamental-axis {
-    background: linear-gradient(135deg, rgba(148, 163, 184, 0.08) 0%, rgba(148, 163, 184, 0.03) 100%);
-    border-color: rgba(148, 163, 184, 0.2);
-    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(148, 163, 184, 0.2);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-highlight);
 }
 
 .ai-summary .workout-header,
 .fundamental .workout-header,
 .fundamental-axis .workout-header {
-    background: linear-gradient(90deg, rgba(148, 163, 184, 0.1), transparent);
+    background: linear-gradient(90deg, rgba(148, 163, 184, 0.08), transparent);
+}
+
+[data-theme="dark"] .ai-summary .workout-header,
+[data-theme="dark"] .fundamental .workout-header,
+[data-theme="dark"] .fundamental-axis .workout-header {
+    background: linear-gradient(90deg, rgba(30, 64, 175, 0.1), transparent); /* Bluish hint for dark */
 }
 
 /* ── Glassy Headers ── */
@@ -7376,19 +7393,18 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .card {
-    background: linear-gradient(135deg, rgba(148, 163, 184, 0.08) 0%, rgba(148, 163, 184, 0.03) 100%);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 20px;
     padding: 24px;
     margin-bottom: 24px;
     backdrop-filter: blur(28px) saturate(180%);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: var(--glass-shadow), var(--glass-highlight);
 }
 
+/* Light mode specific tweak for better depth */
 [data-theme="light"] .help-modal .card {
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85); 
 }
 
 .help-modal .card.highlight {
