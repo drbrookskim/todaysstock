@@ -252,9 +252,9 @@ body {
 }
 
 [data-theme="light"] .modal-content {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 /* ── Persistent Sidebar (PandaDoc Style) ── */
