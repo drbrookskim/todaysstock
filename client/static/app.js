@@ -2011,8 +2011,8 @@ async function renderFundamentalReport(stockCode) {
     });
 
     // Skeleton state
-    const reasonElInitial = document.getElementById('fundSignalReason');
-    if (reasonElInitial) reasonElInitial.textContent = '데이터 분석 중…';
+    const reasonListInitial = document.getElementById('fundSummaryList');
+    if (reasonListInitial) reasonListInitial.innerHTML = '<li class="fund-signal-reason" style="list-style: none; font-size: 0.9rem; color: var(--text-muted);">데이터 분석 중…</li>';
     const fundTypeBadge = document.getElementById('fundCompanyTypeBadge');
     const fundSignalBadge = document.getElementById('fundSignalBadge');
     if (fundTypeBadge) fundTypeBadge.textContent = '';
@@ -2033,8 +2033,8 @@ async function renderFundamentalReport(stockCode) {
         if (d.error) throw new Error(d.error);
     } catch (e) {
         console.warn('Fundamental API error:', e.message);
-        const reasonEl = document.getElementById('fundSignalReason');
-        if (reasonEl) reasonEl.textContent = `❌ 펀더멘탈 데이터 로드 실패 (${e.message})`;
+        const reasonList = document.getElementById('fundSummaryList');
+        if (reasonList) reasonList.innerHTML = `<li class="fund-signal-reason" style="list-style: none; font-size: 0.9rem; color: #ef4444;">❌ 펀더멘탈 데이터 로드 실패 (${e.message})</li>`;
         
         // Even on error, reveal the blocks that were hidden
         blocks.forEach((b, i) => {
@@ -2057,13 +2057,29 @@ async function renderFundamentalReport(stockCode) {
         typeBadge.textContent = d.company_type_label || '';
     }
 
-    // Update fundSummaryBlock with clean single-column layout
-    const summaryBody = document.querySelector('#fundSummaryBlock .workout-body');
-    if (summaryBody) {
-        summaryBody.innerHTML = `
-            <div id="fundSignalReason" class="fund-signal-reason" style="margin:0; border:none; padding:0; font-size:1.15rem; line-height:1.7; font-weight:600; color:var(--text-main);">
-                ${d.signal_reason || '분석 결과가 없습니다.'}
-            </div>`;
+    // Update fundSummaryBlock with shared list style
+    const summaryList = document.getElementById('fundSummaryList');
+    if (summaryList) {
+        summaryList.innerHTML = '';
+        const reason = d.signal_reason || '분석 결과가 없습니다.';
+        // Split if it contains ' | ' or render as single list item
+        const reasonParts = reason.includes(' | ') ? reason.split(' | ') : [reason];
+        
+        reasonParts.forEach((part, idx) => {
+            const li = document.createElement('li');
+            li.style.fontSize = "0.9rem";
+            li.style.color = "var(--text-secondary)";
+            li.style.padding = "8px 0";
+            li.style.listStyle = "none";
+            li.style.borderBottom = (idx === reasonParts.length - 1) ? "none" : "1px solid var(--border-soft)";
+            li.style.display = "flex";
+            li.style.alignItems = "center";
+            li.style.gap = "10px";
+            
+            // Add a small bullet or icon
+            li.innerHTML = `<i class="ph ph-check-circle" style="color: var(--primary); font-size: 1.1rem; opacity: 0.8;"></i><span style="font-weight: 500;">${part}</span>`;
+            summaryList.appendChild(li);
+        });
     }
 
     // ── Quant Analysis ──
