@@ -7281,24 +7281,24 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .modal-container {
-    max-width: 800px;
+    max-width: 900px;
     width: 95%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(15, 23, 42, 0.85); /* Matches .modal-content */
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 32px;
     display: flex;
     flex-direction: column;
     max-height: 85vh;
-    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
+    animation: modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
 }
 
 [data-theme="light"] .help-modal .modal-container {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 @keyframes modalSlideUp {
@@ -7336,19 +7336,29 @@ body.vc-fullscreen-active .main-content {
 }
 
 .help-modal .modal-close {
-    background: var(--bg-app);
-    border: none;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--text-muted);
     width: 36px;
     height: 36px;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[data-theme="light"] .help-modal .modal-close {
+    background: #f8fafc;
+    border-color: #e2e8f0;
 }
 
 .help-modal .modal-close:hover {
     background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: rotate(90deg);
 }
 
 .help-modal .modal-body {
