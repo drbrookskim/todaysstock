@@ -3574,10 +3574,48 @@ html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 }
 
 .signal-badge {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    padding: 4px 12px;
+    padding: 6px 14px;
+    border-radius: 14px;
+    margin-left: 12px;
+}
+
+/* ── [New] Recommendation Labels (Premium) ── */
+.recommend-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
     border-radius: 12px;
+    font-size: 1.1rem; /* Highly readable */
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 16px;
+    height: 42px; /* Targeted range: 30~50px */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.recommend-label:hover {
+    transform: scale(1.05);
+}
+
+.recommend-label.buy {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+}
+
+.recommend-label.sell {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
 }
 
 .signal-buy {

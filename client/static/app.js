@@ -3000,7 +3000,7 @@ function renderBuyReport(report) {
     }
 
     // 2. Pattern Detail
-    document.getElementById('buySignalBadge').textContent = `${strength}%`;
+    document.getElementById('buySignalBadge').textContent = `신뢰도 ${strength}%`;
     document.getElementById('buyPattern').textContent = report.primary_pattern;
     document.getElementById('buyDesc').textContent = report.primary_pattern_desc;
     
@@ -3042,7 +3042,7 @@ function renderSellReport(report, atrTargets) {
     }
 
     // 2. Pattern Detail
-    document.getElementById('sellSignalBadge').textContent = `${strength}%`;
+    document.getElementById('sellSignalBadge').textContent = `신뢰도 ${strength}%`;
     document.getElementById('sellPattern').textContent = report.primary_pattern;
     document.getElementById('sellDesc').textContent = report.primary_pattern_desc;
     
