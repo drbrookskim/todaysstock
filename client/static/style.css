@@ -2990,7 +2990,7 @@ html[data-theme="light"] .ai-insight-row {
 }
 
 .ai-price-val {
-    font-size: 1.05rem;
+    font-size: 0.74rem; /* Reduced by 30% (from 1.05rem) */
     font-weight: 700;
     color: var(--text-color);
 }
@@ -3687,7 +3687,7 @@ html[data-theme="light"] .ai-insight-row {
 }
 
 .price-val {
-    font-size: 0.95rem;
+    font-size: 0.67rem; /* Reduced by 30% (from 0.95rem) */
     font-weight: 700;
     font-family: 'Space Grotesk', -apple-system, sans-serif;
 }
@@ -5724,7 +5724,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .price-val {
-    font-size: 2rem;
+    font-size: 1.4rem; /* Reduced by 30% (from 2rem) */
     font-weight: 800;
     font-family: 'Space Grotesk', sans-serif;
 }
