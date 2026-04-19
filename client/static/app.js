@@ -2586,31 +2586,31 @@ function renderCycleTimelineChart(cyc) {
             // Pulsing current position dot
             html += `<circle cx="${cx}" cy="${lineY}" r="9" fill="${phaseColor}" opacity="0.25"><animate attributeName="r" values="9;12;9" dur="2s" repeatCount="indefinite"/></circle>`;
             html += `<circle cx="${cx}" cy="${lineY}" r="6" fill="${phaseColor}" stroke="#fff" stroke-width="2"/>`;
-            html += `<text x="${cx}" y="${lineY - 18}" text-anchor="middle" fill="${phaseColor}" font-size="11" font-weight="800">현재 (D-${cyc.est_remaining_days})</text>`;
+            html += `<text x="${cx}" y="${lineY - 22}" text-anchor="middle" fill="${phaseColor}" font-size="16" font-weight="800">현재 (D-${cyc.est_remaining_days})</text>`;
         } else if (p.type === 'future') {
             // Target dot
             html += `<circle cx="${cx}" cy="${lineY}" r="8" fill="none" stroke="${futureColor}" stroke-width="3" stroke-dasharray="4,3"/>`;
             html += `<circle cx="${cx}" cy="${lineY}" r="3" fill="${futureColor}"/>`;
-            html += `<text x="${cx}" y="${lineY - 18}" text-anchor="middle" fill="${futureColor}" font-size="11" font-weight="800">🎯 변곡점</text>`;
+            html += `<text x="${cx}" y="${lineY - 22}" text-anchor="middle" fill="${futureColor}" font-size="16" font-weight="800">🎯 변곡점</text>`;
         } else {
             // Past peak dot (solid)
             html += `<circle cx="${cx}" cy="${lineY}" r="5" fill="${lineFill}" stroke="${isLight ? '#94a3b8' : '#475569'}" stroke-width="2"/>`;
         }
 
         // Date label below
-        html += `<text x="${cx}" y="${lineY + 30}" text-anchor="middle" fill="${textFill}" font-size="10" font-weight="600">${p.label}</text>`;
+        html += `<text x="${cx}" y="${lineY + 35}" text-anchor="middle" fill="${textFill}" font-size="14" font-weight="600">${p.label}</text>`;
 
         // Days between peaks (show above connecting line)
         if (i > 0 && p.days != null && p.type !== 'current') {
             const midX = padL + (i - 0.5) * stepW;
             const textColor = p.type === 'future' ? futureColor : textFill;
-            html += `<text x="${midX}" y="${lineY - 12}" text-anchor="middle" fill="${textColor}" font-size="10" font-weight="700">${p.days}일</text>`;
+            html += `<text x="${midX}" y="${lineY - 14}" text-anchor="middle" fill="${textColor}" font-size="14" font-weight="700">${p.days}일</text>`;
         }
     });
 
     // Chart title
-    html += `<text x="${padL}" y="18" fill="${textFill}" font-size="12" font-weight="800">📈 사이클 타임라인</text>`;
-    html += `<text x="${svgW - padR}" y="14" fill="${textFill}" font-size="9" text-anchor="end">평균 ${cyc.avg_cycle_days}일 · ${cyc.cycles_detected}개 사이클</text>`;
+    html += `<text x="${padL}" y="20" fill="${textFill}" font-size="16" font-weight="800">📈 사이클 타임라인</text>`;
+    html += `<text x="${svgW - padR}" y="18" fill="${textFill}" font-size="12" text-anchor="end">평균 ${cyc.avg_cycle_days}일 · ${cyc.cycles_detected}개 사이클</text>`;
 
     html += '</svg>';
     container.innerHTML = html;
