@@ -614,6 +614,12 @@
                             <!-- 2-1. AI Insights Dashboard (Probability, ATR, Volume) -->
                             <div id="aiInsightsCard" class="workout-style ai-insights reveal-fade hidden" style="margin-bottom: 24px;">
                                 <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header themed-card-header">
+                                        <div class="workout-title" style="font-size: 16px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-target"></i> AI 인지형 투자 매력도
+                                            <button class="help-trigger" onclick="openHelpModal('ai_insight')"><i class="ph ph-question"></i></button>
+                                        </div>
+                                    </div>
                                     <div id="aiInsightsBody" class="workout-body" style="padding: 24px;"></div>
                                 </div>
                             </div>
@@ -786,6 +792,12 @@
                             <!-- 3-1. Cycle Prediction Block -->
                             <div id="cycleWidgetContainer" class="workout-style cycle-prediction reveal-fade hidden" style="margin-bottom: 24px;">
                                 <div class="workout-content" style="padding: 0;">
+                                    <div class="workout-header themed-card-header">
+                                        <div class="workout-title" style="font-size: 16px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                            <i class="ph ph-clock-counter-clockwise"></i> 사이클 타임 예측 (변곡점 타이밍)
+                                            <button class="help-trigger" onclick="openHelpModal('cycle_prediction')"><i class="ph ph-question"></i></button>
+                                        </div>
+                                    </div>
                                     <div id="cycleWidgetBody" class="workout-body" style="padding: 24px;"></div>
                                 </div>
                             </div>
@@ -1228,7 +1240,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=51"></script>
+    <script src="./static/app.js?v=52"></script>
 </body>
 
 </html>

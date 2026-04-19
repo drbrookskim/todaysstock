@@ -2364,7 +2364,6 @@ function renderAiInsights(data) {
     }
 
     body.innerHTML = `
-        <div class="ai-widget-title">AI 인지형 투자 매력도</div>
         <div class="ai-insight-grid">
             ${probHtml}
             ${atrHtml}
@@ -2410,7 +2409,6 @@ function renderAiInsights(data) {
 
         const cycHtml = `
         <div class="cyc-widget-inner">
-            <div class="ai-widget-title">사이클 타임 예측 (변곡점 타이밍)</div>
             <div class="cyc-phase-row">
                 <span class="cyc-phase-badge" style="color:${phaseColor}; border-color:${phaseColor};">${cyc.current_phase}</span>
                 <span class="cyc-conf" style="color:${confColor};">신뢰도: ${confLabel}</span>
@@ -4500,6 +4498,22 @@ function _buildLiveBanner(topic) {
                 <h3>📡 현재 감지된 캔들 패턴</h3>
                 <p>${detected ? `<strong>${detected}</strong> 패턴이 감지되었습니다. 아래에서 해당 패턴 설명을 확인하세요.` : '현재 특이 패턴이 감지되지 않았습니다.'}</p>
             </div>`;
+    } else if (topic === 'ai_insight') {
+        bannerHTML = `
+            <div class="card highlight" style="margin-bottom:20px;">
+                <h3>📡 현재 AI 인지형 투자 매력도 분석</h3>
+                <p style="margin-top:10px; font-size:0.9rem; color:var(--text-sub);">
+                    기술적 종합 지표와 거래량 에너지 분석을 통해 현재 종목의 투자 성숙도와 매력도를 실시간 산출 중입니다.
+                </p>
+            </div>`;
+    } else if (topic === 'cycle_prediction') {
+        bannerHTML = `
+            <div class="card highlight" style="margin-bottom:20px;">
+                <h3>📡 현재 사이클 예측 상태</h3>
+                <p style="margin-top:10px; font-size:0.9rem; color:var(--text-sub);">
+                    피보나치 시간대와 과거 이력을 바탕으로 다음 변곡점(Peak/Bottom) 도달 시점을 실시간 추적하고 있습니다.
+                </p>
+            </div>`;
     }
 
     return bannerHTML;
@@ -4537,6 +4551,73 @@ const HELP_CONTENT = {
             <div class="card warning">
                 <h3>⚠️ 주의사항</h3>
                 <p>신뢰도 수치는 <strong>"반드시 그렇게 된다"</strong>는 뜻이 아닙니다. 확률 기반의 예측이므로 캔들 패턴·재무 지표와 함께 종합 판단해야 합니다.</p>
+            </div>
+        `
+    },
+
+    // ── 5. AI 인지형 투자 매력도 ─────────────────────────────────────
+    'ai_insight': {
+        title: 'AI 인지형 투자 매력도 가이드',
+        body: `
+            <h2 class="section-title">투자 매력도 분석 원리</h2>
+            <p class="section-subtitle">AI가 기술적 지표를 어떻게 해석하는지 알아봅니다</p>
+            
+            <div class="card highlight">
+                <h3>💡 매수 확률 산출 방식</h3>
+                <p>단순한 감이 아닌, 시장의 4대 핵심 요소를 가중 합산하여 0~100점 사이의 점수로 환산합니다.</p>
+                <ul class="checklist" style="margin-top:12px;">
+                    <li><strong>이동평균 배열 (35%):</strong> 정배열/역배열 및 이격도 분석</li>
+                    <li><strong>RSI 과매도/과매수 (25%):</strong> 현재 가격의 심리적 위치</li>
+                    <li><strong>MACD 추세 강도 (25%):</strong> 상승/하락 에너지의 크기</li>
+                    <li><strong>거래량 분출 (15%):</strong> 신호의 실제 수급 뒷받침</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🎯 ATR 기반 목표/손절가</h3>
+                <p>평균 실질 변동폭(ATR)을 활용한 기계적 전략입니다. 
+                변동성의 <strong>2배를 수익 목표</strong>로, <strong>1배를 손실 제한</strong>으로 설정하여 수학적으로 유리한 '손익비' 구조를 설계합니다.</p>
+            </div>
+
+            <div class="card warning">
+                <h3>📊 Z-Score 거래량 이상 신호</h3>
+                <p>최근 20일 평균 거래량과 비교하여 현재 거래량이 통계적으로 얼마나 '이례적인지' 분석합니다. 
+                급격한 Z-Score 상승은 곧 추세의 강력한 변화(폭등 또는 폭락의 시작)를 암시합니다.</p>
+            </div>
+        `
+    },
+
+    // ── 6. 사이클 타임 예측 ──────────────────────────────────────────
+    'cycle_prediction': {
+        title: '사이클 타임 예측 가이드',
+        body: `
+            <h2 class="section-title">변곡점 타이밍 예측 원리</h2>
+            <p class="section-subtitle">주식 시장의 반복되는 리듬을 수치화합니다</p>
+
+            <div class="card highlight">
+                <h3>⏳ 피보나치 시간대 (Fibonacci Time Zones)</h3>
+                <p>자연의 황금비율 숫자인 1, 2, 3, 5, 8, 13, 21, 34... 일 단위로 추세가 변하는 성질을 이용합니다. AI는 과거 주요 고점/저점으로부터 이 비율이 일치하는 지점을 찾아 변곡점을 예측합니다.</p>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>지표</th><th>의미와 활용</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>진행률 (%)</strong></td><td>현재 추세가 전체 주기 중 어느 지점에 와 있는지 표시</td></tr>
+                        <tr><td><strong>잔여 거래일</strong></td><td>통계적으로 예상되는 다음 변곡점까지 남은 영업일</td></tr>
+                        <tr><td><strong>신뢰도</strong></td><td>과거 사이클의 주기가 얼마나 일정했는지에 따른 예측 정확도</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card success">
+                <h3>💡 활용 팁</h3>
+                <p>진행률이 <strong>80%~90%</strong>에 도달했다면, 현재 추세가 곧 마무리되고 반대 방향으로의 전환(변곡)이 일어날 가능성이 매우 높음을 의미하므로 포지션 정리를 준비해야 합니다.</p>
+            </div>
+
+            <div class="card warning">
+                <h3>⚠️ 주의사항</h3>
+                <p>사이클 예측은 '가격'이 아닌 **'시간'**에 집중합니다. 변곡점 도달 시 가격이 오를지 내릴지는 'AI 추세 분석' 및 '캔들 패턴' 신호와 결합하여 판단하세요.</p>
             </div>
         `
     },
