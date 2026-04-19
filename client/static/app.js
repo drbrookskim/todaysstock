@@ -2543,10 +2543,11 @@ function renderCycleTimelineChart(cyc) {
     if (count < 2) { container.innerHTML = ''; return; }
 
     // SVG Layout
-    const padL = 50, padR = 50, padTop = 35, padBot = 40;
-    const parentW = document.getElementById('cycleWidgetContainer')?.clientWidth || 0;
-    const svgW = Math.max(parentW - 32, container.clientWidth || 400); 
+    // 컨테이너 패딩(24px * 2 = 48px)을 고려하여 너비 산출
+    const parent = document.getElementById('cycleWidgetBody');
+    const svgW = parent ? parent.clientWidth : 400; 
     const svgH = 150;
+    const padL = 50, padR = 50, padTop = 35, padBot = 40;
     const lineY = padTop + 25;
     const usableW = svgW - padL - padR;
     const stepW = usableW / (count - 1);
