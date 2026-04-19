@@ -7695,7 +7695,6 @@ body.vc-fullscreen-active .main-content {
 .app-footer .footer-right a {
     color: var(--primary);
     text-decoration: none;
-    margin-left: 5px;
     font-weight: 600;
     transition: all 0.2s ease;
 }
