@@ -7678,3 +7678,38 @@ body.vc-fullscreen-active .main-content {
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 8px 30px rgba(81, 84, 238, 0.2);
 }
+
+/* ── Site Footer ── */
+.app-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 40px;
+    margin-top: 60px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    letter-spacing: -0.01em;
+}
+
+.app-footer .footer-right a {
+    color: var(--primary);
+    text-decoration: none;
+    margin-left: 5px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.app-footer .footer-right a:hover {
+    color: var(--accent-indigo);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .app-footer {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+        padding: 24px 20px;
+    }
+}
