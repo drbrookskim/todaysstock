@@ -38,7 +38,21 @@
 
 ## 3. 딥 분석 및 예측 엔진 (Deep Analysis Engine)
 
-### 3-1. ATR 기반 변동성 목표가 산출
+### 3-1. AI 인지형 투자 매력도 (AI Investment Attractiveness)
+기술적 지표, 퀀트 스코어, 매크로 지표를 종합하여 현재 해당 종목의 투자 매력도를 0~100점으로 산출합니다.
+*   **알고리즘 구성**: `(Technical Prob * 0.4) + (Quant Score * 0.4) + (Macro Context * 0.2)`
+*   **시각화**: 게이지 형태의 UI를 통해 '매우 높음', '보통', '낮음' 등으로 직관적 등급 제공.
+
+### 3-2. 사이클 타임 및 예측 (Cycle Time Prediction)
+과거의 저점-고점 간의 시간 간격(Time Series Periodicity)을 분석하여 다음 변곡점이 발생할 확률이 높은 시기를 예측합니다.
+*   **핵심 수식**: `Inflection Point = Last Peak + (Average Cycle Duration * 0.8 + Last Cycle * 0.2)`
+*   **피보나치 보정**: 예측된 날짜 근처의 피보나치 수열(21, 34, 55일 등)을 가중치로 대입하여 신뢰구간 산출.
+
+### 3-3. 주간 캔들 인사이트 요약 (Weekly Candle Insight)
+일봉 패턴의 조합과 주간 이동평균선의 이격도를 분석하여 다가올 주간의 흐름을 텍스트로 요약합니다.
+*   **로직**: 5거래일간의 캔들 몸통/꼬리 비율과 이격도(`Price / MA20`)를 결합하여 심리 상태(장악, 잉태, 반전)를 문장형으로 생성.
+
+### 3-4. ATR 기반 변동성 목표가 산출
 주가의 변동성(ATR)을 반영하여 현실적인 매매 범위를 설정합니다.
 *   **수식**:
     *   `ATR (Average True Range)`: `14일간의 True Range 평균`
@@ -46,41 +60,23 @@
     *   `Conservative Target = Close + (ATR * 1.0)`
     *   `Stop Loss = Close - (ATR * 1.5)`
 
-### 3-2. 매수/매도 확률 점수 (Trade Probability)
-기술적 지표를 가중치 방식으로 결합하여 0~100점의 점수를 산출합니다.
-*   **가중치 체계 (Weights)**:
-    1.  **이동평균선 배열 (35%)**: 정배열 상태 및 주가 위치 보정.
-    2.  **RSI (25%)**: `100 - (100 / (1 + RS))` 수식을 사용하며, 과매도(30 이하) 구간에서 높은 가점.
-    3.  **MACD (25%)**: 골든크로스 및 오실리에이터 강도 반영.
-    4.  **거래량 (15%)**: 전일 대비 거래량 증가율 보정.
-
-### 3-3. Z-score 기반 거래량 이상 탐지
-평균 거래량에서 벗어난 '세력의 개입'이나 '매물 분출'을 감지합니다.
-*   **수식**:
-    *   `Z-score = (Current Volume - Avg Volume) / StdDev Volume`
-    *   `Z >= 3.0`: 폭발적 거래 (Explosion)
-    *   `Z >= 2.0`: 거래 급증 (Surge)
-
-### 3-4. 피보나치 사이클 타임 예측
-과거 고점들 사이의 간격을 분석하여 다음 변곡점의 시기를 예측합니다.
-*   **수식**: `Next Peak = Last Peak + (Avg Cycle * 0.7 + Fibonacci Nearest * 0.3)`
-*   **사용 피보나치 수열**: 8, 13, 21, 34, 55, 89일.
-
 ---
 
 ## 4. 펀더멘탈 퀀트 분석 (Fundamental Quant)
 
 ### 4-1. 업종별 벤치마크 스코어링
-각 기업의 ROE, PER, PBR을 동일 업종 내 중앙값과 비교하여 상대적 가치를 평가합니다.
-*   **분류 업종**: 반도체(IDM, 장비), 이차전지, 바이오, EV, 플랫폼, 금융 등.
+각 기업의 ROE, PER, PBR을 동일 업종 내 중앙값과 비교하여 가치를 평가합니다.
 *   **평가 알고리즘**:
     *   `Score = (ROE / Sector Mean ROE) * W1 + (Sector Mean PER / PER) * W2 + (Sector Mean PBR / PBR) * W3`
     *   성장성 지표(PEG) 반영: `PEG = PER / (EPS Growth Rate)` (1.0 미만 시 저평가)
 
 ---
 
-## 5. 인프라 및 부가 기능 (Infrastructure)
+## 5. UI/UX 및 디자인 시스템 (Design System)
 
-*   **PWA (Progressive Web App)**: Service Worker를 활용한 로컬 리소스 캐싱 및 오프라인 접근 최적화.
-*   **거시경제 시각화**: 한국은행 ECOS API 기반의 기준금리와 코스피 상관관계 분석 차트.
-*   **보안 및 동기화**: Supabase Auth와 PostgreSQL을 활용한 사용자별 관심 종목(Bookmark) 및 프로필 데이터 관리.
+*   **Rounded Model System**: 모든 모달 및 팝업 인터페이스에 **32px 고곡률 라운드**를 적용하여 프리미엄 테마의 일관성 확보.
+*   **Theme-Aware Glassmorphism**: 라이트/다크 모드에 최적화된 반투명 블러 효과 시스템.
+*   **Google Auth Integration**: 복잡한 절차를 생략한 구글 소셜 계정 전용 로그인 시스템.
+*   **Typography Sync**: 주요 지표(ROE 등)와 위젯(사이클 타임라인 등) 간의 폰트 크기 및 무게 조절을 통한 시각적 정합성 구현.
+*   **통합 푸터**: 저작권 명시와 사용자 문의(`mailto`)를 포함한 서비스 최하단 레이아웃.
+
