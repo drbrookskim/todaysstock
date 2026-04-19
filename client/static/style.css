@@ -3980,6 +3980,33 @@ html[data-theme="light"] .ai-insight-row {
     transform: translate(-50%, -50%);
 }
 
+.auth-brand {
+    padding: 20px 0 10px;
+}
+
+.auth-logo-large {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 2rem !important;
+    border-radius: 14px !important;
+    margin: 0 auto;
+    box-shadow: 0 10px 25px rgba(81, 84, 238, 0.25);
+}
+
+[data-theme="dark"] .auth-logo-large {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.auth-modal-subtitle {
+    color: var(--text-muted);
+}
+
+.auth-footer-msg {
+    display: block;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
