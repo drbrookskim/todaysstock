@@ -47,8 +47,13 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 
     /* Radius */
-    --radius-main: 16px; /* Slightly more rounded like Quicken */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-main: 16px; 
     --radius-pill: 9999px;
+    --radius-modal: 32px; /* All modals use this high-curvature rounded style */
 
     /* Stock Colors (Korean Market Standard) */
     --color-up: #ef4444;    /* Red for Increase */
@@ -3923,7 +3928,7 @@ html[data-theme="light"] .ai-insight-row {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-modal);
     z-index: 1010;
     box-shadow: var(--glass-shadow);
     display: none;
@@ -3943,7 +3948,7 @@ html[data-theme="light"] .ai-insight-row {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-modal);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
 }
@@ -7381,7 +7386,7 @@ body.vc-fullscreen-active .main-content {
     width: 95%;
     background: rgba(15, 23, 42, 0.85); /* Matches .modal-content */
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 32px;
+    border-radius: var(--radius-modal);
     display: flex;
     flex-direction: column;
     max-height: 85vh;
