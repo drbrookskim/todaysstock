@@ -3224,7 +3224,7 @@ async function initAuth() {
     const oauthCancelBtn = document.getElementById('oauthCancelBtn');
     const oauthContinueBtn = document.getElementById('oauthContinueBtn');
 
-    let isLoginMode = true;
+
 
     // 모달 열기/닫기 로직
     const showAuthModal = () => {
@@ -3311,79 +3311,7 @@ async function initAuth() {
         }
     });
 
-    // ── 로그인 ↔ 회원가입 전환 ──
-    authSwitchBtn?.addEventListener('click', () => {
-        isLoginMode = !isLoginMode;
-        if (authModalTitle) authModalTitle.textContent = isLoginMode ? '로그인' : '회원가입';
-        if (authSubmitBtn) authSubmitBtn.textContent = isLoginMode ? '로그인' : '회원가입';
-        if (authSwitchText) authSwitchText.textContent = isLoginMode ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?';
-        if (authSwitchBtn) authSwitchBtn.textContent = isLoginMode ? '회원가입' : '로그인';
-        if (authErrorMsg) authErrorMsg.textContent = '';
-    });
 
-    // ── 로그인/회원가입 폼 ──
-    authForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            if (!username || !password) return;
-
-            // email 형식 통일 (username@stockfinder.local 우회)
-            const email = username.includes('@') ? username : `${username}@stockfinder.local`;
-
-            try {
-                authSubmitBtn.disabled = true;
-                authErrorMsg.textContent = '';
-
-                if (sbClient) {
-                    // ── 빠른 경로: Supabase JS SDK 직접 호출 ──
-                    if (isLoginMode) {
-                        const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-                        if (error) throw error;
-                        setSupaToken(data.session.access_token);
-                        hideAuthModal();
-                        await fetchUserSession();
-                    } else {
-                        const { error } = await sbClient.auth.signUp({ email, password });
-                        if (error) throw error;
-                        await showModal('가입 성공', '회원가입 성공! 이제 로그인할 수 있습니다.', 'success');
-                        authSwitchBtn.click();
-                    }
-                } else {
-                    // ── 폴백: Render 백엔드 경유 ──
-                    const endpoint = isLoginMode ? API_BASE_URL + '/api/login' : API_BASE_URL + '/api/register';
-                    const res = await fetch(endpoint, {
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        if (isLoginMode) {
-                            setSupaToken(data.access_token);
-                            hideAuthModal();
-                            await fetchUserSession();
-                        } else {
-                            await showModal('오류', data.message, 'error');
-                            authSwitchBtn.click();
-                        }
-                    } else {
-                        authErrorMsg.textContent = data.message;
-                    }
-                }
-            } catch (error) {
-                const msg = error?.message || '';
-                if (msg.includes('Invalid login credentials')) {
-                    authErrorMsg.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
-                } else if (msg.includes('User already registered')) {
-                    authErrorMsg.textContent = '이미 등록된 아이디입니다.';
-                } else {
-                    authErrorMsg.textContent = msg || '오류가 발생했습니다. 다시 시도해주세요.';
-                }
-            } finally {
-                authSubmitBtn.disabled = false;
-            }
-        });
 
     const updateAuthUI = () => {
         const userNameEl = document.getElementById('sidebarUserName');
