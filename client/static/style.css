@@ -7681,15 +7681,23 @@ body.vc-fullscreen-active .main-content {
 
 /* ── Site Footer ── */
 .app-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 32px 40px;
-    margin-top: 60px;
+    margin-top: 80px;
     border-top: 1px solid var(--border-color);
     color: var(--text-muted);
     font-size: 0.82rem;
     letter-spacing: -0.01em;
+    width: 100%;
+    padding: 32px 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
 }
 
 .app-footer .footer-right a {
@@ -7705,10 +7713,10 @@ body.vc-fullscreen-active .main-content {
 }
 
 @media (max-width: 768px) {
-    .app-footer {
+    .footer-content {
         flex-direction: column;
         gap: 12px;
         text-align: center;
-        padding: 24px 20px;
+        padding: 0 20px;
     }
 }
