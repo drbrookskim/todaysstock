@@ -3919,24 +3919,37 @@ html[data-theme="light"] .ai-insight-row {
     transform: translate(-50%, -50%);
     width: 90%;
     max-width: 400px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     z-index: 1010;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--glass-shadow);
     display: none;
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .auth-modal {
+    background: #ffffff; /* 라이트 모드 모달 배경은 화이트로 고정 */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 /* ── Confirm Modal ── */
 .confirm-modal {
     max-width: 400px;
     padding: 24px;
-    background: var(--bg-card);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-premium);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+[data-theme="light"] .confirm-modal {
+    background: #ffffff;
 }
 .confirm-actions {
     display: flex;
@@ -4096,7 +4109,7 @@ html[data-theme="light"] .ai-insight-row {
     border-radius: 8px;
     font-size: 1.05rem;
     font-weight: 600;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: inherit;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -4105,6 +4118,16 @@ html[data-theme="light"] .ai-insight-row {
     transition: all 0.2s ease;
     margin-top: 20px;
     margin-bottom: 20px;
+}
+
+[data-theme="dark"] .google-auth-btn {
+    background: rgba(255, 255, 255, 0.05); /* 다크 모드에서는 살짝 투명하게 */
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .google-auth-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .divider {
