@@ -54,7 +54,7 @@ let currentStock = null;
 let _lastAnalysisData = null;
 let sectionScrollPositions = {};
 let currentActiveSectionId = 'dashboardHome'; // Track currently visible section
-let currentChartDrawType = 'heikin_ashi'; // Default to Heikin-Ashi
+let currentChartDrawType = 'standard'; // Default to Standard Candle
 window.setChartType = function(type) {
     currentChartDrawType = type;
     document.getElementById('btnChartStandard').classList.remove('active');

@@ -292,6 +292,7 @@
             <div class="progress-dot" onclick="goToLesson(3)">3</div>
             <div class="progress-dot" onclick="goToLesson(4)">4</div>
             <div class="progress-dot" onclick="goToLesson(5)">5</div>
+            <div class="progress-dot" onclick="goToLesson(6)">6</div>
         </div>
 
         <!-- Lesson 1 -->
@@ -632,6 +633,66 @@
 
             <div class="navigation">
                 <button class="nav-btn" onclick="prevLesson()">← 이전</button>
+                <button class="nav-btn" onclick="nextLesson()">다음 →</button>
+            </div>
+        </div>
+
+        <!-- Lesson 6 -->
+        <div class="lesson-content" id="lesson6">
+            <h2 class="lesson-title">🕯️ 레슨 6: 평균대세(Heikin-Ashi) 차트</h2>
+
+            <div class="section">
+                <h3 class="section-title">🎯 핵심 개념</h3>
+                <p>평균대세는 캔들 차트의 한 종류로, 어제의 가격 기운을 오늘의 캔들에 섞어 <b>추세를 매끄럽게 필터링</b>하는 기법입니다.</p>
+            </div>
+
+            <div class="info-box">
+                <strong>💡 왜 평균대세를 사용하나요?</strong><br>
+                일반 캔들은 장중 변동성(노이즈)이 많아 추세를 오해하기 쉽습니다. 평균대세는 이를 제거하여 <b>"지금 주식을 더 보유해도 되는지"</b>를 명확하게 보여줍니다.
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">📊 일반 캔들 vs 평균대세</h3>
+                <table>
+                    <tr>
+                        <th>특성</th>
+                        <th>일반 캔들 (Standard)</th>
+                        <th>평균대세 (Heikin-Ashi)</th>
+                    </tr>
+                    <tr>
+                        <td>데이터</td>
+                        <td>순수 당일 시가/고가/저가/종가</td>
+                        <td>전일과 당일의 가격을 평균화한 값</td>
+                    </tr>
+                    <tr>
+                        <td>목적</td>
+                        <td>정확한 가격 팩트 및 단기 패턴 확인</td>
+                        <td>중장기 추세의 지속성 파악</td>
+                    </tr>
+                    <tr>
+                        <td>장점</td>
+                        <td>세밀한 가격 움직임 포착 가능</td>
+                        <td>노이즈가 적고 추세 매매에 유리</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="success-box">
+                <strong>🚀 실전 매매 활용팁</strong><br>
+                <ul>
+                    <li><b>상승 지속:</b> 아래꼬리가 없는 강한 빨간 캔들이 연속될 때 ➔ 홀딩!</li>
+                    <li><b>하락 지속:</b> 윗꼬리가 없는 강한 파란 캔들이 연속될 때 ➔ 관망!</li>
+                    <li><b>추세 전환:</b> 캔들 몸통이 작아지고 위아래 꼬리가 동시에 길어질 때 ➔ 반전 주의!</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ 주의사항</strong><br>
+                평균대세 차트의 가격은 '계산된 평균값'이므로, **실제 매수/매도를 집행할 때는 반드시 '일반 캔들' 모드로 전환하여 현재가(Fact)를 확인**해야 합니다.
+            </div>
+
+            <div class="navigation">
+                <button class="nav-btn" onclick="prevLesson()">← 이전</button>
                 <button class="nav-btn" onclick="goToLesson(1)">처음으로 🏠</button>
             </div>
         </div>
@@ -665,7 +726,7 @@
         }
 
         function nextLesson() {
-            if (currentLesson < 5) {
+            if (currentLesson < 6) {
                 goToLesson(currentLesson + 1);
             }
         }
