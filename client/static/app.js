@@ -4525,15 +4525,15 @@ const HELP_CONTENT = {
                 <p>신뢰도 수치는 <strong>"반드시 그렇게 된다"</strong>는 뜻이 아닙니다. 확률 기반의 예측이므로 캔들 패턴·재무 지표와 함께 종합 판단해야 합니다.</p>
             </div>
 
-            <div class="card" style="background: rgba(var(--color-accent-rgb), 0.05); border-left: 4px solid var(--color-accent); margin-top: 20px;">
-                <h3 style="color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+            <div class="card" style="background: var(--bg-app); border-left: 4px solid var(--primary); margin-top: 20px; border-radius: 12px;">
+                <h3 style="color: var(--primary); display: flex; align-items: center; gap: 8px; font-size: 1rem;">
                     <i class="ph ph-lightning"></i> 심층 분석 팁: 평균대세(Heikin-Ashi) 활용
                 </h3>
-                <p style="margin-top: 8px; font-size: 0.95rem;">
+                <p style="margin-top: 8px; font-size: 0.95rem; color: var(--text-main);">
                     AI 추세 분석과 함께 **평균대세(HA)** 차트를 사용해 보세요. 
                     장중의 미세한 가격 흔들림(노이즈)을 제거하여, 현재의 상승/하강 추세가 얼마나 견고한지 시각적으로 한눈에 파악할 수 있도록 도와줍니다.
                 </p>
-                <div style="margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary);">
+                <div style="margin-top: 12px; font-size: 0.85rem; color: var(--text-sub);">
                     * 하단 차트 우측 상단의 [평균대세] 버튼으로 즉시 전환 가능합니다.
                 </div>
             </div>
@@ -4931,8 +4931,8 @@ const HELP_CONTENT = {
             </div>
 
             <!-- 🕯️ 평균대세(Heikin-Ashi) 상세 가이드 추가 -->
-            <div class="card" style="background: rgba(var(--color-accent-rgb), 0.08); border-top: 4px solid var(--color-accent); margin-top: 40px; border-radius: 12px; padding: 24px;">
-                <h2 style="color: var(--color-accent); font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+            <div class="card" style="background: var(--bg-app); border-top: 4px solid var(--primary); margin-top: 40px; border-radius: 12px; padding: 24px;">
+                <h2 style="color: var(--primary); font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
                     <i class="ph ph-sparkle" style="font-size: 1.8rem;"></i> 평균대세 (Heikin-Ashi) 가이드
                 </h2>
                 
@@ -4940,49 +4940,49 @@ const HELP_CONTENT = {
                     평균대세는 어제의 가격 에너지를 오늘의 캔들에 결합하여 <strong>추세의 연속성을 극대화</strong>해서 보여주는 프로 트레이딩 기법입니다.
                 </p>
 
-                <div class="table-wrapper" style="margin-bottom: 24px; background: white; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div class="table-wrapper" style="margin-bottom: 24px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-heavy);">
                     <table style="width: 100%; border-collapse: collapse;">
-                        <thead style="background: #f8faff;">
+                        <thead style="background: var(--bg-app);">
                             <tr>
-                                <th style="padding: 12px; border-bottom: 2px solid var(--color-accent); text-align: left; font-size: 0.9rem;">비교 항목</th>
-                                <th style="padding: 12px; border-bottom: 2px solid var(--color-accent); text-align: left; font-size: 0.9rem;">일반 캔들</th>
-                                <th style="padding: 12px; border-bottom: 2px solid var(--color-accent); text-align: left; font-size: 0.9rem;">평균대세 (HA)</th>
+                                <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">비교 항목</th>
+                                <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">일반 캔들</th>
+                                <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">평균대세 (HA)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 600;">데이터 산출</td>
-                                <td style="padding: 10px; border-bottom: 1px solid #eee;">당일 가격 팩트 기반</td>
-                                <td style="padding: 10px; border-bottom: 1px solid #eee;">전일+당일 평균값 기반</td>
+                                <td style="padding: 10px; border-bottom: 1px solid var(--border-soft); font-weight: 600; color: var(--text-main);">데이터 산출</td>
+                                <td style="padding: 10px; border-bottom: 1px solid var(--border-soft); color: var(--text-sub);">당일 가격 팩트 기반</td>
+                                <td style="padding: 10px; border-bottom: 1px solid var(--border-soft); color: var(--text-sub);">전일+당일 평균값 기반</td>
                             </tr>
                             <tr>
-                                <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 600;">시각적 노이즈</td>
-                                <td style="padding: 10px; border-bottom: 1px solid #eee;">많음 (잦은 색상 변화)</td>
-                                <td style="padding: 10px; border-bottom: 1px solid #eee;">적음 (매끄러운 색상 유지)</td>
+                                <td style="padding: 10px; border-bottom: 1px solid var(--border-soft); font-weight: 600; color: var(--text-main);">시각적 노이즈</td>
+                                <td style="padding: 10px; border-bottom: 1px solid var(--border-soft); color: var(--text-sub);">많음 (잦은 색상 변화)</td>
+                                <td style="padding: 10px; border-bottom: 1px solid var(--border-soft); color: var(--text-sub);">적음 (매끄러운 색상 유지)</td>
                             </tr>
                             <tr>
-                                <td style="padding: 10px; font-weight: 600;">활용 용도</td>
-                                <td style="padding: 10px;">정확한 가격 및 패턴 확인</td>
-                                <td style="padding: 10px;">중장기 추세 지속성 판단</td>
+                                <td style="padding: 10px; font-weight: 600; color: var(--text-main);">활용 용도</td>
+                                <td style="padding: 10px; color: var(--text-sub);">정확한 가격 및 패턴 확인</td>
+                                <td style="padding: 10px; color: var(--text-sub);">중장기 추세 지속성 판단</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
-                    <div style="background: rgba(var(--color-up-rgb), 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--color-up);">
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--color-up);">
                         <strong style="color: var(--color-up); display: block; margin-bottom: 4px;">📈 상승 지속 신호</strong>
-                        <span style="font-size: 0.85rem;">아래꼬리가 없는 강한 빨간 캔들이 연속될 때</span>
+                        <span style="font-size: 0.85rem; color: var(--text-sub);">아래꼬리가 없는 강한 빨간 캔들이 연속될 때</span>
                     </div>
-                    <div style="background: rgba(var(--color-down-rgb), 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--color-down);">
+                    <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--color-down);">
                         <strong style="color: var(--color-down); display: block; margin-bottom: 4px;">📉 하락 지속 신호</strong>
-                        <span style="font-size: 0.85rem;">위꼬리가 없는 강한 파란 캔들이 연속될 때</span>
+                        <span style="font-size: 0.85rem; color: var(--text-sub);">위꼬리가 없는 강한 파란 캔들이 연속될 때</span>
                     </div>
                 </div>
 
-                <div class="card warning" style="margin: 0; padding: 16px; font-size: 0.95rem; border-radius: 8px;">
-                    <strong>💡 프로의 조언:</strong><br>
-                    평균대세 차트의 가격은 '계산된 값'입니다. **실제 매매 주문을 넣으실 때는 반드시 [일반 캔들] 모드로 전환하여 현재가(Fact)를 다시 확인**하시는 것이 정석입니다.
+                <div class="card warning" style="margin: 0; padding: 16px; font-size: 0.95rem; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--accent);">
+                    <strong style="color: var(--accent);">💡 프로의 조언:</strong><br>
+                    <p style="margin-top: 4px; color: var(--text-main);">평균대세 차트의 O,H,L,C 가격은 실제 거래 가격이 아닌 '가중 평균값'입니다. **실제 매매 주문을 넣으실 때는 반드시 [일반 캔들] 모드로 전환하여 현재가(Fact)를 다시 확인**하시는 것이 정석입니다.</p>
                 </div>
             </div>
         `
