@@ -54,6 +54,22 @@ let currentStock = null;
 let _lastAnalysisData = null;
 let sectionScrollPositions = {};
 let currentActiveSectionId = 'dashboardHome'; // Track currently visible section
+let currentChartDrawType = 'heikin_ashi'; // Default to Heikin-Ashi
+window.setChartType = function(type) {
+    currentChartDrawType = type;
+    document.getElementById('btnChartStandard').classList.remove('active');
+    document.getElementById('btnChartHeikin').classList.remove('active');
+    if (type === 'standard') {
+        document.getElementById('btnChartStandard').classList.add('active');
+    } else {
+        document.getElementById('btnChartHeikin').classList.add('active');
+    }
+    if (_lastAnalysisData && _lastAnalysisData.recent_candles) {
+        renderCandleChart(_lastAnalysisData.recent_candles);
+    } else if (currentStock && homeStockContext.data && homeStockContext.data.recent_candles) {
+        renderCandleChart(homeStockContext.data.recent_candles);
+    }
+};
 
 // --- Independent Section Contexts ---
 let homeStockContext = { item: null, data: null, analysis: null };
@@ -2785,13 +2801,41 @@ function renderCandleChart(candles) {
     const ma60Data = [];
     const ma120Data = [];
 
-    candles.forEach(c => {
+    // Heikin-Ashi Calculation variables
+    let haPrevOpen = null;
+    let haPrevClose = null;
+
+    candles.forEach((c, index) => {
         const time = c.date; // Expecting 'YYYY-MM-DD'
-        candleData.push({ time, open: c.open, high: c.high, low: c.low, close: c.close });
+        
+        let displayOpen = c.open;
+        let displayClose = c.close;
+        let displayHigh = c.high;
+        let displayLow = c.low;
+        let isBullish = c.is_bullish;
+        
+        if (currentChartDrawType === 'heikin_ashi') {
+            let haClose = (c.open + c.high + c.low + c.close) / 4;
+            let haOpen = index === 0 ? c.open : (haPrevOpen + haPrevClose) / 2;
+            let haHigh = Math.max(c.high, haOpen, haClose);
+            let haLow = Math.min(c.low, haOpen, haClose);
+            
+            displayOpen = haOpen;
+            displayClose = haClose;
+            displayHigh = haHigh;
+            displayLow = haLow;
+            isBullish = displayClose > displayOpen; // In standard HA, > is bullish. (Wait! In KR, red=bullish but close>open implies RED)
+            // Wait, we defined UpColor='#ef4444'(Red), DownColor='#3b82f6'(Blue). The chart automatically colors it based on displayClose > displayOpen.
+            
+            haPrevOpen = haOpen;
+            haPrevClose = haClose;
+        }
+
+        candleData.push({ time, open: displayOpen, high: displayHigh, low: displayLow, close: displayClose });
         volData.push({ 
             time, 
             value: c.volume, 
-            color: c.is_bullish ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)' 
+            color: isBullish ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)' 
         });
         if (c.ma5) ma5Data.push({ time, value: c.ma5 });
         if (c.ma20) ma20Data.push({ time, value: c.ma20 });

@@ -805,10 +805,14 @@
                             <!-- 4. Candle Chart Block -->
                             <div id="aiChartBlock" class="workout-style ai-chart reveal-fade hidden">
                                 <div class="workout-content" style="padding: 0;">
-                                    <div class="workout-header themed-card-header">
+                                    <div class="workout-header themed-card-header" style="justify-content: space-between; display: flex; align-items: center;">
                                         <div class="workout-title" style="font-size: 16px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
                                             <i class="ph ph-chart-line-up"></i> 시각적 패턴 매핑
                                             <button class="help-trigger" onclick="openHelpModal('lesson2')"><i class="ph ph-question"></i></button>
+                                        </div>
+                                        <div class="chart-type-toggle" style="display: flex; gap: 8px;">
+                                            <button id="btnChartHeikin" class="vc-toggle-btn active" onclick="setChartType('heikin_ashi')" style="padding: 4px 10px; font-size: 0.85rem;">평균대세(HA)</button>
+                                            <button id="btnChartStandard" class="vc-toggle-btn" onclick="setChartType('standard')" style="padding: 4px 10px; font-size: 0.85rem;">일반 캔들</button>
                                         </div>
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
