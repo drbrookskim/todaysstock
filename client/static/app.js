@@ -481,21 +481,46 @@ function initResizableSidebar() {
     const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '168';
     updateSidebarWidth(parseInt(savedWidth));
 
-    resizer.addEventListener('mousedown', (e) => {
+    const startResize = (e) => {
         isSidebarDragging = true;
         document.body.style.cursor = 'col-resize';
         resizer.classList.add('is-dragging');
+        
+        // Add listeners for both mouse and touch
         document.addEventListener('mousemove', handleSidebarResize);
         document.addEventListener('mouseup', stopSidebarResize);
+        document.addEventListener('touchmove', handleSidebarResize, { passive: false });
+        document.addEventListener('touchend', stopSidebarResize);
+        document.addEventListener('touchcancel', stopSidebarResize);
+    };
+
+    resizer.addEventListener('mousedown', (e) => {
+        startResize(e);
         e.preventDefault(); // Prevent text selection
     });
+    
+    resizer.addEventListener('touchstart', (e) => {
+        startResize(e);
+        // Do not preventDefault here to allow standard touch behaviors if needed, 
+        // but touch-action: none on resizer will handle the important parts.
+    }, { passive: true });
 }
 
 function handleSidebarResize(e) {
     if (!isSidebarDragging) return;
     
+    // Extract clientX from Mouse or Touch event
+    let clientX;
+    if (e.type.startsWith('touch')) {
+        clientX = e.touches[0].clientX;
+        // Prevent scrolling while resizing on touch
+        if (e.cancelable) e.preventDefault();
+    } else {
+        clientX = e.clientX;
+    }
+    
     // Clamp width: 72px (Min) to 30% of window (Max)
-    let newWidth = e.clientX;
+    let newWidth = clientX;
     const maxWidth = window.innerWidth * 0.3;
     
     if (newWidth < 100) newWidth = 72; // Snap to collapsed
@@ -511,8 +536,13 @@ function stopSidebarResize() {
     document.body.style.cursor = '';
     const resizer = document.getElementById('sidebarResizer');
     resizer?.classList.remove('is-dragging');
+
+    // Remove all listeners
     document.removeEventListener('mousemove', handleSidebarResize);
     document.removeEventListener('mouseup', stopSidebarResize);
+    document.removeEventListener('touchmove', handleSidebarResize);
+    document.removeEventListener('touchend', stopSidebarResize);
+    document.removeEventListener('touchcancel', stopSidebarResize);
     
     const sidebar = document.getElementById('mainSidebar');
     if (sidebar) {

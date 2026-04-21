@@ -293,6 +293,17 @@ body {
     cursor: col-resize;
     z-index: 110;
     transition: background 0.2s;
+    touch-action: none; /* Prevent scroll during drag */
+}
+
+/* Larger hit area for touch */
+.sidebar-resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -10px; /* Expand hit area to the left */
+    width: 20px;
+    height: 100%;
 }
 
 .sidebar-resizer:hover,
