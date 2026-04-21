@@ -16,6 +16,7 @@
 }
 
 :root {
+    --sidebar-width: 168px; /* Dynamic Sidebar Width */
     /* Mix & Match Palette (Inspired by Remote/Quicken/PandaDoc) */
     --bg-app: #f1f5f9; /* Slightly more gray for better contrast with pure white cards */
     --bg-sidebar: #ffffff;
@@ -80,6 +81,7 @@ html:not([data-theme="light"]) {
     --bg-sidebar: #0f172a;
     --bg-card: #0f172a;
     --bg-header: #0f172a;
+    --sidebar-width: 168px;
     
     --text-main: #f8fafc;
     --text-sub: #94a3b8;
@@ -264,7 +266,7 @@ body {
 
 /* ── Persistent Sidebar (PandaDoc Style) ── */
 .main-sidebar {
-    width: 72px;
+    width: var(--sidebar-width);
     height: 100vh;
     background-color: var(--bg-card);
     border-right: 1px solid var(--border-soft);
@@ -273,10 +275,29 @@ body {
     padding: 24px 0;
     position: sticky;
     top: 0;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Transition only width for smooth resizing via JS or toggle */
+    transition: width 0.1s ease-out; 
     z-index: 100;
     overflow-x: hidden;
     flex-shrink: 0;
+    position: relative; /* For resizer handle */
+}
+
+/* ── Sidebar Resizer Handle ── */
+.sidebar-resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 110;
+    transition: background 0.2s;
+}
+
+.sidebar-resizer:hover,
+.sidebar-resizer.is-dragging {
+    background: var(--primary-glow);
 }
 
 /* Sidebar logic moved to end of file for priority */
@@ -5816,65 +5837,39 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 
 
 
-/* --- SIDEBAR PINNING & COLLAPSE --- */
+/* --- SIDEBAR RESIZABLE & COLLAPSE --- */
 
-/* Collapsed: icon-only (default) */
-.main-sidebar {
-    width: 72px;
-}
+/* Width and expansion is now controlled via JS and --sidebar-width variable */
 
-/* Hover: expand temporarily */
-.main-sidebar:hover {
-    width: 168px;
-    box-shadow: 8px 0 24px rgba(0,0,0,0.1);
-}
-
-/* Pinned: always expanded */
-.main-sidebar.pinned {
-    width: 168px;
-}
-
-/* Hide text when collapsed and not hovered */
-.main-sidebar:not(.pinned):not(:hover) .brand-text,
-.main-sidebar:not(.pinned):not(:hover) .nav-item span,
-.main-sidebar:not(.pinned):not(:hover) .user-name,
-.main-sidebar:not(.pinned):not(:hover) .user-status,
-.main-sidebar:not(.pinned):not(:hover) .logout-btn span,
-.main-sidebar:not(.pinned):not(:hover) .nav-badge {
+/* Hide text when collapsed */
+.main-sidebar.collapsed .brand-text,
+.main-sidebar.collapsed .nav-item span,
+.main-sidebar.collapsed .user-profile,
+.main-sidebar.collapsed .withdrawal-btn span,
+.main-sidebar.collapsed .logout-btn span,
+.main-sidebar.collapsed .nav-badge {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.15s ease;
 }
 
-/* Show text when pinned */
-.main-sidebar.pinned .brand-text,
-.main-sidebar.pinned .nav-item span,
-.main-sidebar.pinned .user-name,
-.main-sidebar.pinned .user-status,
-.main-sidebar.pinned .nav-badge {
+/* Ensure icons are centered when collapsed */
+.main-sidebar.collapsed .nav-item,
+.main-sidebar.collapsed .sidebar-user,
+.main-sidebar.collapsed .withdrawal-btn {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Show text when NOT collapsed */
+.main-sidebar:not(.collapsed) .brand-text,
+.main-sidebar:not(.collapsed) .nav-item span,
+.main-sidebar:not(.collapsed) .user-profile,
+.main-sidebar:not(.collapsed) .nav-badge {
     opacity: 1;
     visibility: visible;
-}
-
-/* Pin button: hidden when collapsed and not hovered */
-.main-sidebar:not(.pinned):not(:hover) .pin-btn {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Pin button: visible when pinned or hovered (or open on mobile) */
-.main-sidebar.pinned .pin-btn,
-.main-sidebar:hover .pin-btn,
-.main-sidebar.mobile-open .pin-btn {
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* Active pin button: rotated icon */
-.pin-btn.active i {
-    transform: rotate(-45deg);
-    color: var(--primary);
 }
 
 

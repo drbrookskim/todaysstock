@@ -468,40 +468,76 @@ function showSection(id) {
     }
 }
 
-// ── Sidebar Pin & Toggle ──
-const SIDEBAR_PIN_KEY = 'stockfinder-sidebar-pin';
+// ── Resizable Sidebar Logic ──
+const SIDEBAR_WIDTH_KEY = 'stockfinder-sidebar-width';
+let isSidebarDragging = false;
 
-function isSidebarPinned() {
-    return localStorage.getItem(SIDEBAR_PIN_KEY) !== 'false';
-}
-
-function setSidebarPinned(pinned) {
-    localStorage.setItem(SIDEBAR_PIN_KEY, pinned ? 'true' : 'false');
-    applySidebarPinState();
-}
-
-function applySidebarPinState() {
+function initResizableSidebar() {
     const sidebar = document.getElementById('mainSidebar');
-    const pinBtn = document.getElementById('sidebarPinBtn');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (!sidebar) return;
+    const resizer = document.getElementById('sidebarResizer');
+    if (!sidebar || !resizer) return;
+
+    // Load saved width
+    const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '168';
+    updateSidebarWidth(parseInt(savedWidth));
+
+    resizer.addEventListener('mousedown', (e) => {
+        isSidebarDragging = true;
+        document.body.style.cursor = 'col-resize';
+        resizer.classList.add('is-dragging');
+        document.addEventListener('mousemove', handleSidebarResize);
+        document.addEventListener('mouseup', stopSidebarResize);
+        e.preventDefault(); // Prevent text selection
+    });
+}
+
+function handleSidebarResize(e) {
+    if (!isSidebarDragging) return;
     
-    if (isSidebarPinned()) {
-        sidebar.classList.add('pinned');
-        document.body.setAttribute('data-sidebar-pinned', 'true');
-        if (overlay) overlay.classList.remove('show');
-        if (pinBtn) {
-            pinBtn.classList.add('active');
-            pinBtn.title = '사이드바 고정 해제';
-        }
-    } else {
-        sidebar.classList.remove('pinned');
-        document.body.removeAttribute('data-sidebar-pinned');
-        if (pinBtn) {
-            pinBtn.classList.remove('active');
-            pinBtn.title = '사이드바 고정';
-        }
+    // Clamp width: 72px (Min) to 30% of window (Max)
+    let newWidth = e.clientX;
+    const maxWidth = window.innerWidth * 0.3;
+    
+    if (newWidth < 100) newWidth = 72; // Snap to collapsed
+    if (newWidth > maxWidth) newWidth = maxWidth;
+    if (newWidth < 72) newWidth = 72;
+
+    updateSidebarWidth(newWidth);
+}
+
+function stopSidebarResize() {
+    if (!isSidebarDragging) return;
+    isSidebarDragging = false;
+    document.body.style.cursor = '';
+    const resizer = document.getElementById('sidebarResizer');
+    resizer?.classList.remove('is-dragging');
+    document.removeEventListener('mousemove', handleSidebarResize);
+    document.removeEventListener('mouseup', stopSidebarResize);
+    
+    const sidebar = document.getElementById('mainSidebar');
+    if (sidebar) {
+        const currentWidth = sidebar.offsetWidth;
+        localStorage.setItem(SIDEBAR_WIDTH_KEY, currentWidth);
     }
+}
+
+function updateSidebarWidth(width) {
+    const sidebar = document.getElementById('mainSidebar');
+    if (!sidebar) return;
+
+    document.documentElement.style.setProperty('--sidebar-width', width + 'px');
+    
+    // Toggle collapsed class if near minimum
+    if (width <= 80) {
+        sidebar.classList.add('collapsed');
+    } else {
+        sidebar.classList.remove('collapsed');
+    }
+}
+
+function isSidebarExpanded() {
+    const sidebar = document.getElementById('mainSidebar');
+    return sidebar && !sidebar.classList.contains('collapsed');
 }
 
 function closeSidebar() {
@@ -3193,10 +3229,7 @@ function startApp() {
     });
 
     // Sidebar pin/toggle init
-    applySidebarPinState();
-    document.getElementById('sidebarPinBtn')?.addEventListener('click', () => {
-        setSidebarPinned(!isSidebarPinned());
-    });
+    initResizableSidebar();
     document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
 
@@ -3359,7 +3392,7 @@ async function initAuth() {
                 renderWatchlist();
                 updateWatchlistBtn();
                 // Optionally close sidebar after logging out
-                if (!isSidebarPinned()) closeSidebar();
+                if (!isSidebarExpanded()) closeSidebar();
             }
         }
     });

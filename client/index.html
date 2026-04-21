@@ -66,7 +66,7 @@
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 
-<body data-sidebar-pinned="true">
+<body data-sidebar-width="168px">
     <!-- ── PWA 설치 배너 (Chrome/Edge: beforeinstallprompt) ── -->
     <div id="pwaInstallBanner" class="pwa-banner" style="display:none;" role="dialog" aria-label="앱 설치 안내">
         <div class="pwa-banner-icon">
@@ -109,7 +109,6 @@
             <div class="sidebar-brand">
                 <div class="logo-circle">S</div>
                 <span class="brand-text">Signnith</span>
-                <button id="sidebarPinBtn" class="pin-btn" title="사이드바 고정"><i class="ph ph-push-pin"></i></button>
             </div>
 
             <nav class="sidebar-nav">
@@ -155,6 +154,7 @@
                     <span>회원 탈퇴</span>
                 </button>
             </div>
+            <div id="sidebarResizer" class="sidebar-resizer" title="드래그하여 너비 조절"></div>
         </aside>
 
         <main class="main-content">
