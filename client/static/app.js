@@ -751,10 +751,10 @@ function updateWatchlistBtn() {
 }
 
 function updateWatchlistCount() {
-    const countEl = document.getElementById('navWatchlistCount');
+    const countEl = document.getElementById('watchlistCount');
     if (countEl) {
         countEl.textContent = currentWatchlist.length;
-        countEl.style.display = currentWatchlist.length > 0 ? 'flex' : 'none';
+        countEl.style.display = currentWatchlist.length > 0 ? 'inline-flex' : 'none';
     }
 }
 

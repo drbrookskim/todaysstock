@@ -120,7 +120,6 @@
                 <a href="#" class="nav-item" id="navWatchlist" style="display: none;">
                     <i class="ph ph-star"></i>
                     <span>관심종목</span>
-                    <span id="navWatchlistCount" class="nav-badge">0</span>
                 </a>
                 <a href="#" class="nav-item" id="navAnalysis" style="display: none;">
                     <i class="ph ph-chart-line-up"></i>
@@ -969,7 +968,7 @@
             <section id="watchlistSection" class="watchlist-section page-section hidden">
                 <div class="container animate-in">
                     <div class="section-header">
-                        <h3>관심종목</h3>
+                        <h3 style="display: flex; align-items: center; gap: 8px;">관심종목 <span id="watchlistCount" class="nav-badge" style="position: static; transform: none; font-size: 0.85rem; padding: 2px 8px;">0</span></h3>
                     </div>
                     <div id="watchlistContainer" class="watchlist-grid">
                         <!-- Watchlist items will be rendered here -->
