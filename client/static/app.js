@@ -3344,24 +3344,28 @@ async function initAuth() {
         authErrorMsg.textContent = '';
     };
 
-    sidebarUserSection?.addEventListener('click', () => {
-        if (!authUser || !authUser.logged_in) showAuthModal();
+    sidebarUserSection?.addEventListener('click', async () => {
+        if (!authUser || !authUser.logged_in) {
+            showAuthModal();
+        } else {
+            // Logged in: Show logout confirmation modal
+            const confirmed = await window.showConfirm('로그아웃', '정말 로그아웃 하시겠습니까?', 'info');
+            if (confirmed) {
+                await fetch(API_BASE_URL + '/api/logout', { method: 'POST', headers: getAuthHeaders() });
+                removeSupaToken();
+                authUser = null;
+                currentWatchlist = [];
+                updateAuthUI();
+                renderWatchlist();
+                updateWatchlistBtn();
+                // Optionally close sidebar after logging out
+                if (!isSidebarPinned()) closeSidebar();
+            }
+        }
     });
 
     closeAuthModal?.addEventListener('click', hideAuthModal);
     authModalOverlay?.addEventListener('click', hideAuthModal);
-
-    sidebarLogoutBtn?.addEventListener('click', async () => {
-            await fetch(API_BASE_URL + '/api/logout', { method: 'POST', headers: getAuthHeaders() });
-            removeSupaToken();
-            authUser = null;
-            currentWatchlist = [];
-            updateAuthUI();
-            renderWatchlist();
-            updateWatchlistBtn();
-            // Optionally close sidebar after logging out
-            if (!isSidebarPinned()) closeSidebar();
-        });
 
     // ── Supabase JS 클라이언트 초기화 (브라우저 직통 인증용) ──
     let sbClient = null;
@@ -3463,8 +3467,8 @@ async function initAuth() {
                 }
             }
             if (sidebarUserSection) {
-                sidebarUserSection.style.cursor = 'default';
-                sidebarUserSection.title = "사용자 정보";
+                sidebarUserSection.style.cursor = 'pointer';
+                sidebarUserSection.title = "클릭하면 로그아웃할 수 있습니다";
             }
 
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
