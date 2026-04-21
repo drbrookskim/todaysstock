@@ -2173,8 +2173,8 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
 @media (max-width: 600px) {
     .main-sidebar {
         position: fixed;
-        left: -240px;
-        width: 240px;
+        left: -168px;
+        width: 168px;
         z-index: 1001;
         transition: left 0.3s ease, width 0.3s ease;
     }
@@ -2184,8 +2184,8 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     }
     /* If pinned on mobile, shift content and hide overlay to allow interaction */
     body[data-sidebar-pinned="true"] .main-content {
-        margin-left: 240px;
-        width: calc(100vw - 240px);
+        margin-left: 168px;
+        width: calc(100vw - 168px);
     }
     body[data-sidebar-pinned="true"] .sidebar-overlay {
         display: none !important;
@@ -5825,13 +5825,13 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 
 /* Hover: expand temporarily */
 .main-sidebar:hover {
-    width: 240px;
+    width: 168px;
     box-shadow: 8px 0 24px rgba(0,0,0,0.1);
 }
 
 /* Pinned: always expanded */
 .main-sidebar.pinned {
-    width: 240px;
+    width: 168px;
 }
 
 /* Hide text when collapsed and not hovered */

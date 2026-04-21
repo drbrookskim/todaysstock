@@ -3448,9 +3448,9 @@ async function initAuth() {
         console.log('[DEBUG] updateAuthUI - logged_in:', authUser?.logged_in);
         if (authUser && authUser.logged_in) {
             console.log('[DEBUG] updateAuthUI - Updating UI for Logged In User');
-            if (userNameEl) userNameEl.textContent = authUser.username ? `Hello, ${authUser.username}` : 'Hello, User';
-            if (userStatusEl) userStatusEl.textContent = '로그인됨';
-            if (pageGreeting) pageGreeting.textContent = authUser.username ? `Hello, ${authUser.username} 🕊️` : 'Hello, User 🕊️';
+            if (userNameEl) userNameEl.textContent = authUser.username ? authUser.username : 'User';
+            if (userStatusEl) userStatusEl.textContent = '';
+            if (pageGreeting) pageGreeting.textContent = authUser.username ? `${authUser.username} 🕊️` : 'User 🕊️';
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
             const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
