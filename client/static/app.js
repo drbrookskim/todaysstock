@@ -3268,6 +3268,36 @@ async function initAuth() {
     const oauthCancelBtn = document.getElementById('oauthCancelBtn');
     const oauthContinueBtn = document.getElementById('oauthContinueBtn');
 
+    // WebView Warning Elements
+    const webviewWarningOverlay = document.getElementById('webviewWarningOverlay');
+    const webviewWarningModal = document.getElementById('webviewWarningModal');
+    const webviewCloseBtn = document.getElementById('webviewCloseBtn');
+
+    /**
+     * 인앱 브라우저(WebView) 여부 감지
+     * - 카카오톡, 인스타그램, 페이스북 등의 앱 내장 브라우저에서는 구글 로그인이 원천 차단됨
+     */
+    const isInAppBrowser = () => {
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const inAppPatterns = [
+            'KAKAOTALK', 'Instagram', 'FBAN', 'FBAV', 'Line', 'NAVER', 'Snapchat', 'Quora'
+        ];
+        return inAppPatterns.some(pattern => ua.indexOf(pattern) > -1);
+    };
+
+    const showWebviewWarning = () => {
+        webviewWarningOverlay?.classList.add('active');
+        webviewWarningModal?.classList.add('active');
+    };
+
+    const hideWebviewWarning = () => {
+        webviewWarningOverlay?.classList.remove('active');
+        webviewWarningModal?.classList.remove('active');
+    };
+
+    webviewCloseBtn?.addEventListener('click', hideWebviewWarning);
+    webviewWarningOverlay?.addEventListener('click', hideWebviewWarning);
+
 
 
     // 모달 열기/닫기 로직
@@ -3316,6 +3346,14 @@ async function initAuth() {
     // ── Google OAuth ──
     googleAuthBtn?.addEventListener('click', async () => {
         if (!sbClient) { await window.showModal('인증 오류', '구글 로그인을 사용할 수 없습니다.', 'error'); return; }
+        
+        // 인앱 브라우저 체크
+        if (isInAppBrowser()) {
+            hideAuthModal();
+            showWebviewWarning();
+            return;
+        }
+
         if (oauthConfirmOverlay && oauthConfirmModal) {
             hideAuthModal();
             oauthConfirmOverlay.classList.add('active');
@@ -3331,6 +3369,15 @@ async function initAuth() {
 
     oauthContinueBtn?.addEventListener('click', async () => {
         if (!sbClient) { await window.showModal('인증 오류', '구글 로그인을 사용할 수 없습니다.', 'error'); return; }
+        
+        // 인앱 브라우저 이중 체크 (보안 정책 회피 대비)
+        if (isInAppBrowser()) {
+            oauthConfirmOverlay?.classList.remove('active');
+            oauthConfirmModal?.classList.remove('active');
+            showWebviewWarning();
+            return;
+        }
+
         try {
             if (oauthContinueBtn) {
                 oauthContinueBtn.disabled = true;

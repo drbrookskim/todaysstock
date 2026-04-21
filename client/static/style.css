@@ -4294,6 +4294,70 @@ html[data-theme="light"] .ai-insight-row {
     line-height: 1.4;
 }
 
+.webview-warning {
+    max-width: 400px;
+    width: 95%;
+}
+
+.webview-warning h3 i {
+    color: var(--accent-amber);
+    margin-right: 8px;
+}
+
+.warning-alert {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 4px solid var(--accent-amber);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.warning-alert p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.warning-alert p:last-child {
+    margin-bottom: 0;
+}
+
+.guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.guide-steps .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.step-num {
+    background: var(--primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.step p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
 .confirm-actions {
     display: flex;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
