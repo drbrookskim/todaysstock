@@ -504,6 +504,17 @@ function initResizableSidebar() {
         // Do not preventDefault here to allow standard touch behaviors if needed, 
         // but touch-action: none on resizer will handle the important parts.
     }, { passive: true });
+
+    // Sidebar Toggle Button Click (Desktop/Mobile)
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const currentWidth = sidebar.offsetWidth;
+            const targetWidth = (currentWidth <= 80) ? 168 : 72;
+            updateSidebarWidth(targetWidth);
+            localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
+        });
+    }
 }
 
 function handleSidebarResize(e) {

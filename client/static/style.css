@@ -317,28 +317,37 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 20px 32px;
+    padding: 0 16px 32px;
     min-width: max-content;
+}
+
+.sidebar-action-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sidebar-action-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.sidebar-action-btn i {
+    font-size: 1.4rem;
 }
 
 .brand-text {
     font-size: 1.1rem;
     font-weight: 700;
     transition: opacity 0.2s;
-}
-
-.pin-btn {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .pin-btn:hover {

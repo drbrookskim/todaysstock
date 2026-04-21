@@ -107,7 +107,9 @@
         <!-- New Primary Sidebar (PandaDoc / Remote Style) -->
         <aside id="mainSidebar" class="main-sidebar pinned">
             <div class="sidebar-brand">
-                <div class="logo-circle">S</div>
+                <button id="sidebarToggleBtn" class="sidebar-action-btn" title="사이드바 전환">
+                    <i class="ph ph-sidebar-simple"></i>
+                </button>
                 <span class="brand-text">Signnith</span>
             </div>
 
@@ -968,7 +970,7 @@
             <section id="watchlistSection" class="watchlist-section page-section hidden">
                 <div class="container animate-in">
                     <div class="section-header">
-                        <h3 style="display: flex; align-items: center; gap: 8px;">관심종목 <span id="watchlistCount" class="nav-badge" style="position: static; transform: none; font-size: 0.85rem; padding: 2px 8px;">0</span></h3>
+                        <h2 style="display: flex; align-items: center; margin: 0; font-size: 1.5rem; font-weight: 800; color: var(--text-main);">관심종목 <span id="watchlistCount" style="margin-left: 8px; color: var(--text-muted); font-weight: 500; font-size: 1.2rem;">0</span></h2>
                     </div>
                     <div id="watchlistContainer" class="watchlist-grid">
                         <!-- Watchlist items will be rendered here -->
