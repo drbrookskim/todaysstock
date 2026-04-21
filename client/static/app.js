@@ -3275,17 +3275,57 @@ async function initAuth() {
 
     /**
      * 인앱 브라우저(WebView) 여부 감지
-     * - 카카오톡, 인스타그램, 페이스북 등의 앱 내장 브라우저에서는 구글 로그인이 원천 차단됨
      */
-    const isInAppBrowser = () => {
+    const getInAppBrowserInfo = () => {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
-        const inAppPatterns = [
-            'KAKAOTALK', 'Instagram', 'FBAN', 'FBAV', 'Line', 'NAVER', 'Snapchat', 'Quora'
-        ];
-        return inAppPatterns.some(pattern => ua.indexOf(pattern) > -1);
+        const info = {
+            isInApp: false,
+            isKakao: ua.indexOf('KAKAOTALK') > -1,
+            isInstagram: ua.indexOf('Instagram') > -1,
+            isFacebook: (ua.indexOf('FBAN') > -1) || (ua.indexOf('FBAV') > -1),
+            isAndroid: ua.indexOf('Android') > -1,
+            isIOS: /iPhone|iPad|iPod/i.test(ua)
+        };
+        
+        info.isInApp = info.isKakao || info.isInstagram || info.isFacebook || 
+                       ua.indexOf('Line') > -1 || ua.indexOf('NAVER') > -1;
+        
+        return info;
     };
 
+    /**
+     * 외부 브라우저(시스템 브라우저)로 강제 전환 시도
+     */
+    const autoExternalBrowser = () => {
+        const info = getInAppBrowserInfo();
+        if (!info.isInApp) return;
+
+        const currentUrl = window.location.href;
+
+        // 1. 카카오톡 전용 스키마 (iOS/Android 공통)
+        if (info.isKakao) {
+            window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(currentUrl)}`;
+            return true;
+        }
+
+        // 2. 안드로이드 인텐트 스키마 (Chrome 강제 실행)
+        if (info.isAndroid) {
+            const intentUrl = `intent://${currentUrl.replace(/https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+            window.location.href = intentUrl;
+            return true;
+        }
+
+        // iOS 인스타그램/페이스북 등은 자동 전환이 제한적이므로 가이드 모달 노출 유지
+        return false;
+    };
+
+    const isInAppBrowser = () => getInAppBrowserInfo().isInApp;
+
     const showWebviewWarning = () => {
+        // 자동 전환 시도
+        const success = autoExternalBrowser();
+        
+        // 자동 전환에 실패했거나(iOS 등), 사용자가 여전히 페이지에 머물러 있는 경우 모달 표시
         webviewWarningOverlay?.classList.add('active');
         webviewWarningModal?.classList.add('active');
     };
@@ -3297,6 +3337,11 @@ async function initAuth() {
 
     webviewCloseBtn?.addEventListener('click', hideWebviewWarning);
     webviewWarningOverlay?.addEventListener('click', hideWebviewWarning);
+    
+    // 수동 자동실행 시도 버튼 (모달 내 추가될 버튼)
+    document.getElementById('webviewAutoOpenBtn')?.addEventListener('click', () => {
+        autoExternalBrowser();
+    });
 
 
 
