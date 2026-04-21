@@ -321,6 +321,19 @@ body {
     min-width: max-content;
 }
 
+.logo-circle {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: white;
+    box-shadow: 0 4px 10px rgba(81, 84, 238, 0.3);
+}
+
 .sidebar-action-btn {
     width: 32px;
     height: 32px;
