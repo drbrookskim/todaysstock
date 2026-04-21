@@ -1566,15 +1566,7 @@ async function renderIndexChart(symbol, name) {
         }
         currentIndexChart = chart;
 
-        // Sync with resize
-        const resizeObserver = new ResizeObserver(entries => {
-            if (entries.length === 0 || !currentIndexChart) return;
-            const { width, height } = entries[0].contentRect;
-            if (width > 0 && height > 0) {
-                currentIndexChart.applyOptions({ width, height });
-            }
-        });
-        resizeObserver.observe(container);
+        // Sync with resize is now managed globally to avoid redundant observers.
 
     } catch (err) {
         console.error("renderIndexChart error:", err);
@@ -2993,13 +2985,8 @@ function renderCandleChart(candles) {
     chart.subscribeCrosshairMove(updateLegend);
     updateLegend(); // Initial call
 
-    // Resize handling
-    window.addEventListener('resize', () => {
-        if (currentChart) {
-            const newW = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 800);
-            currentChart.applyOptions({ width: newW });
-        }
-    });
+    // Resize handling is now managed globally to avoid listener accumulation
+    // and performance issues on mobile zoom/resize events.
 
     // ── MA Visual Bars (The "Quicken" Style Bars below chart) ──
     const maVisualBarsContainer = document.getElementById('maVisualBars');
@@ -5415,6 +5402,56 @@ function closeHelpModal() {
     modal.classList.add('hidden');
     document.body.style.overflow = ''; // Scroll unlock
 }
+
+
+// ──────────────────────────────────────────────────────────────────
+// ── Global Event Handlers (Optimization) ─────────────
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * 전역 Resize 핸들러 — 불필요한 이벤트 중복 방지 및 모달 리프레시 방지
+ */
+const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
+
+window.addEventListener('resize', debounce(() => {
+    // 1. 하이킨아시/표준 차트 리사이즈
+    if (window.currentChart) {
+        const container = document.getElementById('chartContainer');
+        if (container) {
+            const newW = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 800);
+            window.currentChart.applyOptions({ width: newW });
+        }
+    }
+    
+    // 2. 시장 지수 차트 리사이즈
+    if (window.currentIndexChart) {
+        const container = document.getElementById('indexChartContainer');
+        if (container) {
+            const { width, height } = container.getBoundingClientRect();
+            if (width > 0 && height > 0) {
+                window.currentIndexChart.applyOptions({ width, height });
+            }
+        }
+    }
+    
+    // 3. 지배력(Force Graph) 리사이즈 (기존 로직 통합)
+    if (window._vcCurrentView === 'graph' && window._vcFg) {
+        const container = document.getElementById('vcGraphContainer');
+        if (container && window._vcFg) {
+            window._vcFg.width(container.clientWidth).height(Math.max(500, container.clientHeight - 40));
+        }
+    }
+}, 150));
 
 // Global escape key to close modals
 window.addEventListener('keydown', (e) => {
