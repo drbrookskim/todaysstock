@@ -5865,6 +5865,26 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     transition: opacity 0.15s ease;
 }
 
+/* Ultra-minimized: Only handle is visible */
+.main-sidebar.hidden-content {
+    background: transparent !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+.main-sidebar.hidden-content .logo-circle,
+.main-sidebar.hidden-content .sidebar-nav,
+.main-sidebar.hidden-content .sidebar-footer {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.main-sidebar.hidden-content .sidebar-resizer {
+    background: var(--primary-glow); /* Keep handler visible */
+    width: 4px;
+}
+
 /* Ensure icons are centered when collapsed */
 .main-sidebar.collapsed .nav-item,
 .main-sidebar.collapsed .sidebar-user,

@@ -519,13 +519,16 @@ function handleSidebarResize(e) {
         clientX = e.clientX;
     }
     
-    // Clamp width: 72px (Min) to 30% of window (Max)
+    // Clamp width: 4px (Truly minimized) to 30% of window (Max)
     let newWidth = clientX;
     const maxWidth = window.innerWidth * 0.3;
     
-    if (newWidth < 100) newWidth = 72; // Snap to collapsed
+    // Multi-stage snapping
+    if (newWidth < 40) newWidth = 4; // Snap to hidden (only handle)
+    else if (newWidth < 100) newWidth = 72; // Snap to collapsed (icons)
+    
     if (newWidth > maxWidth) newWidth = maxWidth;
-    if (newWidth < 72) newWidth = 72;
+    if (newWidth < 4) newWidth = 4;
 
     updateSidebarWidth(newWidth);
 }
@@ -546,6 +549,8 @@ function stopSidebarResize() {
     
     const sidebar = document.getElementById('mainSidebar');
     if (sidebar) {
+        // Save the width (don't save if it's the ultra-min 4px, maybe save 72 as min for auto-load?)
+        // Actually, saving 4px is fine if that's what they wanted.
         const currentWidth = sidebar.offsetWidth;
         localStorage.setItem(SIDEBAR_WIDTH_KEY, currentWidth);
     }
@@ -557,11 +562,14 @@ function updateSidebarWidth(width) {
 
     document.documentElement.style.setProperty('--sidebar-width', width + 'px');
     
-    // Toggle collapsed class if near minimum
-    if (width <= 80) {
+    // Class-based view states
+    if (width <= 10) {
+        sidebar.classList.add('collapsed', 'hidden-content');
+    } else if (width <= 80) {
         sidebar.classList.add('collapsed');
+        sidebar.classList.remove('hidden-content');
     } else {
-        sidebar.classList.remove('collapsed');
+        sidebar.classList.remove('collapsed', 'hidden-content');
     }
 }
 
