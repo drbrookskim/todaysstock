@@ -7307,14 +7307,23 @@ body.vc-fullscreen-active .main-content {
 }
 
 .modal-content {
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
+    background: rgba(15, 23, 42, 0.85); /* Glassmorphism Style from help-modal */
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
-    width: 90%;
-    max-width: 420px;
-    padding: 30px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 95%;
+    max-width: 300px; /* Reduced from 420px */
+    padding: 32px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     text-align: center;
+    color: var(--text-main);
+}
+
+[data-theme="light"] .modal-content {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .animate-pop {
@@ -7331,8 +7340,8 @@ body.vc-fullscreen-active .main-content {
 }
 
 .modal-header i {
-    font-size: 3rem;
-    margin-bottom: 15px;
+    font-size: 2.5rem; /* Reduced from 3rem */
+    margin-bottom: 12px;
     display: block;
 }
 
@@ -7341,7 +7350,7 @@ body.vc-fullscreen-active .main-content {
 .modal-header i.ph-check-circle { color: #10b981; }
 
 .modal-header h3 {
-    font-size: 1.4rem;
+    font-size: 1.2rem; /* Reduced from 1.4rem */
     font-weight: 700;
     color: var(--text-main);
 }
@@ -7364,10 +7373,10 @@ body.vc-fullscreen-active .main-content {
 
 .modal-footer button {
     flex: 1;
-    padding: 14px;
+    padding: 12px; /* Reduced from 14px */
     border-radius: 12px;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem; /* Reduced from 0.95rem */
     cursor: pointer;
     transition: all 0.2s;
 }
