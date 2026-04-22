@@ -468,49 +468,24 @@ function showSection(id) {
     }
 }
 
-// ── Resizable Sidebar Logic ──
+// ── Sidebar Logic (Fixed Width 290px) ──
 const SIDEBAR_WIDTH_KEY = 'stockfinder-sidebar-width';
-let isSidebarDragging = false;
 
 function initResizableSidebar() {
     const sidebar = document.getElementById('mainSidebar');
     const resizer = document.getElementById('sidebarResizer');
-    if (!sidebar || !resizer) return;
+    if (!sidebar) return;
 
-    // Load saved width - Default to 0 (Hidden) as requested
+    // Load saved width - Default to 0 (Hidden)
     const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '0';
-    updateSidebarWidth(parseInt(savedWidth));
-
-    const startResize = (e) => {
-        isSidebarDragging = true;
-        document.body.style.cursor = 'col-resize';
-        resizer.classList.add('is-dragging');
-        
-        // Add listeners for both mouse and touch
-        document.addEventListener('mousemove', handleSidebarResize);
-        document.addEventListener('mouseup', stopSidebarResize);
-        document.addEventListener('touchmove', handleSidebarResize, { passive: false });
-        document.addEventListener('touchend', stopSidebarResize);
-        document.addEventListener('touchcancel', stopSidebarResize);
-    };
-
-    resizer.addEventListener('mousedown', (e) => {
-        startResize(e);
-        e.preventDefault(); // Prevent text selection
-    });
-    
-    resizer.addEventListener('touchstart', (e) => {
-        startResize(e);
-        // Do not preventDefault here to allow standard touch behaviors if needed, 
-        // but touch-action: none on resizer will handle the important parts.
-    }, { passive: true });
+    updateSidebarWidth(parseInt(savedWidth) === 0 ? 0 : 290);
 
     // Sidebar Toggle Button Click (Internal)
     const toggleBtn = document.getElementById('sidebarToggleBtn');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
-            const currentWidth = sidebar.offsetWidth;
-            const targetWidth = (currentWidth > 0) ? 0 : 312; 
+            const currentWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 0;
+            const targetWidth = (currentWidth > 0) ? 0 : 290; 
             updateSidebarWidth(targetWidth);
             localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
         });
@@ -520,62 +495,13 @@ function initResizableSidebar() {
     const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
     if (floatingToggleBtn) {
         floatingToggleBtn.addEventListener('click', () => {
-            let targetWidth = parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY) || '312');
-            if (targetWidth === 0 || isNaN(targetWidth)) targetWidth = 312; // default if saved is 0
-            updateSidebarWidth(targetWidth);
-            localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
+            updateSidebarWidth(290);
+            localStorage.setItem(SIDEBAR_WIDTH_KEY, 290);
         });
     }
-}
 
-function handleSidebarResize(e) {
-    if (!isSidebarDragging) return;
-    
-    // Extract clientX from Mouse or Touch event
-    let clientX;
-    if (e.type.startsWith('touch')) {
-        clientX = e.touches[0].clientX;
-        // Prevent scrolling while resizing on touch
-        if (e.cancelable) e.preventDefault();
-    } else {
-        clientX = e.clientX;
-    }
-    
-    // Clamp width: 0px (Completely hidden) to 25% of window (Max)
-    let newWidth = clientX;
-    const maxWidth = window.innerWidth * 0.25;
-    
-    // Multi-stage snapping
-    if (newWidth < 20) newWidth = 0; // Snap to completely hidden
-    else if (newWidth < 100) newWidth = 72; // Snap to collapsed (icons)
-    
-    if (newWidth > maxWidth) newWidth = maxWidth;
-    if (newWidth < 0) newWidth = 0;
-
-    updateSidebarWidth(newWidth);
-}
-
-function stopSidebarResize() {
-    if (!isSidebarDragging) return;
-    isSidebarDragging = false;
-    document.body.style.cursor = '';
-    const resizer = document.getElementById('sidebarResizer');
-    resizer?.classList.remove('is-dragging');
-
-    // Remove all listeners
-    document.removeEventListener('mousemove', handleSidebarResize);
-    document.removeEventListener('mouseup', stopSidebarResize);
-    document.removeEventListener('touchmove', handleSidebarResize);
-    document.removeEventListener('touchend', stopSidebarResize);
-    document.removeEventListener('touchcancel', stopSidebarResize);
-    
-    const sidebar = document.getElementById('mainSidebar');
-    if (sidebar) {
-        // Save the width (don't save if it's the ultra-min 4px, maybe save 72 as min for auto-load?)
-        // Actually, saving 4px is fine if that's what they wanted.
-        const currentWidth = sidebar.offsetWidth;
-        localStorage.setItem(SIDEBAR_WIDTH_KEY, currentWidth);
-    }
+    // Hide resizer since resizing is disabled
+    if (resizer) resizer.style.display = 'none';
 }
 
 function updateSidebarWidth(width) {
@@ -583,7 +509,9 @@ function updateSidebarWidth(width) {
     const floatingToggle = document.getElementById('floatingSidebarToggle');
     if (!sidebar) return;
 
-    document.documentElement.style.setProperty('--sidebar-width', width + 'px');
+    // Use fixed 290 or 0
+    const finalWidth = (width > 0) ? 290 : 0;
+    document.documentElement.style.setProperty('--sidebar-width', finalWidth + 'px');
     
     // Manage floating toggle visibility
     if (floatingToggle) {

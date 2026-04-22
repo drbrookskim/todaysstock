@@ -312,33 +312,13 @@ body {
     font-size: 1.5rem;
 }
 
-/* ── Sidebar Resizer Handle ── */
+/* ── Sidebar Resizer Handle (Disabled) ── */
 .sidebar-resizer {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 6px;
-    height: 100%;
-    cursor: col-resize;
-    z-index: 110;
-    transition: background 0.2s;
-    touch-action: none; /* Prevent scroll during drag */
+    display: none !important;
 }
 
-/* Larger hit area for touch */
-.sidebar-resizer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -10px; /* Expand hit area to the left */
-    width: 20px;
-    height: 100%;
-}
+/* Sidebar resizer hover styles removed as resizing is disabled */
 
-.sidebar-resizer:hover,
-.sidebar-resizer.is-dragging {
-    background: var(--primary-glow);
-}
 
 /* Sidebar logic moved to end of file for priority */
 
