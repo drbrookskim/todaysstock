@@ -474,15 +474,35 @@ const SIDEBAR_PINNED_KEY = 'stockfinder-sidebar-pinned';
 
 function initResizableSidebar() {
     const sidebar = document.getElementById('mainSidebar');
+    const pinBtn = document.getElementById('pinSidebarBtn');
     const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
     
     if (!sidebar) return;
+
+    // Load initial states - Default to Unpinned (false)
+    let isPinned = localStorage.getItem(SIDEBAR_PINNED_KEY) === 'true';
+    
+    if (isPinned) {
+        sidebar.classList.add('pinned');
+        pinBtn?.classList.add('active');
+    } else {
+        sidebar.classList.remove('pinned');
+        pinBtn?.classList.remove('active');
+    }
 
     // Load initial width - Default to 290
     let savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     if (savedWidth === null) savedWidth = '290';
     
     updateSidebarWidth(parseInt(savedWidth));
+
+    // Pin Button Click
+    pinBtn?.addEventListener('click', () => {
+        const currentlyPinned = sidebar.classList.toggle('pinned');
+        pinBtn.classList.toggle('active');
+        localStorage.setItem(SIDEBAR_PINNED_KEY, currentlyPinned);
+        updateSidebarWidth(290); // Ensure it's not hidden
+    });
 
     // Floating Toggle Button Click
     floatingToggleBtn?.addEventListener('click', () => {
@@ -508,8 +528,15 @@ function updateSidebarWidth(width) {
         sidebar.classList.add('collapsed', 'hidden-content');
         document.body.classList.add('sidebar-hidden');
     } else {
-        sidebar.classList.remove('collapsed', 'hidden-content');
+        sidebar.classList.remove('hidden-content');
         document.body.classList.remove('sidebar-hidden');
+        
+        // If not pinned, it should behave as 'collapsed' (icons only) unless hovered
+        if (!sidebar.classList.contains('pinned')) {
+            sidebar.classList.add('collapsed');
+        } else {
+            sidebar.classList.remove('collapsed');
+        }
     }
 }
 
