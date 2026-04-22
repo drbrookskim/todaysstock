@@ -478,7 +478,7 @@ function initResizableSidebar() {
     if (!sidebar || !resizer) return;
 
     // Load saved width
-    const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '168';
+    const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '260';
     updateSidebarWidth(parseInt(savedWidth));
 
     const startResize = (e) => {
@@ -511,7 +511,7 @@ function initResizableSidebar() {
         toggleBtn.addEventListener('click', () => {
             const currentWidth = sidebar.offsetWidth;
             // Toggle to hidden (0) if visible, or expand if already collapsed
-            const targetWidth = (currentWidth > 0) ? 0 : 168; 
+            const targetWidth = (currentWidth > 0) ? 0 : 260; 
             updateSidebarWidth(targetWidth);
             localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
         });
@@ -521,8 +521,8 @@ function initResizableSidebar() {
     const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
     if (floatingToggleBtn) {
         floatingToggleBtn.addEventListener('click', () => {
-            let targetWidth = parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY) || '168');
-            if (targetWidth === 0 || isNaN(targetWidth)) targetWidth = 168; // default if saved is 0
+            let targetWidth = parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY) || '260');
+            if (targetWidth === 0 || isNaN(targetWidth)) targetWidth = 260; // default if saved is 0
             updateSidebarWidth(targetWidth);
             localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
         });
