@@ -617,8 +617,8 @@ html:not([data-theme="light"]) .nav-item.active i {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: transparent; /* Remove background as requested */
-    border-bottom: none; /* Remove border to match the clean backgroundless look */
+    background-color: var(--bg-header);
+    border-bottom: 1px solid var(--border-soft);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -628,30 +628,6 @@ html:not([data-theme="light"]) .nav-item.active i {
     display: flex;
     align-items: center;
     gap: 20px;
-    flex: 1; /* Allow center to be truly centered */
-}
-
-.top-bar-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex: 2;
-}
-
-.homepage-logo {
-    max-height: 50px; /* Optimal height for top bar */
-    width: auto;
-    object-fit: contain;
-    /* Optional: If the image has a white background and you want it to blend in a light theme */
-    mix-blend-mode: multiply; 
-}
-
-.top-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex: 1;
-    justify-content: flex-end;
 }
 
 .mobile-toggle {
