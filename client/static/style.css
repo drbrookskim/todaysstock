@@ -7226,8 +7226,14 @@ details[open] .toggle-icon {
 /* ── Responsive ── */
 @media (max-width: 768px) {
     /* Top Bar Mobile Overrides */
-    .top-bar { position: relative !important; } /* Prevents text logo from floating over content when swiping down */
-    .floating-sidebar-toggle { display: none !important; } /* Hide desktop floating toggle */
+    .top-bar { 
+        position: sticky !important; 
+        background-color: var(--bg-header) !important;
+        border-bottom: 1px solid var(--border-soft) !important;
+    }
+    .top-bar-center { display: none !important; } /* Hide large logo on mobile as requested */
+    .floating-sidebar-toggle { display: none !important; } 
+    .sidebar-resizer { display: none !important; } /* Hide resizer on mobile */
     
     .vc-container { padding: 16px 16px 60px; }
     .vc-layout { flex-direction: column; }
