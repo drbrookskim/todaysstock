@@ -680,6 +680,16 @@ html:not([data-theme="light"]) .nav-item.active i {
     justify-content: center;
     gap: 16px;
     margin-bottom: 24px;
+    flex-wrap: wrap; /* Allows slogan to wrap if space is tight */
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .hero-brand-area {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
 }
 
 .premium-brand-title {
@@ -692,14 +702,16 @@ html:not([data-theme="light"]) .nav-item.active i {
     margin: 0;
     line-height: 1;
     filter: drop-shadow(0 4px 12px rgba(81, 84, 238, 0.3));
+    transition: font-size 0.2s ease;
 }
 
-.brand-slogan {
-    font-size: 16pt;
-    font-weight: 600;
-    color: var(--text-sub);
-    opacity: 0.8;
-    letter-spacing: -0.02em;
+@media (max-width: 768px) {
+    .premium-brand-title {
+        font-size: 2.2rem; /* Reduce size on mobile/narrow windows */
+    }
+    .brand-slogan {
+        font-size: 13pt; /* Reduce slogan size too */
+    }
 }
 
 .sub-greeting-text {
