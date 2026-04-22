@@ -266,7 +266,7 @@ body {
 
 /* ── Persistent Sidebar (PandaDoc Style) ── */
 .main-sidebar {
-    width: var(--sidebar-width);
+    width: clamp(180px, 20vw, 290px); /* Automatically scales between 180px and 290px */
     height: 100vh;
     background-color: var(--bg-card);
     border-right: 1px solid var(--border-soft);
@@ -5995,28 +5995,18 @@ body.sidebar-hidden .main-content {
     gap: 12px;
 }
 
-/* Watchlist Grid & Tiles */
+/* Watchlist Grid & Tiles - Adaptive UI */
 .watchlist-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-auto-rows: min-content;
     gap: 16px;
     padding: 20px 0;
     width: 100%;
 }
 
-@media (max-width: 1200px) {
-    .watchlist-grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (max-width: 1024px) {
-    .watchlist-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 768px) {
-    .watchlist-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-    .watchlist-grid { grid-template-columns: 1fr; }
-}
+/* Remove fixed breakpoints for grid as auto-fill handles it now */
+
 
 .watchlist-tile {
     background: var(--bg-card);
