@@ -505,12 +505,24 @@ function initResizableSidebar() {
         // but touch-action: none on resizer will handle the important parts.
     }, { passive: true });
 
-    // Sidebar Toggle Button Click (Desktop/Mobile)
+    // Sidebar Toggle Button Click (Internal)
     const toggleBtn = document.getElementById('sidebarToggleBtn');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
             const currentWidth = sidebar.offsetWidth;
-            const targetWidth = (currentWidth <= 80) ? 168 : 72;
+            // Toggle to hidden (0) if visible, or expand if already collapsed
+            const targetWidth = (currentWidth > 0) ? 0 : 168; 
+            updateSidebarWidth(targetWidth);
+            localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
+        });
+    }
+
+    // Floating Toggle Button Click (External)
+    const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
+    if (floatingToggleBtn) {
+        floatingToggleBtn.addEventListener('click', () => {
+            let targetWidth = parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY) || '168');
+            if (targetWidth === 0 || isNaN(targetWidth)) targetWidth = 168; // default if saved is 0
             updateSidebarWidth(targetWidth);
             localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
         });
@@ -530,16 +542,16 @@ function handleSidebarResize(e) {
         clientX = e.clientX;
     }
     
-    // Clamp width: 4px (Truly minimized) to 30% of window (Max)
+    // Clamp width: 0px (Completely hidden) to 25% of window (Max)
     let newWidth = clientX;
-    const maxWidth = window.innerWidth * 0.3;
+    const maxWidth = window.innerWidth * 0.25;
     
     // Multi-stage snapping
-    if (newWidth < 40) newWidth = 4; // Snap to hidden (only handle)
+    if (newWidth < 20) newWidth = 0; // Snap to completely hidden
     else if (newWidth < 100) newWidth = 72; // Snap to collapsed (icons)
     
     if (newWidth > maxWidth) newWidth = maxWidth;
-    if (newWidth < 4) newWidth = 4;
+    if (newWidth < 0) newWidth = 0;
 
     updateSidebarWidth(newWidth);
 }
@@ -569,18 +581,31 @@ function stopSidebarResize() {
 
 function updateSidebarWidth(width) {
     const sidebar = document.getElementById('mainSidebar');
+    const floatingToggle = document.getElementById('floatingSidebarToggle');
     if (!sidebar) return;
 
     document.documentElement.style.setProperty('--sidebar-width', width + 'px');
     
+    // Manage floating toggle visibility
+    if (floatingToggle) {
+        if (width === 0) {
+            floatingToggle.style.display = 'flex';
+        } else {
+            floatingToggle.style.display = 'none';
+        }
+    }
+
     // Class-based view states
-    if (width <= 10) {
+    if (width === 0) {
         sidebar.classList.add('collapsed', 'hidden-content');
+        document.body.classList.add('sidebar-hidden');
     } else if (width <= 80) {
         sidebar.classList.add('collapsed');
         sidebar.classList.remove('hidden-content');
+        document.body.classList.remove('sidebar-hidden');
     } else {
         sidebar.classList.remove('collapsed', 'hidden-content');
+        document.body.classList.remove('sidebar-hidden');
     }
 }
 

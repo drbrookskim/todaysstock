@@ -283,6 +283,35 @@ body {
     position: relative; /* For resizer handle */
 }
 
+/* ── Floating Sidebar Toggle (When Sidebar is 0px) ── */
+.floating-sidebar-toggle {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    width: 40px;
+    height: 40px;
+    display: none; /* Shown via JS when sidebar width is 0 */
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    color: var(--text-main);
+    cursor: pointer;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.floating-sidebar-toggle:hover {
+    background: var(--bg-hover);
+    color: var(--primary);
+}
+
+.floating-sidebar-toggle i {
+    font-size: 1.5rem;
+}
+
 /* ── Sidebar Resizer Handle ── */
 .sidebar-resizer {
     position: absolute;
@@ -5902,9 +5931,12 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     pointer-events: none !important;
 }
 
+.main-sidebar.hidden-content .sidebar-brand {
+    display: none !important;
+}
+
 .main-sidebar.hidden-content .sidebar-resizer {
-    background: var(--primary-glow); /* Keep handler visible */
-    width: 4px;
+    display: none !important;
 }
 
 /* Ensure icons are centered when collapsed */
