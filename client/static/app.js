@@ -3561,8 +3561,6 @@ async function initAuth() {
             console.log('[DEBUG] updateAuthUI - Updating UI for Logged In User');
             if (userNameEl) userNameEl.textContent = authUser.username ? authUser.username : 'User';
             if (userStatusEl) userStatusEl.textContent = '';
-            if (pageGreeting) pageGreeting.textContent = authUser.username ? `${authUser.username} 🕊️` : 'User 🕊️';
-            
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
             const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
             if (sidebarWithdrawBtn) {
@@ -3616,7 +3614,6 @@ async function initAuth() {
             console.log('[DEBUG] updateAuthUI - Updating UI for Guest');
             if (userNameEl) userNameEl.textContent = 'Guest';
             if (userStatusEl) userStatusEl.textContent = '로그인이 필요합니다';
-            if (pageGreeting) pageGreeting.textContent = 'Hello, Signnith 🕊️';
             
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.add('hidden');
             const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
