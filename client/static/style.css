@@ -617,8 +617,8 @@ html:not([data-theme="light"]) .nav-item.active i {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: var(--bg-header);
-    border-bottom: 1px solid var(--border-soft);
+    background-color: transparent;
+    border-bottom: none;
     position: sticky;
     top: 0;
     z-index: 50;
@@ -628,6 +628,14 @@ html:not([data-theme="light"]) .nav-item.active i {
     display: flex;
     align-items: center;
     gap: 20px;
+    flex: 1;
+}
+
+.top-bar-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 2;
 }
 
 .mobile-toggle {
@@ -660,15 +668,15 @@ html:not([data-theme="light"]) .nav-item.active i {
 }
 
 .premium-brand-title {
-    font-size: 2.2rem;
+    font-size: 3.3rem; /* Increased by 50% from 2.2rem */
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
     background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
     line-height: 1.2;
-    filter: drop-shadow(0 2px 8px rgba(81, 84, 238, 0.2));
+    filter: drop-shadow(0 4px 12px rgba(81, 84, 238, 0.3));
 }
 
 .sub-greeting-text {
