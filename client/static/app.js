@@ -474,48 +474,15 @@ const SIDEBAR_PINNED_KEY = 'stockfinder-sidebar-pinned';
 
 function initResizableSidebar() {
     const sidebar = document.getElementById('mainSidebar');
-    const pinBtn = document.getElementById('pinSidebarBtn');
-    const toggleBtn = document.getElementById('sidebarToggleBtn');
     const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
     
     if (!sidebar) return;
 
-    // Load initial states - Default to Pinned (true) and Width (290)
-    let isPinned = localStorage.getItem(SIDEBAR_PINNED_KEY);
-    if (isPinned === null) isPinned = true;
-    else isPinned = isPinned === 'true';
-
+    // Load initial width - Default to 290
     let savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-    if (savedWidth === null) savedWidth = isPinned ? '290' : '80';
+    if (savedWidth === null) savedWidth = '290';
     
-    if (isPinned) {
-        sidebar.classList.add('pinned');
-        pinBtn?.classList.add('active');
-    }
-
     updateSidebarWidth(parseInt(savedWidth));
-
-    // Pin Button Click
-    pinBtn?.addEventListener('click', () => {
-        const currentlyPinned = sidebar.classList.toggle('pinned');
-        pinBtn.classList.toggle('active');
-        localStorage.setItem(SIDEBAR_PINNED_KEY, currentlyPinned);
-        
-        // If pinning, ensure it's visible
-        if (currentlyPinned) {
-            updateSidebarWidth(290);
-            localStorage.setItem(SIDEBAR_WIDTH_KEY, '290');
-        }
-    });
-
-    // Toggle Button Click (Hamburger)
-    toggleBtn?.addEventListener('click', () => {
-        const currentWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 0;
-        // Toggle between Hidden (0) and Visible (290)
-        const targetWidth = (currentWidth > 0) ? 0 : 290;
-        updateSidebarWidth(targetWidth);
-        localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
-    });
 
     // Floating Toggle Button Click
     floatingToggleBtn?.addEventListener('click', () => {
@@ -541,16 +508,8 @@ function updateSidebarWidth(width) {
         sidebar.classList.add('collapsed', 'hidden-content');
         document.body.classList.add('sidebar-hidden');
     } else {
-        // Even if width is 290, we use 'collapsed' class to handle the hover-to-expand CSS logic if not pinned
-        sidebar.classList.remove('hidden-content');
+        sidebar.classList.remove('collapsed', 'hidden-content');
         document.body.classList.remove('sidebar-hidden');
-        
-        // On desktop, if not pinned, it should behave as 'collapsed' (icons only) unless hovered
-        if (!sidebar.classList.contains('pinned')) {
-            sidebar.classList.add('collapsed');
-        } else {
-            sidebar.classList.remove('collapsed');
-        }
     }
 }
 
