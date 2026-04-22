@@ -647,16 +647,32 @@ html:not([data-theme="light"]) .nav-item.active i {
     visibility: visible;
 }
 
+.hero-brand-area {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
 .premium-brand-title {
-    font-size: 3.3rem; /* Increased by 50% from 2.2rem */
+    font-size: 3.3rem;
     font-weight: 800;
     letter-spacing: -0.04em;
     background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1;
     filter: drop-shadow(0 4px 12px rgba(81, 84, 238, 0.3));
+}
+
+.brand-slogan {
+    font-size: 16pt;
+    font-weight: 600;
+    color: var(--text-sub);
+    opacity: 0.8;
+    letter-spacing: -0.02em;
 }
 
 .sub-greeting-text {
