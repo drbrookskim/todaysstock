@@ -5928,32 +5928,34 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     transition: opacity 0.15s ease;
 }
 
-/* Ultra-minimized: Only handle is visible */
-.main-sidebar.hidden-content {
-    background: transparent !important;
-    border-right: none !important;
-    box-shadow: none !important;
-}
+/* Ultra-minimized: Only handle is visible (Desktop only) */
+@media (min-width: 601px) {
+    .main-sidebar.hidden-content {
+        background: transparent !important;
+        border-right: none !important;
+        box-shadow: none !important;
+    }
 
-.main-sidebar.hidden-content .logo-circle,
-.main-sidebar.hidden-content .sidebar-nav,
-.main-sidebar.hidden-content .sidebar-footer {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-}
+    .main-sidebar.hidden-content .logo-circle,
+    .main-sidebar.hidden-content .sidebar-nav,
+    .main-sidebar.hidden-content .sidebar-footer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
 
-.main-sidebar.hidden-content .sidebar-brand {
-    display: none !important;
-}
+    .main-sidebar.hidden-content .sidebar-brand {
+        display: none !important;
+    }
 
-.main-sidebar.hidden-content .sidebar-resizer {
-    display: none !important;
-}
+    .main-sidebar.hidden-content .sidebar-resizer {
+        display: none !important;
+    }
 
-/* Manage content overlap when sidebar is hidden */
-body.sidebar-hidden .main-content {
-    padding-top: 72px !important;
+    /* Manage content overlap when sidebar is hidden */
+    body.sidebar-hidden .main-content {
+        padding-top: 72px !important;
+    }
 }
 
 /* Ensure icons are centered when collapsed */
@@ -7223,6 +7225,10 @@ details[open] .toggle-icon {
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
+    /* Top Bar Mobile Overrides */
+    .top-bar { position: relative !important; } /* Prevents text logo from floating over content when swiping down */
+    .floating-sidebar-toggle { display: none !important; } /* Hide desktop floating toggle */
+    
     .vc-container { padding: 16px 16px 60px; }
     .vc-layout { flex-direction: column; }
     .vc-sidebar { width: 100%; flex-direction: column; }
