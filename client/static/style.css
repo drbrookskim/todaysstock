@@ -312,6 +312,33 @@ body {
     font-size: 1.5rem;
 }
 
+.brand-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pin-btn, .sidebar-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-btn:hover, .sidebar-action-btn:hover {
+    color: var(--primary);
+}
+
+.pin-btn.active {
+    color: var(--primary);
+    transform: rotate(-45deg);
+}
+
 /* ── Sidebar Resizer Handle (Disabled) ── */
 .sidebar-resizer {
     display: none !important;
@@ -5948,28 +5975,43 @@ html:not([data-theme="light"]) .trend-pill.bullish {
         display: none !important;
     }
 
-    /* Manage content overlap when sidebar is hidden */
-    body.sidebar-hidden .main-content {
-        padding-top: 72px !important;
-    }
+/* Manage content overlap when sidebar is hidden */
+body.sidebar-hidden .main-content {
+    padding-top: 72px !important;
+}
+
+/* Hover-to-expand behavior for unpinned sidebar */
+.main-sidebar.collapsed:not(.pinned) {
+    width: 80px !important;
+    overflow-x: hidden;
+}
+
+.main-sidebar.collapsed:not(.pinned):hover {
+    width: 290px !important;
+    box-shadow: var(--shadow-lg);
+}
+
+.main-sidebar.hidden-content {
+    width: 0 !important;
 }
 
 /* Ensure icons are centered when collapsed */
-.main-sidebar.collapsed .nav-item,
-.main-sidebar.collapsed .sidebar-user,
-.main-sidebar.collapsed .withdrawal-btn {
+.main-sidebar.collapsed:not(:hover) .nav-item,
+.main-sidebar.collapsed:not(:hover) .sidebar-user,
+.main-sidebar.collapsed:not(:hover) .withdrawal-btn {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
 }
 
-/* Show text when NOT collapsed */
-.main-sidebar:not(.collapsed) .brand-text,
-.main-sidebar:not(.collapsed) .nav-item span,
-.main-sidebar:not(.collapsed) .user-profile,
-.main-sidebar:not(.collapsed) .nav-badge {
-    opacity: 1;
-    visibility: visible;
+/* Hide text when collapsed and NOT hovered */
+.main-sidebar.collapsed:not(:hover) .brand-text,
+.main-sidebar.collapsed:not(:hover) .nav-item span,
+.main-sidebar.collapsed:not(:hover) .user-profile,
+.main-sidebar.collapsed:not(:hover) .nav-badge,
+.main-sidebar.collapsed:not(:hover) .pin-btn {
+    opacity: 0;
+    visibility: hidden;
 }
 
 

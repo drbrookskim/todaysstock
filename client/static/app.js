@@ -468,40 +468,56 @@ function showSection(id) {
     }
 }
 
-// ── Sidebar Logic (Fixed Width 290px) ──
+// ── Sidebar Logic (Fixed Width 290px + Pin Functionality) ──
 const SIDEBAR_WIDTH_KEY = 'stockfinder-sidebar-width';
+const SIDEBAR_PINNED_KEY = 'stockfinder-sidebar-pinned';
 
 function initResizableSidebar() {
     const sidebar = document.getElementById('mainSidebar');
-    const resizer = document.getElementById('sidebarResizer');
+    const pinBtn = document.getElementById('pinSidebarBtn');
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
+    
     if (!sidebar) return;
 
-    // Load saved width - Default to 0 (Hidden)
+    // Load initial states
     const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '0';
-    updateSidebarWidth(parseInt(savedWidth) === 0 ? 0 : 290);
-
-    // Sidebar Toggle Button Click (Internal)
-    const toggleBtn = document.getElementById('sidebarToggleBtn');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            const currentWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 0;
-            const targetWidth = (currentWidth > 0) ? 0 : 290; 
-            updateSidebarWidth(targetWidth);
-            localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
-        });
+    const isPinned = localStorage.getItem(SIDEBAR_PINNED_KEY) === 'true';
+    
+    if (isPinned) {
+        sidebar.classList.add('pinned');
+        pinBtn?.classList.add('active');
     }
 
-    // Floating Toggle Button Click (External)
-    const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
-    if (floatingToggleBtn) {
-        floatingToggleBtn.addEventListener('click', () => {
+    updateSidebarWidth(parseInt(savedWidth));
+
+    // Pin Button Click
+    pinBtn?.addEventListener('click', () => {
+        const currentlyPinned = sidebar.classList.toggle('pinned');
+        pinBtn.classList.toggle('active');
+        localStorage.setItem(SIDEBAR_PINNED_KEY, currentlyPinned);
+        
+        // If pinning, ensure it's visible
+        if (currentlyPinned) {
             updateSidebarWidth(290);
-            localStorage.setItem(SIDEBAR_WIDTH_KEY, 290);
-        });
-    }
+            localStorage.setItem(SIDEBAR_WIDTH_KEY, '290');
+        }
+    });
 
-    // Hide resizer since resizing is disabled
-    if (resizer) resizer.style.display = 'none';
+    // Toggle Button Click (Hamburger)
+    toggleBtn?.addEventListener('click', () => {
+        const currentWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 0;
+        // Toggle between Hidden (0) and Visible (290)
+        const targetWidth = (currentWidth > 0) ? 0 : 290;
+        updateSidebarWidth(targetWidth);
+        localStorage.setItem(SIDEBAR_WIDTH_KEY, targetWidth);
+    });
+
+    // Floating Toggle Button Click
+    floatingToggleBtn?.addEventListener('click', () => {
+        updateSidebarWidth(290);
+        localStorage.setItem(SIDEBAR_WIDTH_KEY, '290');
+    });
 }
 
 function updateSidebarWidth(width) {
@@ -509,30 +525,28 @@ function updateSidebarWidth(width) {
     const floatingToggle = document.getElementById('floatingSidebarToggle');
     if (!sidebar) return;
 
-    // Use fixed 290 or 0
     const finalWidth = (width > 0) ? 290 : 0;
     document.documentElement.style.setProperty('--sidebar-width', finalWidth + 'px');
     
-    // Manage floating toggle visibility
     if (floatingToggle) {
-        if (width === 0) {
-            floatingToggle.style.display = 'flex';
-        } else {
-            floatingToggle.style.display = 'none';
-        }
+        floatingToggle.style.display = (finalWidth === 0) ? 'flex' : 'none';
     }
 
     // Class-based view states
-    if (width === 0) {
+    if (finalWidth === 0) {
         sidebar.classList.add('collapsed', 'hidden-content');
         document.body.classList.add('sidebar-hidden');
-    } else if (width <= 80) {
-        sidebar.classList.add('collapsed');
+    } else {
+        // Even if width is 290, we use 'collapsed' class to handle the hover-to-expand CSS logic if not pinned
         sidebar.classList.remove('hidden-content');
         document.body.classList.remove('sidebar-hidden');
-    } else {
-        sidebar.classList.remove('collapsed', 'hidden-content');
-        document.body.classList.remove('sidebar-hidden');
+        
+        // On desktop, if not pinned, it should behave as 'collapsed' (icons only) unless hovered
+        if (!sidebar.classList.contains('pinned')) {
+            sidebar.classList.add('collapsed');
+        } else {
+            sidebar.classList.remove('collapsed');
+        }
     }
 }
 
