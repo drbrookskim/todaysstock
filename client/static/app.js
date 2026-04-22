@@ -480,9 +480,13 @@ function initResizableSidebar() {
     
     if (!sidebar) return;
 
-    // Load initial states
-    const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY) || '0';
-    const isPinned = localStorage.getItem(SIDEBAR_PINNED_KEY) === 'true';
+    // Load initial states - Default to Pinned (true) and Width (290)
+    let isPinned = localStorage.getItem(SIDEBAR_PINNED_KEY);
+    if (isPinned === null) isPinned = true;
+    else isPinned = isPinned === 'true';
+
+    let savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    if (savedWidth === null) savedWidth = isPinned ? '290' : '80';
     
     if (isPinned) {
         sidebar.classList.add('pinned');
