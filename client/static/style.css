@@ -717,7 +717,7 @@ html:not([data-theme="light"]) .nav-item.active i {
 }
 
 .premium-brand-title {
-    font-size: 3.3rem;
+    font-size: 7.0rem;
     font-weight: 800;
     letter-spacing: -0.04em;
     background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
@@ -731,7 +731,7 @@ html:not([data-theme="light"]) .nav-item.active i {
 
 @media (max-width: 768px) {
     .premium-brand-title {
-        font-size: 2.2rem; /* Reduce size on mobile/narrow windows */
+        font-size: 4.5rem; /* Increased size on mobile/narrow windows */
     }
     .brand-slogan {
         font-size: 13pt; /* Reduce slogan size too */
@@ -1556,7 +1556,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .current-price {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
     font-weight: 800;
     font-family: 'Space Grotesk', sans-serif;
 }
@@ -1775,7 +1775,7 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .current-price {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 2.5rem;
+    font-size: 1.75rem;
     font-weight: 800;
     letter-spacing: -1px;
 }
