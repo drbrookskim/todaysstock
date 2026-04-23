@@ -5977,6 +5977,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     .main-sidebar.hidden-content .sidebar-resizer {
         display: none !important;
     }
+}
 
 /* Manage content overlap when sidebar is hidden */
 body.sidebar-hidden .main-content {
