@@ -758,12 +758,13 @@ def me():
             else:
                 username = email.split('@')[0] if email else "사용자"
                 
+            avatar_url = metadata.get("avatar_url") or metadata.get("picture") or ""
             profile = _get_or_create_profile(res.user.id, email)
                 
             return jsonify({
                 "logged_in": True, 
                 "username": username, 
-                "avatar_url": metadata.get("avatar_url") or metadata.get("picture") or "",
+                "avatar_url": avatar_url,
                 "user_id": res.user.id,
                 "is_approved": profile.get("is_approved", False),
                 "role": profile.get("role", "user")
@@ -784,6 +785,7 @@ def session():
         full_name = metadata.get("full_name") or metadata.get("name")
         email     = user_res.user.email or ""
         username  = full_name or (email.split('@')[0] if email else "사용자")
+        avatar_url = metadata.get("avatar_url") or metadata.get("picture") or ""
 
         # Watchlist
         try:
@@ -803,7 +805,7 @@ def session():
         return jsonify({
             "logged_in": True, 
             "username": username, 
-            "avatar_url": metadata.get("avatar_url") or metadata.get("picture") or "",
+            "avatar_url": avatar_url,
             "watchlist": watchlist,
             "is_approved": profile.get("is_approved", False),
             "role": profile.get("role", "user")

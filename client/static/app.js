@@ -202,7 +202,24 @@ function initNavigation() {
                         emptyState?.classList.add('hidden');
                         contentWrapper?.classList.remove('hidden');
                         if (currentStockLabel) {
-                            currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
+                            // Try to get price from contexts (Home or Watchlist)
+                            const ctx = (homeStockContext.item && homeStockContext.item.code === currentStock.code) ? homeStockContext : 
+                                        ((watchlistStockContext.item && watchlistStockContext.item.code === currentStock.code) ? watchlistStockContext : null);
+                            const data = ctx ? ctx.data : null;
+                            
+                            if (data) {
+                                const price = data.price ? data.price.toLocaleString() : '0';
+                                const change = data.change || 0;
+                                const priceClass = change > 0 ? 'up' : (change < 0 ? 'down' : '');
+                                const changeFormatted = data.change_percent ? ` (${data.change > 0 ? '+' : ''}${data.change_percent.toFixed(2)}%)` : '';
+                                
+                                currentStockLabel.innerHTML = `
+                                    <span class="analysis-stock-name">${currentStock.name}</span>
+                                    <span class="analysis-stock-price ${priceClass}">${price}${changeFormatted}</span>
+                                `;
+                            } else {
+                                currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
+                            }
                         }
                         
                         const stockCode = currentStock.code || currentStock.ticker;
