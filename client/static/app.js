@@ -1357,9 +1357,9 @@ async function renderMacroIndicators() {
 
         const getChg = (key) => {
             const val = data[`${key}_chg`];
-            if (val === undefined || val === null) return { text: '-', up: false };
+            if (val === undefined || val === null) return { change: '-', up: false };
             return { 
-                text: `${val > 0 ? '+' : ''}${val.toFixed(2)}%`, 
+                change: `${val > 0 ? '+' : ''}${val.toFixed(2)}%`, 
                 up: val > 0 
             };
         };
@@ -1495,6 +1495,7 @@ async function renderIndexChart(symbol, name) {
     try {
         const resp = await fetchWithTimeout(`${API_BASE_URL}/api/market-index/history?symbol=${encodeURIComponent(symbol)}`);
         if (!resp.ok) throw new Error('History Fetch Failed');
+
         const data = await resp.json();
 
         container.innerHTML = '';
