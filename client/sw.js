@@ -3,7 +3,7 @@
  * 전략: Network-First (항상 최신 데이터 우선, API는 캐시 제외)
  */
 
-const CACHE_NAME = "waiting-for-the-peak-v93";
+const CACHE_NAME = "waiting-for-the-peak-v94";
 
 // 앱 셸 캐시 목록 (정적 자산만)
 const SHELL_URLS = [
