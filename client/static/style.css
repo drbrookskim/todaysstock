@@ -5709,6 +5709,11 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 
 .index-item.active .indicator-label {
     color: var(--primary);
+    font-weight: 700;
+}
+
+.index-item[data-id="PHLX SEMI"] .indicator-label {
+    font-size: 0.8rem; /* 20% smaller for long label */
 }
 
 .index-chart-panel {
