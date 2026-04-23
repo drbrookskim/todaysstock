@@ -4091,19 +4091,32 @@ html[data-theme="light"] .ai-insight-row {
     border-radius: var(--radius-modal);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-    font-size: 0.95rem; /* Base font size reduction */
+    font-size: 0.9rem; /* Base font size 10% reduction */
+    text-align: center;
+}
+
+.confirm-modal .modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 24px 0;
+    border-bottom: none;
 }
 
 .confirm-modal .modal-header h3 {
-    font-size: 1.18rem !important;
+    font-size: 1.12rem !important;
+    text-align: center;
+    margin: 0;
 }
 
 .confirm-modal .modal-body p {
-    font-size: 0.95rem !important;
+    font-size: 0.9rem !important;
+    text-align: center;
 }
 
 .confirm-modal .confirm-actions button {
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
 }
 
 [data-theme="light"] .confirm-modal {
@@ -7530,6 +7543,7 @@ body.vc-fullscreen-active .main-content {
     box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     text-align: center;
     color: var(--text-main);
+    font-size: 0.9rem; /* 10% reduction */
 }
 
 [data-theme="light"] .modal-content {
@@ -7562,9 +7576,10 @@ body.vc-fullscreen-active .main-content {
 .modal-header i.ph-check-circle { color: #10b981; }
 
 .modal-header h3 {
-    font-size: 1.2rem; /* Reduced from 1.4rem */
+    font-size: 1.08rem; /* 10% reduction from 1.2rem */
     font-weight: 700;
     color: var(--text-main);
+    text-align: center;
 }
 
 .modal-body {
@@ -7573,8 +7588,9 @@ body.vc-fullscreen-active .main-content {
 
 .modal-body p {
     color: var(--text-muted);
-    font-size: 1rem;
+    font-size: 0.9rem; /* 10% reduction from 1.0rem */
     line-height: 1.6;
+    text-align: center;
     white-space: pre-line; /* Support \n in messages */
 }
 
