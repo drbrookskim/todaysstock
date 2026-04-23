@@ -80,9 +80,10 @@ def _get_or_create_profile(user_id, email, avatar_url=None):
         res = supabase_global.table("profiles").select("*").eq("id", user_id).execute()
         if res.data:
             profile = res.data[0]
-            # [Fix] 최초 관리자 계정은 기존에 미승인 상태였더라도 로그인 시 강제로 승인 상태로 보정
-            if email.lower() == INITIAL_ADMIN_EMAIL.lower() and (not profile.get("is_approved") or profile.get("role") != "admin"):
-                print(f"👑 Syncing admin status for {email}")
+            # [Fix] 최초 관리자 계정은 로그인 시 강제로 승인 상태 및 관리자 권한으로 보정 (DB 불일치 해결)
+            is_initial_admin = (email.lower() == INITIAL_ADMIN_EMAIL.lower())
+            if is_initial_admin and (not profile.get("is_approved") or profile.get("role") != "admin"):
+                print(f"👑 Force syncing admin status for {email}")
                 supabase_global.table("profiles").update({"is_approved": True, "role": "admin"}).eq("id", user_id).execute()
                 profile["is_approved"] = True
                 profile["role"] = "admin"
@@ -847,7 +848,17 @@ def admin_get_users():
             
         # 3. 모든 가입 사용자 목록 조회 (최근 가입순)
         users_res = supabase_global.table("profiles").select("*").order("created_at", desc=True).execute()
-        return jsonify({"success": True, "users": users_res.data})
+        users = users_res.data
+        
+        # [Sync] nelcome9 계정은 조회 시점에 최종적으로 관리자 권한인지 다시 확인 및 보정
+        for u in users:
+            if u.get("email", "").lower() == INITIAL_ADMIN_EMAIL.lower() and (u.get("role") != "admin" or not u.get("is_approved")):
+                print(f"👑 Force syncing admin role for {u.get('email')}")
+                supabase_global.table("profiles").update({"role": "admin", "is_approved": True}).eq("id", u["id"]).execute()
+                u["role"] = "admin"
+                u["is_approved"] = True
+                
+        return jsonify({"success": True, "users": users})
     except Exception as e:
         print(f"[ADMIN] Get users error: {e}")
         return jsonify({"success": False, "message": f"서버 오류: {str(e)}"}), 500

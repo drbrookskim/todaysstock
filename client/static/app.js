@@ -3456,7 +3456,10 @@ async function initAuth() {
         console.log('[DEBUG] updateAuthUI - logged_in:', authUser?.logged_in);
         if (authUser && authUser.logged_in) {
             console.log('[DEBUG] updateAuthUI - Updating UI for Logged In User');
-            if (userNameEl) userNameEl.textContent = authUser.username ? authUser.username : 'User';
+            if (userNameEl) {
+                const name = authUser.username ? authUser.username : 'User';
+                userNameEl.innerHTML = name + (authUser.role === 'admin' ? ' <span class="admin-sidebar-badge" style="background:var(--primary); color:#fff; font-size:9px; padding:1px 5px; border-radius:4px; vertical-align:middle; font-weight:800; margin-left:4px;">ADMIN</span>' : '');
+            }
             if (userStatusEl) userStatusEl.textContent = '';
             if (sidebarLogoutBtn) sidebarLogoutBtn.classList.remove('hidden');
             const sidebarWithdrawBtn = document.getElementById('sidebarWithdrawBtn');
@@ -4305,7 +4308,7 @@ async function renderAdminDashboard() {
                 : `<button class="btn-approve" onclick="approveUser('${u.id}')" style="margin-right: 8px;"><i class="ph ph-check"></i> 승인</button>`;
                 
             // 관리자(nelcome9)는 삭제 버튼을 표시하지 않음
-            const isAdmin = email.includes('nelcome9') || u.role === 'admin';
+            const isAdmin = email.toLowerCase() === 'nelcome9@gmail.com' || u.role === 'admin';
             const deleteBtn = isAdmin 
                 ? '<span style="color:var(--text-muted); font-size: 0.8rem;">(관리자)</span>'
                 : `<button onclick="deleteUser('${u.id}')" style="background:var(--color-down); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size: 0.8rem;" class="btn-approve"><i class="ph ph-trash"></i> 삭제</button>`;
@@ -4315,7 +4318,7 @@ async function renderAdminDashboard() {
                     <td>
                         <div style="display:flex; align-items:center; gap:10px;">
                             ${u.avatar_url ? `<img src="${u.avatar_url}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">` : `<i class="ph ph-user" style="font-size:24px; color:var(--text-muted);"></i>`}
-                            <span>${email}</span>
+                            <span>${email}</span> ${isAdmin ? '<span class="admin-badge" style="background:var(--primary); color:#fff; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:700;">ADMIN</span>' : ''}
                         </div>
                     </td>
                     <td>${dateStr}</td>
