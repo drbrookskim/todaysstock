@@ -5639,7 +5639,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 }
 
 .analysis-stock-name {
-    color: #000 !important;
+    color: var(--text-main) !important;
     font-weight: 700;
 }
 
