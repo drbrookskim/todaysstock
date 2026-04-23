@@ -295,24 +295,9 @@ body {
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
-/* ── Floating Sidebar Toggle (When Sidebar is 0px) ── */
-.floating-sidebar-toggle {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 44px;
-    height: 44px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
-    border-radius: 12px;
-    color: var(--text-main);
-    cursor: pointer;
-    z-index: 1000; /* Ensure it stays on top */
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ── Floating Sidebar Toggle (Hidden for Top Dock) ── */
+.floating-sidebar-toggle, .mobile-toggle {
+    display: none !important;
 }
 
 .floating-sidebar-toggle:hover {
@@ -2330,26 +2315,11 @@ html:not([data-theme="light"]) .ma-visual-legend-line {
     }
 }
 
-@media (max-width: 600px) {
+/* Legacy Mobile Sidebar Overrides Removed */
+    .container {
+        padding: 24px 16px 60px;
     }
-    .main-sidebar.mobile-open,
-    .main-sidebar.pinned {
-        left: 0;
-    }
-    /* If pinned on mobile, shift content and hide overlay to allow interaction */
-    body[data-sidebar-pinned="true"] .main-content {
-        margin-left: 168px;
-        width: calc(100vw - 168px);
-    }
-    body[data-sidebar-pinned="true"] .sidebar-overlay {
-        display: none !important;
-    }
-    .brand-text, .user-info, .nav-item span {
-        display: block;
-    }
-    .mobile-toggle {
-        display: block;
-    }
+}
     .container {
         padding: 24px 16px 60px;
     }
