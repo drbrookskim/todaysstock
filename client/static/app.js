@@ -3455,6 +3455,20 @@ async function initAuth() {
                 sidebarUserSection.title = "클릭하면 로그아웃할 수 있습니다";
             }
 
+            // Profile Image Handling
+            const sidebarUserIcon = document.getElementById('sidebarUserIcon');
+            const sidebarUserImg = document.getElementById('sidebarUserImg');
+            if (authUser.avatar_url) {
+                if (sidebarUserIcon) sidebarUserIcon.classList.add('hidden');
+                if (sidebarUserImg) {
+                    sidebarUserImg.src = authUser.avatar_url;
+                    sidebarUserImg.classList.remove('hidden');
+                }
+            } else {
+                if (sidebarUserIcon) sidebarUserIcon.classList.remove('hidden');
+                if (sidebarUserImg) sidebarUserImg.classList.add('hidden');
+            }
+
             if (addWatchlistBtnContainer) addWatchlistBtnContainer.classList.remove('remove');
             updateWatchlistCount();
 
@@ -3537,6 +3551,7 @@ async function initAuth() {
             authUser = { 
                 logged_in: data.logged_in, 
                 username: data.username,
+                avatar_url: data.avatar_url,
                 is_approved: data.is_approved,
                 role: data.role
             };

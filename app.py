@@ -763,6 +763,7 @@ def me():
             return jsonify({
                 "logged_in": True, 
                 "username": username, 
+                "avatar_url": metadata.get("avatar_url") or metadata.get("picture") or "",
                 "user_id": res.user.id,
                 "is_approved": profile.get("is_approved", False),
                 "role": profile.get("role", "user")
@@ -802,6 +803,7 @@ def session():
         return jsonify({
             "logged_in": True, 
             "username": username, 
+            "avatar_url": metadata.get("avatar_url") or metadata.get("picture") or "",
             "watchlist": watchlist,
             "is_approved": profile.get("is_approved", False),
             "role": profile.get("role", "user")

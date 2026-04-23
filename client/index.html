@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=100">
+    <link rel="stylesheet" href="./static/style.css?v=101">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -148,7 +148,10 @@
 
             <div class="sidebar-bottom">
                 <div class="sidebar-user" id="sidebarUserSection">
-                    <div class="user-avatar"><i class="ph ph-user"></i></div>
+                    <div class="user-avatar" id="sidebarUserAvatar">
+                        <i class="ph ph-user" id="sidebarUserIcon"></i>
+                        <img id="sidebarUserImg" class="hidden" src="" alt="Profile">
+                    </div>
                     <div class="user-profile">
                         <span id="sidebarUserName" class="user-name">Guest</span>
                         <span id="sidebarUserStatus" class="user-status">로그인이 필요합니다</span>
@@ -1263,7 +1266,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=100"></script>
+    <script src="./static/app.js?v=101"></script>
 </body>
 
 </html>
