@@ -925,7 +925,17 @@ async function selectStock(item, origin = 'search') {
             
             if (emptyState) emptyState.classList.add('hidden');
             if (contentWrapper) contentWrapper.classList.remove('hidden');
-            if (currentLabel) currentLabel.textContent = `${item.name} (${item.code})`;
+            if (currentLabel) {
+                const price = data && data.price ? data.price.toLocaleString() : '0';
+                const change = data && data.change ? data.change : 0;
+                const priceClass = change > 0 ? 'up' : (change < 0 ? 'down' : '');
+                const changeFormatted = data && data.change_percent ? ` (${data.change > 0 ? '+' : ''}${data.change_percent.toFixed(2)}%)` : '';
+                
+                currentLabel.innerHTML = `
+                    <span class="analysis-stock-name">${item.name}</span>
+                    <span class="analysis-stock-price ${priceClass}">${price}${changeFormatted}</span>
+                `;
+            }
 
             // triggerFullDeepAnalysis is now handled by navigateToSection -> initNavigation
         }

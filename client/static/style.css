@@ -3627,9 +3627,9 @@ html[data-theme="light"] .ai-insight-row {
 }
 
 .workout-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -5611,6 +5611,36 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     padding: 0 4px;
     animation: fadeIn 0.8s ease-out;
 }
+
+#macroIndicatorSection .section-header h3,
+#analysisSection .section-header h3 {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--text-main) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#analysisCurrentStock {
+    font-size: 1.1rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.analysis-stock-name {
+    color: #000 !important;
+    font-weight: 700;
+}
+
+.analysis-stock-price {
+    font-weight: 700;
+}
+
+.analysis-stock-price.up { color: var(--color-up) !important; }
+.analysis-stock-price.down { color: var(--color-down) !important; }
 
 .macro-grid {
     display: grid;
