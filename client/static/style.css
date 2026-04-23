@@ -720,7 +720,7 @@ html:not([data-theme="light"]) .nav-item.active i {
     font-size: 7.0rem;
     font-weight: 800;
     letter-spacing: -0.04em;
-    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    background: linear-gradient(to right, #3b82f6 0%, #ef4444 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
@@ -3743,6 +3743,8 @@ html[data-theme="light"] .ai-insight-row {
 }
 
 /* ── [New] Recommendation Labels (Premium) ── */
+
+
 .recommend-label {
     display: inline-flex;
     align-items: center;
