@@ -468,76 +468,14 @@ function showSection(id) {
     }
 }
 
-// ── Sidebar Logic (Fixed Width 290px + Pin Functionality) ──
-const SIDEBAR_WIDTH_KEY = 'stockfinder-sidebar-width';
-const SIDEBAR_PINNED_KEY = 'stockfinder-sidebar-pinned';
-
+// ── Navigation Logic (Top Dock) ──
 function initResizableSidebar() {
-    const sidebar = document.getElementById('mainSidebar');
-    const pinBtn = document.getElementById('pinSidebarBtn');
-    const floatingToggleBtn = document.getElementById('floatingSidebarToggle');
-    
-    if (!sidebar) return;
-
-    // Load initial states - Default to Unpinned (false)
-    let isPinned = localStorage.getItem(SIDEBAR_PINNED_KEY) === 'true';
-    
-    if (isPinned) {
-        sidebar.classList.add('pinned');
-        pinBtn?.classList.add('active');
-    } else {
-        sidebar.classList.remove('pinned');
-        pinBtn?.classList.remove('active');
-    }
-
-    // Load initial width - Default to 290
-    let savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-    if (savedWidth === null) savedWidth = '290';
-    
-    updateSidebarWidth(parseInt(savedWidth));
-
-    // Pin Button Click
-    pinBtn?.addEventListener('click', () => {
-        const currentlyPinned = sidebar.classList.toggle('pinned');
-        pinBtn.classList.toggle('active');
-        localStorage.setItem(SIDEBAR_PINNED_KEY, currentlyPinned);
-        updateSidebarWidth(290); // Ensure it's not hidden
-    });
-
-    // Floating Toggle Button Click
-    floatingToggleBtn?.addEventListener('click', () => {
-        updateSidebarWidth(290);
-        localStorage.setItem(SIDEBAR_WIDTH_KEY, '290');
-    });
+    // Legacy sidebar logic disabled for Top Dock Mode
+    console.log("Navigation: Top Dock Mode active");
 }
 
 function updateSidebarWidth(width) {
-    const sidebar = document.getElementById('mainSidebar');
-    const floatingToggle = document.getElementById('floatingSidebarToggle');
-    if (!sidebar) return;
-
-    const finalWidth = (width > 0) ? 290 : 0;
-    document.documentElement.style.setProperty('--sidebar-width', finalWidth + 'px');
-    
-    if (floatingToggle) {
-        floatingToggle.style.display = (finalWidth === 0) ? 'flex' : 'none';
-    }
-
-    // Class-based view states
-    if (finalWidth === 0) {
-        sidebar.classList.add('collapsed', 'hidden-content');
-        document.body.classList.add('sidebar-hidden');
-    } else {
-        sidebar.classList.remove('hidden-content');
-        document.body.classList.remove('sidebar-hidden');
-        
-        // If not pinned, it should behave as 'collapsed' (icons only) unless hovered
-        if (!sidebar.classList.contains('pinned')) {
-            sidebar.classList.add('collapsed');
-        } else {
-            sidebar.classList.remove('collapsed');
-        }
-    }
+    // No-op for top dock
 }
 
 function isSidebarExpanded() {

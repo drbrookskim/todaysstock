@@ -265,22 +265,33 @@ body {
 }
 
 /* ── Persistent Sidebar (PandaDoc Style) ── */
+/* ── Top Navigation Dock (Formerly Sidebar) ── */
 .main-sidebar {
-    width: clamp(180px, 20vw, 290px); /* Automatically scales between 180px and 290px */
-    height: 100vh;
-    background-color: var(--bg-card);
-    border-right: 1px solid var(--border-soft);
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto !important; /* Overrides JS-set widths */
+    height: 64px;
+    background: rgba(23, 23, 33, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
     display: flex;
-    flex-direction: column;
-    padding: 24px 0;
-    position: sticky;
-    top: 0;
-    /* Transition only width for smooth resizing via JS or toggle */
-    transition: width 0.1s ease-out; 
-    z-index: 100;
-    overflow-x: hidden;
-    flex-shrink: 0;
-    position: relative; /* For resizer handle */
+    flex-direction: row !important;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 2000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 8px;
+}
+
+.main-sidebar:hover {
+    background: rgba(23, 23, 33, 0.85);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Floating Sidebar Toggle (When Sidebar is 0px) ── */
@@ -614,7 +625,8 @@ html:not([data-theme="light"]) .nav-item.active i {
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
-    height: calc(100vh - 80px); /* Adjust for top-bar if needed, though flex:1 should handle it */
+    padding-top: 100px; /* Offset for top dock */
+    margin-left: 0 !important;
 }
 
 /* ── Top Bar (Remote Style) ── */
@@ -5992,38 +6004,68 @@ body.sidebar-hidden .main-content {
     padding-top: 72px !important;
 }
 
-/* Hover-to-expand behavior for unpinned sidebar */
-.main-sidebar.collapsed:not(.pinned) {
-    width: 80px !important;
-    overflow-x: hidden;
+/* Dock Specific Overrides */
+.sidebar-brand, .pin-btn, .sidebar-action-btn, .logo-circle, .brand-text {
+    display: none !important;
 }
 
-.main-sidebar.collapsed:not(.pinned):hover {
-    width: clamp(180px, 20vw, 290px) !important;
-    box-shadow: var(--shadow-lg);
+.sidebar-nav {
+    display: flex;
+    flex-direction: row !important;
+    gap: 4px;
+    padding: 0 !important;
 }
 
-.main-sidebar.hidden-content {
-    width: 0 !important;
+.nav-item {
+    width: 48px;
+    height: 48px;
+    justify-content: center !important;
+    padding: 0 !important;
+    border-radius: 24px !important;
+    margin: 0 !important;
 }
 
-/* Ensure icons are centered when collapsed */
-.main-sidebar.collapsed:not(:hover) .nav-item,
-.main-sidebar.collapsed:not(:hover) .sidebar-user,
-.main-sidebar.collapsed:not(:hover) .withdrawal-btn {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
+.nav-item span, .nav-badge {
+    display: none !important;
 }
 
-/* Hide text when collapsed and NOT hovered */
-.main-sidebar.collapsed:not(:hover) .brand-text,
-.main-sidebar.collapsed:not(:hover) .nav-item span,
-.main-sidebar.collapsed:not(:hover) .user-profile,
-.main-sidebar.collapsed:not(:hover) .nav-badge,
-.main-sidebar.collapsed:not(:hover) .pin-btn {
-    opacity: 0;
-    visibility: hidden;
+.nav-item i {
+    font-size: 1.5rem !important;
+    margin: 0 !important;
+}
+
+.sidebar-bottom {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    gap: 4px;
+}
+
+.sidebar-user {
+    padding: 0 !important;
+    cursor: pointer;
+}
+
+.user-profile, .user-status, .withdrawal-btn span {
+    display: none !important;
+}
+
+.user-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    margin: 0 !important;
+}
+
+.withdrawal-btn {
+    width: 40px !important;
+    height: 40px !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border-radius: 20px !important;
+    margin-left: 4px !important;
 }
 
 
