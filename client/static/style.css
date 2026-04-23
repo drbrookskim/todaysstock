@@ -114,6 +114,7 @@ html:not([data-theme="light"]) {
     --dock-item-hover: rgba(255, 255, 255, 0.1);
     --dock-bg-hover: rgba(23, 23, 33, 0.85);
     --dock-border-hover: rgba(255, 255, 255, 0.2);
+    --primary-soft: rgba(81, 84, 238, 0.15);
 }
 
 [data-theme="light"] .bg-glow {
@@ -5707,6 +5708,8 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .index-item.active {
     background: var(--primary-soft);
     border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(81, 84, 238, 0.2);
+    transform: translateX(4px);
 }
 
 .index-item.active .indicator-label {
