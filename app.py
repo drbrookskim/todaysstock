@@ -70,7 +70,7 @@ else:
 # --- 관리자 승인 시스템 상수 및 헬퍼 ---
 INITIAL_ADMIN_EMAIL = "nelcome9@gmail.com"
 
-def _get_or_create_profile(user_id, email):
+def _get_or_create_profile(user_id, email, avatar_url=None):
     """사용자 프로필을 조회하고 없으면 생성합니다."""
     if not supabase_global:
         return {"is_approved": True, "role": "user"}  # Supabase가 안 잡혀있을 때의 Fallback
@@ -86,6 +86,11 @@ def _get_or_create_profile(user_id, email):
                 supabase_global.table("profiles").update({"is_approved": True, "role": "admin"}).eq("id", user_id).execute()
                 profile["is_approved"] = True
                 profile["role"] = "admin"
+            
+            # Sync avatar_url if provided and different
+            if avatar_url and profile.get("avatar_url") != avatar_url:
+                supabase_global.table("profiles").update({"avatar_url": avatar_url}).eq("id", user_id).execute()
+                profile["avatar_url"] = avatar_url
             return profile
             
         # 프로필이 없는 경우 새로 생성
@@ -95,6 +100,7 @@ def _get_or_create_profile(user_id, email):
         new_profile = {
             "id": user_id,
             "email": email,
+            "avatar_url": avatar_url,
             "is_approved": is_approved,
             "role": role
         }
@@ -759,7 +765,7 @@ def me():
                 username = email.split('@')[0] if email else "사용자"
                 
             avatar_url = metadata.get("avatar_url") or metadata.get("picture") or ""
-            profile = _get_or_create_profile(res.user.id, email)
+            profile = _get_or_create_profile(res.user.id, email, avatar_url=avatar_url)
                 
             return jsonify({
                 "logged_in": True, 
@@ -800,7 +806,7 @@ def session():
             watchlist = []
 
         # 프로필 정보 연동
-        profile = _get_or_create_profile(user_res.user.id, email)
+        profile = _get_or_create_profile(user_res.user.id, email, avatar_url=avatar_url)
 
         return jsonify({
             "logged_in": True, 

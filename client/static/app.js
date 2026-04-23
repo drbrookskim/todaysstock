@@ -4311,7 +4311,12 @@ async function renderAdminDashboard() {
 
             return `
                 <tr>
-                    <td>${email}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            ${u.avatar_url ? `<img src="${u.avatar_url}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">` : `<i class="ph ph-user" style="font-size:24px; color:var(--text-muted);"></i>`}
+                            <span>${email}</span>
+                        </div>
+                    </td>
                     <td>${dateStr}</td>
                     <td>${statusBadge}</td>
                     <td style="white-space: nowrap;">${actionBtn}${deleteBtn}</td>
