@@ -637,7 +637,7 @@ html:not([data-theme="light"]) .nav-item.active i {
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
-    padding-top: 100px; /* Offset for top dock */
+    padding-top: 80px; /* Reduced offset for top dock */
     margin-left: 0 !important;
 }
 
@@ -976,7 +976,7 @@ html[data-theme="light"] .theme-icon-btn i {
     flex-direction: column;
     align-items: center;
     gap: 32px;
-    padding: 60px 0;
+    padding: 20px 0 60px; /* Reduced top padding to bring Signnith closer to dock */
     transition: opacity 0.3s ease;
 }
 
@@ -5647,8 +5647,8 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     font-weight: 700;
 }
 
-.analysis-stock-price.up { color: var(--color-up) !important; }
-.analysis-stock-price.down { color: var(--color-down) !important; }
+.analysis-stock-price.up { color: #ef4444 !important; }
+.analysis-stock-price.down { color: #3b82f6 !important; }
 
 .macro-grid {
     display: grid;
