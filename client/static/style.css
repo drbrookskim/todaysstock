@@ -3035,13 +3035,113 @@ html[data-theme="light"] .ai-insight-row {
     gap: 4px;
 }
 
-.ai-gauge-svg {
-    display: block;
+/* ── AI Indicators Circular (Parallel) ── */
+.ai-indicators-parallel {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.ai-indicator-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ai-indicator-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.ai-indicator-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-indicator-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ai-indicator-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.ai-indicator-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: 'Space Grotesk', monospace;
+}
+
+/* ── Main Segmented Gauge ── */
+.ai-gauge-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ai-gauge-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .ai-gauge-label {
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── AI Insight Row Adjustment ── */
+.ai-insight-row {
+    display: grid;
+    grid-template-columns: 140px 140px 1fr;
+    grid-template-areas: 
+        "label primary details"
+        "label insight insight";
+    gap: 20px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    margin-bottom: 20px;
+}
+
+.ai-row-label { grid-area: label; display: flex; flex-direction: column; gap: 8px; color: var(--text-muted); }
+.ai-row-primary { grid-area: primary; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border-soft); }
+.ai-row-details { grid-area: details; }
+.ai-row-insight { grid-area: insight; font-size: 0.85rem; color: var(--text-muted); padding-top: 10px; border-top: 1px solid var(--border-soft); margin-top: 10px; }
+
+@media (max-width: 992px) {
+    .ai-insight-row {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "label"
+            "primary"
+            "details"
+            "insight";
+    }
+    .ai-row-primary { border-right: none; border-bottom: 1px solid var(--border-soft); padding-bottom: 20px; }
+}
+
+.ai-gauge-svg {
+    display: block;
 }
 
 .ai-gauge-indicators {

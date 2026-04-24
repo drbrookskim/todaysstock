@@ -2313,18 +2313,44 @@ function renderAiInsights(data) {
             { label: 'MACD', val: bd.macd ?? 0, max: 25 },
             { label: '거래량', val: bd.volume ?? 0, max: 15 },
         ];
-        const breakdownBars = items.map(it => {
-            const pct = Math.round((it.val / it.max) * 100);
-            return `<div class="ai-breakdown-row">
-                <span class="ai-breakdown-label">${it.label}</span>
-                <div class="ai-breakdown-track">
-                    <div class="ai-breakdown-fill" style="width:${pct}%; background:${scoreColor};"></div>
-                </div>
-                <span class="ai-breakdown-val">${it.val}/${it.max}</span>
-            </div>`;
+        // ── 지표별 원형 인디케이터 (Parallel Circular Indicators) ──
+        const indicatorCircles = items.map(it => {
+            const pct = Math.min(100, Math.round((it.val / it.max) * 100));
+            const r = 20;
+            const circumference = 2 * Math.PI * r;
+            const offset = circumference - (pct / 100) * circumference;
+            return `
+                <div class="ai-indicator-item">
+                    <div class="ai-indicator-svg">
+                        <svg viewBox="0 0 50 50" width="50" height="50">
+                            <!-- Background Circle -->
+                            <circle cx="25" cy="25" r="${r}" fill="none" stroke="var(--border-soft)" stroke-width="4"/>
+                            <!-- Progress Circle -->
+                            <circle cx="25" cy="25" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="4"
+                                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+                                stroke-linecap="round" transform="rotate(-90 25 25)"/>
+                            <text x="25" y="29" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text-main)">${pct}%</text>
+                        </svg>
+                    </div>
+                    <div class="ai-indicator-meta">
+                        <span class="ai-indicator-label">${it.label}</span>
+                        <span class="ai-indicator-val">${it.val}/${it.max}</span>
+                    </div>
+                </div>`;
         }).join('');
 
-        const dashOffset = Math.round((1 - score / 100) * 251);
+        // ── 메인 세그먼트 확률 게이지 ──
+        const mainR = 40;
+        const mainCircumference = 2 * Math.PI * mainR; // ~251.3
+        const segmentCount = 12;
+        const gapSize = 4;
+        const dashSize = (mainCircumference / segmentCount) - gapSize;
+        const dashArray = `${dashSize} ${gapSize}`;
+        
+        // 확률에 따른 대시 오프셋 (세그먼트 단위로 끊어서 보여주기 위해 마스크 효과처럼 계산)
+        // 하지만 부드럽게 차는 느낌을 위해 stroke-dashoffset 사용
+        const mainOffset = mainCircumference - (score / 100) * mainCircumference;
+
         probHtml = `
         <div class="ai-insight-row">
             <div class="ai-row-label">
@@ -2332,24 +2358,29 @@ function renderAiInsights(data) {
                 <span>매수 확률</span>
             </div>
             <div class="ai-row-primary">
-                <div class="ai-gauge-mini">
-                    <svg viewBox="0 0 100 100" width="60" height="60">
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-soft)" stroke-width="12"/>
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="${scoreColor}" stroke-width="12"
-                            stroke-dasharray="251" stroke-dashoffset="${dashOffset}"
-                            stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                        <text x="50" y="55" text-anchor="middle" font-size="24" font-weight="800" fill="var(--text-main)">${score}</text>
-                    </svg>
-                    <span class="ai-gauge-text" style="color:${scoreColor}">${prob.label}</span>
+                <div class="ai-gauge-container">
+                    <div class="ai-gauge-main">
+                        <svg viewBox="0 0 100 100" width="100" height="100">
+                            <!-- Background Segmented Circle -->
+                            <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"
+                                stroke-dasharray="${dashArray}" transform="rotate(-90 50 50)"/>
+                            <!-- Progress Segmented Circle -->
+                            <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
+                                stroke-dasharray="${dashArray}" stroke-dashoffset="${mainOffset}"
+                                stroke-linecap="butt" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
+                            <text x="50" y="52" text-anchor="middle" font-size="22" font-weight="900" fill="var(--text-main)">${score}%</text>
+                        </svg>
+                        <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
+                    </div>
                 </div>
             </div>
             <div class="ai-row-details">
-                <div class="ai-breakdown-container">
-                    ${breakdownBars}
+                <div class="ai-indicators-parallel">
+                    ${indicatorCircles}
                 </div>
             </div>
             <div class="ai-row-insight">
-                <span>주가 방향성, 탄력, 추세 강도 및 거래량 가중 합산 결과입니다. 캔들 패턴 보너스(+/-5%) 포함.</span>
+                <span>추세 강도, 탄력성, 거래량 및 캔들 패턴 가중 합산 결과입니다. 모든 지표가 원형 게이지로 시각화되었습니다.</span>
             </div>
         </div>`;
     }
