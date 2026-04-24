@@ -3052,6 +3052,9 @@ html[data-theme="light"] .ai-insight-row {
     border-radius: 14px;
     border: 1px solid var(--border-soft);
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    width: 160px; /* Fixed width for equal size */
+    height: 72px; /* Fixed height for equal size */
+    justify-content: center;
 }
 
 .ai-indicator-item:hover {
@@ -3148,10 +3151,11 @@ html[data-theme="light"] .ai-insight-row {
 
 .ai-content-body {
     display: flex;
+    flex-wrap: wrap; /* Enable wrapping for responsiveness */
     align-items: center;
     justify-content: center; /* Centered entire content group */
-    gap: 60px; /* Increased gap for better balance when centered */
-    padding: 20px 0;
+    gap: 40px 60px; /* Vertical and horizontal gap */
+    padding: 30px 0;
 }
 
 .ai-row-primary { 
