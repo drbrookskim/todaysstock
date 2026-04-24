@@ -3129,29 +3129,30 @@ html[data-theme="light"] .ai-insight-row {
     display: flex; 
     flex-direction: column; 
     align-items: flex-start; 
-    justify-content: center; /* Vertical Center */
+    justify-content: center; 
     gap: 16px; 
     color: var(--text-muted); 
-    padding-top: 0; /* Removed padding-top for centering */
+    padding-top: 0; 
+    padding-left: 20px; /* Added 20px left margin as requested */
 }
 
 .ai-row-primary { 
     grid-area: primary; 
     display: flex; 
     flex-direction: column;
-    align-items: center; /* Horizontal Center */
+    align-items: center; 
     justify-content: center; 
     border-right: 1px solid var(--border-soft); 
-    padding-top: 0; 
+    padding-top: 10px; /* Set top margin to 10px as requested */
 }
 
 .ai-row-details { 
     grid-area: details; 
     display: flex;
     flex-direction: column;
-    align-items: center; /* Horizontal Center */
+    align-items: center; 
     justify-content: center;
-    padding-top: 0; 
+    padding-top: 10px; /* Set top margin to 10px as requested */
 }
 
 .ai-row-insight { 
