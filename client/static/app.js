@@ -217,23 +217,47 @@ function initNavigation() {
                         emptyState?.classList.add('hidden');
                         contentWrapper?.classList.remove('hidden');
                         if (currentStockLabel) {
-                            // Try to get price from contexts (Home or Watchlist)
                             const ctx = (homeStockContext.item && homeStockContext.item.code === currentStock.code) ? homeStockContext : 
                                         ((watchlistStockContext.item && watchlistStockContext.item.code === currentStock.code) ? watchlistStockContext : null);
                             const data = ctx ? ctx.data : null;
                             
                             if (data) {
-                                const price = data.price ? data.price.toLocaleString() : '0';
+                                // Market Hours Logic (KST: 09:00 - 15:30)
+                                const now = new Date();
+                                const hour = now.getHours();
+                                const min = now.getMinutes();
+                                const isMarketOpen = (hour > 9 || (hour === 9 && min >= 0)) && (hour < 15 || (hour === 15 && min <= 30));
+                                
+                                // Price Selection: Open if market open, Close if market closed
+                                let displayPrice = data.price;
+                                let priceLabel = isMarketOpen ? "시가" : "종가";
+                                
+                                // [Advanced] If we have specific OHLC data in context
+                                if (isMarketOpen && data.open) {
+                                    displayPrice = data.open;
+                                } else if (!isMarketOpen && data.close) {
+                                    displayPrice = data.close;
+                                }
+                                
+                                const price = displayPrice ? displayPrice.toLocaleString() : '0';
                                 const change = data.change || 0;
                                 const priceClass = change > 0 ? 'up' : (change < 0 ? 'down' : '');
                                 const changeFormatted = data.change_percent ? ` (${data.change > 0 ? '+' : ''}${data.change_percent.toFixed(2)}%)` : '';
                                 
+                                // NXT Extended Hours Logic
+                                let extendedHtml = '';
+                                const isNXT = (currentStock.code === 'NXT' || currentStock.ticker === 'NXT' || (currentStock.name && currentStock.name.toUpperCase().includes('NXT')));
+                                if (isNXT && data.extended_price) {
+                                    extendedHtml = ` <span class="analysis-extended-price" style="font-size:0.85rem; color:var(--text-muted); opacity:0.8;">| 시간 외 거래가 ${data.extended_price.toLocaleString()}원</span>`;
+                                }
+
                                 const ticker = currentStock.code || currentStock.ticker || '';
                                 currentStockLabel.innerHTML = `
                                     <span class="analysis-stock-name">${currentStock.name}(${ticker})</span>
                                     <span class="analysis-stock-divider">|</span>
-                                    <span class="analysis-stock-price-label">주식가격</span>
+                                    <span class="analysis-stock-price-label">${priceLabel}</span>
                                     <span class="analysis-stock-price ${priceClass}">${price} 원${changeFormatted}</span>
+                                    ${extendedHtml}
                                 `;
                             } else {
                                 const ticker = currentStock.code || currentStock.ticker || '';

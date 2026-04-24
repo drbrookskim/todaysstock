@@ -5705,7 +5705,7 @@ html:not([data-theme="light"]) .company-quote {
     padding: 8px 16px;
     border-radius: 9999px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Reduced by 5% */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
