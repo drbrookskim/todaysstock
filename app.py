@@ -211,21 +211,44 @@ FALLBACK_STOCK_LIST = [
 
 
 def load_all_stocks():
-    """네이버 증권 API에서 KOSPI + KOSDAQ 전체 종목을 로드합니다."""
+    """전체 종목 리스트를 로드합니다.
+    우선순위: 1) 정적 stocks.json 파일 → 2) 네이버 API → 3) 폴백 목록
+    """
     global STOCK_LIST
+
+    # ── 1순위: 정적 JSON 파일 (배포 환경에서 가장 안정적) ──
+    try:
+        json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "client", "static", "stocks.json")
+        if os.path.exists(json_path):
+            with open(json_path, "r", encoding="utf-8") as f:
+                stocks = json.load(f)
+            if stocks and len(stocks) > 100:
+                STOCK_LIST = stocks
+                kospi_count  = sum(1 for s in stocks if s["market"] == "KOSPI")
+                kosdaq_count = sum(1 for s in stocks if s["market"] == "KOSDAQ")
+                konex_count  = sum(1 for s in stocks if s["market"] == "KONEX")
+                print(f"📊 [stocks.json] KOSPI {kospi_count}개 + KOSDAQ {kosdaq_count}개 + KONEX {konex_count}개 = 총 {len(STOCK_LIST)}개")
+                # 네이버 API로 백그라운드 갱신 시도 (실패해도 무관)
+                try:
+                    _refresh_from_naver()
+                except Exception:
+                    pass
+                return
+    except Exception as e:
+        print(f"⚠️  stocks.json 로드 실패: {e}")
+
+    # ── 2순위: 네이버 증권 API ──
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         stocks = []
         seen_codes = set()
-
         for market in ["KOSPI", "KOSDAQ"]:
             page = 1
             while True:
                 url = f"https://m.stock.naver.com/api/stocks/marketValue/{market}?page={page}&pageSize=100"
                 resp = http_requests.get(url, headers=headers, timeout=10)
                 resp.raise_for_status()
-                data = resp.json()
-                items = data.get("stocks", [])
+                items = resp.json().get("stocks", [])
                 if not items:
                     break
                 for item in items:
@@ -235,20 +258,52 @@ def load_all_stocks():
                         stocks.append({"name": name, "code": code, "market": market})
                         seen_codes.add(code)
                 page += 1
-
         if stocks:
             STOCK_LIST = stocks
-            kospi_count = sum(1 for s in stocks if s["market"] == "KOSPI")
+            kospi_count  = sum(1 for s in stocks if s["market"] == "KOSPI")
             kosdaq_count = sum(1 for s in stocks if s["market"] == "KOSDAQ")
-            print(f"📊 전체 종목 로드 완료: KOSPI {kospi_count}개 + KOSDAQ {kosdaq_count}개 = 총 {len(STOCK_LIST)}개")
-        else:
-            STOCK_LIST = FALLBACK_STOCK_LIST
-            print(f"⚠️  종목 조회 결과 없음 → 폴백 종목 {len(FALLBACK_STOCK_LIST)}개 사용")
-
+            print(f"📊 [Naver API] KOSPI {kospi_count}개 + KOSDAQ {kosdaq_count}개 = 총 {len(STOCK_LIST)}개")
+            return
     except Exception as e:
-        print(f"⚠️  종목 로드 실패: {e}")
-        STOCK_LIST = FALLBACK_STOCK_LIST
-        print(f"📊 폴백 종목 {len(FALLBACK_STOCK_LIST)}개 사용")
+        print(f"⚠️  네이버 API 종목 로드 실패: {e}")
+
+    # ── 3순위: 폴백 ──
+    STOCK_LIST = FALLBACK_STOCK_LIST
+    print(f"⚠️  폴백 종목 {len(FALLBACK_STOCK_LIST)}개 사용")
+
+
+def _refresh_from_naver():
+    """백그라운드에서 네이버 API로 STOCK_LIST를 갱신합니다."""
+    global STOCK_LIST
+    import threading
+    def _task():
+        try:
+            headers = {"User-Agent": "Mozilla/5.0"}
+            stocks = []
+            seen_codes = set()
+            for market in ["KOSPI", "KOSDAQ"]:
+                page = 1
+                while True:
+                    url = f"https://m.stock.naver.com/api/stocks/marketValue/{market}?page={page}&pageSize=100"
+                    resp = http_requests.get(url, headers=headers, timeout=10)
+                    resp.raise_for_status()
+                    items = resp.json().get("stocks", [])
+                    if not items:
+                        break
+                    for item in items:
+                        code = item.get("itemCode", "")
+                        name = item.get("stockName", "")
+                        if code and name and code not in seen_codes:
+                            stocks.append({"name": name, "code": code, "market": market})
+                            seen_codes.add(code)
+                    page += 1
+            if len(stocks) > len(STOCK_LIST):
+                STOCK_LIST = stocks
+                print(f"🔄 [Background] 네이버 갱신 완료: 총 {len(STOCK_LIST)}개")
+        except Exception as e:
+            pass  # 백그라운드 실패는 무시
+    threading.Thread(target=_task, daemon=True).start()
+
 
 
 def search_stocks(query):
