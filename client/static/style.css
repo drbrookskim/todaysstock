@@ -2793,7 +2793,7 @@ html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 .ai-insight-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 24px; /* Matched to AI Buy Report spacing */
     margin-top: 16px;
 }
 
@@ -2920,7 +2920,7 @@ html[data-theme="light"] .ai-insight-row {
 .ai-insight-grid {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 24px; /* Matched to AI Buy Report spacing */
 }
 
 .unit-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
@@ -3123,7 +3123,7 @@ html[data-theme="light"] .ai-insight-row {
     background: rgba(255, 255, 255, 0.01);
     border-radius: 24px;
     border: 1px solid var(--border-soft);
-    margin-bottom: 24px;
+    margin-bottom: 0; /* Use container gap instead */
 }
 
 .ai-row-main-content {
@@ -3141,7 +3141,7 @@ html[data-theme="light"] .ai-insight-row {
     color: var(--text-main);
     font-size: 1.1rem;
     font-weight: 700;
-    margin-bottom: 10px; /* Adjusted to 10px */
+    margin-bottom: 24px; /* Matched to AI Buy Report header spacing */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 12px;
     width: 100%; /* Ensure full width for centering */
