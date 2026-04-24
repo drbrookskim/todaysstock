@@ -546,7 +546,7 @@ html:not([data-theme="light"]) .nav-item.active i {
     width: 36px;
     height: 36px;
     background-color: var(--border-soft);
-    border-radius: 10px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
