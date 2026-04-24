@@ -2884,16 +2884,29 @@ html[data-theme="light"] .ai-insight-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px; /* Increased padding */
+    padding: 12px 20px;
     border-radius: 12px;
-    font-size: 1.4rem; /* Doubled from ~0.7rem */
+    font-size: 1.4rem;
     font-weight: 800;
     min-width: 180px;
     gap: 16px;
+    border: 1px solid transparent; /* Base border */
 }
 
-.price-pill.green { background: #ecfdf5; color: #059669; }
-.price-pill.red { background: #fef2f2; color: #dc2626; }
+/* Theme-aware Price Pills */
+.price-pill.green { 
+    background: rgba(16, 185, 129, 0.08); 
+    color: #10b981; 
+    border: 1px solid rgba(16, 185, 129, 0.2); 
+}
+.price-pill.red { 
+    background: rgba(239, 68, 68, 0.08); 
+    color: #ef4444; 
+    border: 1px solid rgba(239, 68, 68, 0.2); 
+}
+
+html[data-theme="light"] .price-pill.green { background: #ecfdf5; color: #059669; border-color: #d1fae5; }
+html[data-theme="light"] .price-pill.red { background: #fef2f2; color: #dc2626; border-color: #fee2e2; }
 
 .pill-label { font-size: 1.1rem; opacity: 0.8; text-transform: uppercase; }
 

@@ -2366,7 +2366,7 @@ function renderAiInsights(data) {
                                     <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
                                         stroke-dasharray="${mainCircumference}" stroke-dashoffset="${mainOffset}"
                                         stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
-                                    <text x="50" y="55" text-anchor="middle" font-size="24" font-weight="900" fill="var(--text-main)">${score}%</text>
+                                    <text x="50" y="55" text-anchor="middle" font-size="44" font-weight="900" fill="var(--text-main)">${score}%</text>
                                 </svg>
                                 <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
                             </div>
