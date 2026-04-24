@@ -2884,17 +2884,18 @@ html[data-theme="light"] .ai-insight-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    min-width: 100px;
+    padding: 12px 20px; /* Increased padding */
+    border-radius: 12px;
+    font-size: 1.4rem; /* Doubled from ~0.7rem */
+    font-weight: 800;
+    min-width: 180px;
+    gap: 16px;
 }
 
 .price-pill.green { background: #ecfdf5; color: #059669; }
 .price-pill.red { background: #fef2f2; color: #dc2626; }
 
-.pill-label { font-size: 0.65rem; opacity: 0.8; text-transform: uppercase; }
+.pill-label { font-size: 1.1rem; opacity: 0.8; text-transform: uppercase; }
 
 .ai-ratio-box {
     display: flex;
@@ -2923,8 +2924,24 @@ html[data-theme="light"] .ai-insight-row {
     gap: 16px; /* Reduced gap */
 }
 
-.unit-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-.unit-val { font-size: 1.05rem; font-weight: 700; color: var(--text-main); }
+.stat-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+}
+
+.unit-label { 
+    font-size: 1.2rem; 
+    color: var(--text-muted); 
+    font-weight: 600; 
+}
+.unit-val { 
+    font-size: 1.6rem; 
+    font-weight: 800; 
+    color: var(--text-main); 
+}
 
 .ai-row-insight {
     font-size: 0.85rem;
@@ -3049,15 +3066,15 @@ html[data-theme="light"] .ai-insight-row {
 .ai-indicator-item {
     display: flex;
     align-items: center;
-    gap: 20px; /* Increased gap */
+    gap: 14px;
     background: rgba(255, 255, 255, 0.03);
-    padding: 16px 24px;
-    border-radius: 18px;
+    padding: 12px 18px;
+    border-radius: 14px;
     border: 1px solid var(--border-soft);
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    width: 240px; /* Increased from 160px */
-    height: 100px; /* Increased from 72px */
-    justify-content: flex-start; /* Better alignment for large text */
+    width: 160px; /* Reverted to original size */
+    height: 72px; /* Reverted to original size */
+    justify-content: center;
 }
 
 .ai-indicator-item:hover {
@@ -3070,28 +3087,26 @@ html[data-theme="light"] .ai-insight-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: scale(1.4); /* Scale up the circle a bit */
+    /* Reverted scale */
 }
 
 .ai-indicator-meta {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .ai-indicator-label {
-    font-size: 1.1rem; /* Significantly increased from 0.75rem */
+    font-size: 0.75rem; /* Reverted */
     font-weight: 600;
     color: var(--text-muted);
-    white-space: nowrap;
 }
 
 .ai-indicator-val {
-    font-size: 1.4rem; /* Significantly increased from 0.85rem */
+    font-size: 0.85rem; /* Reverted */
     font-weight: 700;
     color: var(--text-main);
     font-family: 'Space Grotesk', monospace;
-    white-space: nowrap;
 }
 
 /* ── Main Segmented Gauge ── */
