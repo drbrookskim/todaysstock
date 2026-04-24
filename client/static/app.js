@@ -2339,16 +2339,9 @@ function renderAiInsights(data) {
                 </div>`;
         }).join('');
 
-        // ── 메인 세그먼트 확률 게이지 ──
+        // ── 메인 원형 확률 게이지 (Unified Solid Style) ──
         const mainR = 40;
         const mainCircumference = 2 * Math.PI * mainR; // ~251.3
-        const segmentCount = 12;
-        const gapSize = 4;
-        const dashSize = (mainCircumference / segmentCount) - gapSize;
-        const dashArray = `${dashSize} ${gapSize}`;
-        
-        // 확률에 따른 대시 오프셋 (세그먼트 단위로 끊어서 보여주기 위해 마스크 효과처럼 계산)
-        // 하지만 부드럽게 차는 느낌을 위해 stroke-dashoffset 사용
         const mainOffset = mainCircumference - (score / 100) * mainCircumference;
 
         probHtml = `
@@ -2361,14 +2354,13 @@ function renderAiInsights(data) {
                 <div class="ai-gauge-container">
                     <div class="ai-gauge-main">
                         <svg viewBox="0 0 100 100" width="100" height="100">
-                            <!-- Background Segmented Circle -->
-                            <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"
-                                stroke-dasharray="${dashArray}" transform="rotate(-90 50 50)"/>
-                            <!-- Progress Segmented Circle -->
+                            <!-- Background Circle -->
+                            <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"/>
+                            <!-- Progress Circle -->
                             <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
-                                stroke-dasharray="${dashArray}" stroke-dashoffset="${mainOffset}"
-                                stroke-linecap="butt" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
-                            <text x="50" y="52" text-anchor="middle" font-size="22" font-weight="900" fill="var(--text-main)">${score}%</text>
+                                stroke-dasharray="${mainCircumference}" stroke-dashoffset="${mainOffset}"
+                                stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
+                            <text x="50" y="55" text-anchor="middle" font-size="24" font-weight="900" fill="var(--text-main)">${score}%</text>
                         </svg>
                         <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
                     </div>
@@ -2380,7 +2372,7 @@ function renderAiInsights(data) {
                 </div>
             </div>
             <div class="ai-row-insight">
-                <span>추세 강도, 탄력성, 거래량 및 캔들 패턴 가중 합산 결과입니다. 모든 지표가 원형 게이지로 시각화되었습니다.</span>
+                <span>추세 강도, 탄력성, 거래량 및 캔들 패턴 가중 합산 결과입니다. 모든 게이지가 통일된 원형 디자인으로 표시됩니다.</span>
             </div>
         </div>`;
     }
