@@ -228,12 +228,16 @@ function initNavigation() {
                                 const priceClass = change > 0 ? 'up' : (change < 0 ? 'down' : '');
                                 const changeFormatted = data.change_percent ? ` (${data.change > 0 ? '+' : ''}${data.change_percent.toFixed(2)}%)` : '';
                                 
+                                const ticker = currentStock.code || currentStock.ticker || '';
                                 currentStockLabel.innerHTML = `
-                                    <span class="analysis-stock-name">${currentStock.name}</span>
-                                    <span class="analysis-stock-price ${priceClass}">${price}${changeFormatted}</span>
+                                    <span class="analysis-stock-name">${currentStock.name}(${ticker})</span>
+                                    <span class="analysis-stock-divider">|</span>
+                                    <span class="analysis-stock-price-label">주식가격</span>
+                                    <span class="analysis-stock-price ${priceClass}">${price} 원${changeFormatted}</span>
                                 `;
                             } else {
-                                currentStockLabel.textContent = `${currentStock.name} (${currentStock.code || currentStock.ticker || ''})`;
+                                const ticker = currentStock.code || currentStock.ticker || '';
+                                currentStockLabel.textContent = `${currentStock.name}(${ticker})`;
                             }
                         }
                         
