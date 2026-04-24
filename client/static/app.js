@@ -2350,29 +2350,33 @@ function renderAiInsights(data) {
 
         probHtml = `
         <div class="ai-insight-row">
-            <div class="ai-row-label">
-                <i class="ph ph-target"></i>
-                <span>매수 확률</span>
-            </div>
-            <div class="ai-row-primary">
-                <div class="ai-gauge-container">
-                    <div class="ai-gauge-main">
-                        <svg viewBox="0 0 100 100" width="100" height="100">
-                            <!-- Background Circle -->
-                            <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"/>
-                            <!-- Progress Circle -->
-                            <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
-                                stroke-dasharray="${mainCircumference}" stroke-dashoffset="${mainOffset}"
-                                stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
-                            <text x="50" y="55" text-anchor="middle" font-size="24" font-weight="900" fill="var(--text-main)">${score}%</text>
-                        </svg>
-                        <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
-                    </div>
+            <div class="ai-row-main-content">
+                <div class="ai-content-header">
+                    <i class="ph ph-target"></i>
+                    <span>매수 확률</span>
                 </div>
-            </div>
-            <div class="ai-row-details">
-                <div class="ai-indicators-parallel">
-                    ${indicatorCircles}
+                <div class="ai-content-body">
+                    <div class="ai-row-primary">
+                        <div class="ai-gauge-container">
+                            <div class="ai-gauge-main">
+                                <svg viewBox="0 0 100 100" width="100" height="100">
+                                    <!-- Background Circle -->
+                                    <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"/>
+                                    <!-- Progress Circle -->
+                                    <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
+                                        stroke-dasharray="${mainCircumference}" stroke-dashoffset="${mainOffset}"
+                                        stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
+                                    <text x="50" y="55" text-anchor="middle" font-size="24" font-weight="900" fill="var(--text-main)">${score}%</text>
+                                </svg>
+                                <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ai-row-details">
+                        <div class="ai-indicators-parallel">
+                            ${indicatorCircles}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="ai-row-insight">
@@ -2387,26 +2391,30 @@ function renderAiInsights(data) {
         const rrColor = (atr.rr_ratio ?? 0) >= 1.5 ? '#10b981' : '#f59e0b';
         atrHtml = `
         <div class="ai-insight-row">
-            <div class="ai-row-label">
-                <i class="ph ph-chart-line"></i>
-                <span>목표 / 손절</span>
-            </div>
-            <div class="ai-row-primary">
-                <div class="ai-price-pill-group">
-                    <div class="price-pill green">
-                        <span class="pill-label">Target</span>
-                        <span class="pill-val">${atr.target?.toLocaleString()}</span>
-                    </div>
-                    <div class="price-pill red">
-                        <span class="pill-label">Stop</span>
-                        <span class="pill-val">${atr.stop_loss?.toLocaleString()}</span>
-                    </div>
+            <div class="ai-row-main-content">
+                <div class="ai-content-header">
+                    <i class="ph ph-chart-line"></i>
+                    <span>목표 / 손절</span>
                 </div>
-            </div>
-            <div class="ai-row-details">
-                <div class="ai-ratio-box" style="color:${rrColor}">
-                    <span class="ratio-label">R:R Ratio</span>
-                    <span class="ratio-val">1 : ${atr.rr_ratio}</span>
+                <div class="ai-content-body">
+                    <div class="ai-row-primary">
+                        <div class="ai-price-pill-group">
+                            <div class="price-pill green">
+                                <span class="pill-label">Target</span>
+                                <span class="pill-val">${atr.target?.toLocaleString()}</span>
+                            </div>
+                            <div class="price-pill red">
+                                <span class="pill-label">Stop</span>
+                                <span class="pill-val">${atr.stop_loss?.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ai-row-details">
+                        <div class="ai-ratio-box" style="color:${rrColor}">
+                            <span class="ratio-label">R:R Ratio</span>
+                            <span class="ratio-val">1 : ${atr.rr_ratio}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="ai-row-insight">
@@ -2418,28 +2426,30 @@ function renderAiInsights(data) {
     // ── 3. 이상 거래량 배지 ──
     let volHtml = '';
     if (vol) {
-        const levelClass = vol.level !== 'normal' ? `vol-${vol.level}` : '';
-        const dirIcon = vol.direction === 'up' ? '🔴' : '🔵';
         volHtml = `
         <div class="ai-insight-row">
-            <div class="ai-row-label">
-                <i class="ph ph-wave-sine"></i>
-                <span>거래량 이상</span>
-            </div>
-            <div class="ai-row-primary">
-                <div class="status-pill premium ${vol.level}">
-                    <span>${vol.label}</span>
+            <div class="ai-row-main-content">
+                <div class="ai-content-header">
+                    <i class="ph ph-wave-sine"></i>
+                    <span>거래량 이상</span>
                 </div>
-            </div>
-            <div class="ai-row-details">
-                <div class="ai-stats-row">
-                    <div class="stat-unit">
-                        <span class="unit-label">Ratio</span>
-                        <span class="unit-val">${vol.ratio}x</span>
+                <div class="ai-content-body">
+                    <div class="ai-row-primary">
+                        <div class="status-pill premium ${vol.level}">
+                            <span>${vol.label}</span>
+                        </div>
                     </div>
-                    <div class="stat-unit">
-                        <span class="unit-label">Z-Score</span>
-                        <span class="unit-val">${vol.zscore}</span>
+                    <div class="ai-row-details">
+                        <div class="ai-stats-row">
+                            <div class="stat-unit">
+                                <span class="unit-label">Ratio</span>
+                                <span class="unit-val">${vol.ratio}x</span>
+                            </div>
+                            <div class="stat-unit">
+                                <span class="unit-label">Z-Score</span>
+                                <span class="unit-val">${vol.zscore}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
