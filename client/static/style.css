@@ -3115,8 +3115,8 @@ html[data-theme="light"] .ai-insight-row {
     grid-template-areas: 
         "label primary details"
         "label insight insight";
-    gap: 32px; /* Increased from 24px */
-    padding: 64px; /* Doubled from 32px */
+    gap: 32px;
+    padding: 32px 64px 64px 64px; /* Reduced top padding (1) to 32px */
     background: rgba(255, 255, 255, 0.01);
     border-radius: 24px;
     border: 1px solid var(--border-soft);
@@ -3129,7 +3129,7 @@ html[data-theme="light"] .ai-insight-row {
     flex-direction: column; 
     gap: 16px; 
     color: var(--text-muted); 
-    padding-top: 16px; /* Doubled from 8px */
+    padding-top: 8px; /* Reduced by half (1) */
 }
 
 .ai-row-primary { 
@@ -3138,21 +3138,21 @@ html[data-theme="light"] .ai-insight-row {
     align-items: flex-start; 
     justify-content: center; 
     border-right: 1px solid var(--border-soft); 
-    padding-top: 20px; /* Doubled from 10px */
+    padding-top: 10px; /* Reduced by half (1) */
 }
 
 .ai-row-details { 
     grid-area: details; 
-    padding-top: 20px; /* Doubled from 10px */
+    padding-top: 10px; /* Reduced by half (1) */
 }
 
 .ai-row-insight { 
     grid-area: insight; 
     font-size: 0.85rem; 
     color: var(--text-muted); 
-    padding-top: 32px; /* Doubled from 16px */
+    padding-top: 64px; /* Doubled (2) from 32px */
     border-top: 1px solid var(--border-soft); 
-    margin-top: 32px; /* Doubled from 16px */
+    margin-top: 64px; /* Doubled (2) from 32px */
 }
 
 @media (max-width: 992px) {
@@ -3163,7 +3163,7 @@ html[data-theme="light"] .ai-insight-row {
             "primary"
             "details"
             "insight";
-        padding: 40px; /* Increased for mobile */
+        padding: 32px;
     }
     .ai-row-primary { border-right: none; border-bottom: 1px solid var(--border-soft); padding-bottom: 32px; }
 }
