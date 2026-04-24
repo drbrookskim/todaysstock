@@ -2733,8 +2733,9 @@ html[data-theme="light"] .chart-legend {
 
 .legend-item {
     display: flex;
-    align-items: center;
-    gap: 5px;
+    flex-direction: column; /* Stack vertically */
+    align-items: flex-start;
+    gap: 2px; /* Small gap between label and value */
 }
 
 .legend-label {
@@ -2745,8 +2746,10 @@ html[data-theme="light"] .chart-legend {
 }
 
 .legend-val {
-    min-width: 55px;
+    min-width: 50px;
     letter-spacing: -0.2px;
+    font-size: 0.82rem;
+    font-weight: 700;
 }
 
 /* OHLC Colors */

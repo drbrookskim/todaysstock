@@ -3056,16 +3056,16 @@ function renderCandleChart(candles) {
             const fmt = (v) => v != null ? Math.round(v).toLocaleString() : '—';
             
             legend.innerHTML = `
-                <div class="legend-item"><span class="legend-label">일자</span> <span class="legend-val">${data.time}</span></div>
-                <div class="legend-item"><span class="legend-label">시가</span> <span class="legend-val ${colorClass}">${fmt(data.open)}</span></div>
-                <div class="legend-item"><span class="legend-label">종가</span> <span class="legend-val ${colorClass}">${fmt(data.close)}</span></div>
-                <div class="legend-item"><span class="legend-label">고가</span> <span class="legend-val ${colorClass}">${fmt(data.high)}</span></div>
-                <div class="legend-item"><span class="legend-label">저가</span> <span class="legend-val ${colorClass}">${fmt(data.low)}</span></div>
-                <div class="legend-item"><span class="legend-label">RSI(14)</span> <span class="legend-val" style="color:#818cf8;">${data.rsi ? data.rsi.toFixed(1) : '—'}</span></div>
-                <div class="legend-item"><span class="legend-label ma5-label">5일선</span> <span class="legend-val ma5-label">${fmt(data.ma5)}</span></div>
-                <div class="legend-item"><span class="legend-label ma20-label">20일선</span> <span class="legend-val ma20-label">${fmt(data.ma20)}</span></div>
-                <div class="legend-item"><span class="legend-label ma60-label">60일선</span> <span class="legend-val ma60-label">${fmt(data.ma60)}</span></div>
-                <div class="legend-item"><span class="legend-label ma120-label">120일선</span> <span class="legend-val ma120-label">${fmt(data.ma120)}</span></div>
+                <div class="legend-item"><span class="legend-label">일자</span><span class="legend-val">${data.time}</span></div>
+                <div class="legend-item"><span class="legend-label">시가</span><span class="legend-val ${colorClass}">${fmt(data.open)}</span></div>
+                <div class="legend-item"><span class="legend-label">종가</span><span class="legend-val ${colorClass}">${fmt(data.close)}</span></div>
+                <div class="legend-item"><span class="legend-label">고가</span><span class="legend-val ${colorClass}">${fmt(data.high)}</span></div>
+                <div class="legend-item"><span class="legend-label">저가</span><span class="legend-val ${colorClass}">${fmt(data.low)}</span></div>
+                <div class="legend-item"><span class="legend-label">RSI(14)</span><span class="legend-val" style="color:#818cf8;">${data.rsi ? data.rsi.toFixed(1) : '—'}</span></div>
+                <div class="legend-item"><span class="legend-label ma5-label">5일선</span><span class="legend-val ma5-label">${fmt(data.ma5)}</span></div>
+                <div class="legend-item"><span class="legend-label ma20-label">20일선</span><span class="legend-val ma20-label">${fmt(data.ma20)}</span></div>
+                <div class="legend-item"><span class="legend-label ma60-label">60일선</span><span class="legend-val ma60-label">${fmt(data.ma60)}</span></div>
+                <div class="legend-item"><span class="legend-label ma120-label">120일선</span><span class="legend-val ma120-label">${fmt(data.ma120)}</span></div>
             `;
         }
     }
