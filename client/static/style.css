@@ -3049,15 +3049,15 @@ html[data-theme="light"] .ai-insight-row {
 .ai-indicator-item {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 20px; /* Increased gap */
     background: rgba(255, 255, 255, 0.03);
-    padding: 12px 18px;
-    border-radius: 14px;
+    padding: 16px 24px;
+    border-radius: 18px;
     border: 1px solid var(--border-soft);
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    width: 160px; /* Fixed width for equal size */
-    height: 72px; /* Fixed height for equal size */
-    justify-content: center;
+    width: 240px; /* Increased from 160px */
+    height: 100px; /* Increased from 72px */
+    justify-content: flex-start; /* Better alignment for large text */
 }
 
 .ai-indicator-item:hover {
@@ -3070,25 +3070,28 @@ html[data-theme="light"] .ai-insight-row {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: scale(1.4); /* Scale up the circle a bit */
 }
 
 .ai-indicator-meta {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .ai-indicator-label {
-    font-size: 0.75rem;
+    font-size: 1.1rem; /* Significantly increased from 0.75rem */
     font-weight: 600;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 
 .ai-indicator-val {
-    font-size: 0.85rem;
+    font-size: 1.4rem; /* Significantly increased from 0.85rem */
     font-weight: 700;
     color: var(--text-main);
     font-family: 'Space Grotesk', monospace;
+    white-space: nowrap;
 }
 
 /* ── Main Segmented Gauge ── */
