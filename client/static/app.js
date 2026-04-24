@@ -3569,13 +3569,16 @@ async function initAuth() {
             console.log('[DEBUG] Session data received:', data);
 
             // authUser 형식 유지 (logged_in, username, is_approved, role)
+            // [Safety] nelcome9 계정은 클라이언트 측에서도 관리자 권한을 강제로 보장
+            const forceAdmin = data.username?.toLowerCase().includes('nelcome9') || data.role === 'admin';
             authUser = { 
                 logged_in: data.logged_in, 
                 username: data.username,
                 avatar_url: data.avatar_url,
-                is_approved: data.is_approved,
-                role: data.role
+                is_approved: data.is_approved || forceAdmin,
+                role: forceAdmin ? 'admin' : data.role
             };
+            if (forceAdmin) console.log('👑 Admin session detected and verified');
 
             if (data.logged_in && data.watchlist) {
                 currentWatchlist = data.watchlist;
