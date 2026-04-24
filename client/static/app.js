@@ -48,6 +48,21 @@ async function fetchWithTimeout(resource, options = {}) {
 let suggestItems = [];
 let activeIndex = -1;
 let debounceTimer = null;
+
+// ── 클라이언트 측 종목 캐시 (stocks.json 로드 후 즉시 검색용) ──
+let _stocksCache = [];
+
+(async function _loadStocksCache() {
+    try {
+        const r = await fetch('./static/stocks.json');
+        if (r.ok) {
+            _stocksCache = await r.json();
+            console.log(`[Stocks] 클라이언트 캐시 로드 완료: ${_stocksCache.length}개`);
+        }
+    } catch (e) {
+        console.warn('[Stocks] stocks.json 로드 실패 — 서버 API 사용:', e);
+    }
+})();
 let currentWatchlist = [];
 let currentIndexChart = null; // Lightweight Chart instance
 let currentStock = null;
@@ -805,10 +820,39 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// ── Suggestions API ──
+// ── Suggestions (클라이언트 캐시 우선, 서버 API 폴백) ──
 async function fetchSuggestions(query) {
     try {
-        const res = await fetchWithTimeout(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`, { timeout: 30000 });
+        // 1순위: 클라이언트 측 즉시 검색 (네트워크 0ms)
+        if (_stocksCache.length > 0) {
+            const q = query.trim().toUpperCase();
+            let results = [];
+            // 코드 정확 일치
+            const exact = _stocksCache.find(s => s.code === query.trim());
+            if (exact) results.push(exact);
+            // 이름이 query로 시작
+            for (const s of _stocksCache) {
+                if (!results.includes(s) && s.name.toUpperCase().startsWith(q)) {
+                    results.push(s);
+                    if (results.length >= 20) break;
+                }
+            }
+            // 이름에 포함
+            if (results.length < 20) {
+                for (const s of _stocksCache) {
+                    if (!results.includes(s) && (s.name.toUpperCase().includes(q) || s.code.includes(query.trim()))) {
+                        results.push(s);
+                        if (results.length >= 20) break;
+                    }
+                }
+            }
+            suggestItems = results;
+            activeIndex = -1;
+            renderSuggestions(results, query);
+            return;
+        }
+        // 2순위: 서버 API 폴백
+        const res = await fetchWithTimeout(API_BASE_URL + `/api/suggest?q=${encodeURIComponent(query)}`, { timeout: 5000 });
         const data = await res.json();
         suggestItems = data;
         activeIndex = -1;
