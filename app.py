@@ -809,13 +809,22 @@ def session():
         # 프로필 정보 연동
         profile = _get_or_create_profile(user_res.user.id, email, avatar_url=avatar_url)
 
+        # [강제 보정] 초기 관리자 이메일이면 항상 admin 권한으로 응답
+        is_admin_email = (email.lower() == INITIAL_ADMIN_EMAIL.lower())
+        resolved_role = "admin" if is_admin_email else profile.get("role", "user")
+        resolved_approved = True if is_admin_email else profile.get("is_approved", False)
+        
+        if is_admin_email:
+            print(f"👑 [Session] Admin confirmed for {email}")
+
         return jsonify({
             "logged_in": True, 
-            "username": username, 
+            "username": username,
+            "email": email,
             "avatar_url": avatar_url,
             "watchlist": watchlist,
-            "is_approved": profile.get("is_approved", False),
-            "role": profile.get("role", "user")
+            "is_approved": resolved_approved,
+            "role": resolved_role
         })
     except Exception as e:
         print(f"session error: {e}")
