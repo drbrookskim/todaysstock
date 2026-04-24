@@ -3046,17 +3046,18 @@ html[data-theme="light"] .ai-insight-row {
 .ai-indicator-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.02);
-    padding: 8px 12px;
-    border-radius: 12px;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 18px;
+    border-radius: 14px;
     border: 1px solid var(--border-soft);
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .ai-indicator-item:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .ai-indicator-svg {
@@ -3068,7 +3069,7 @@ html[data-theme="light"] .ai-insight-row {
 .ai-indicator-meta {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .ai-indicator-label {
@@ -3116,11 +3117,11 @@ html[data-theme="light"] .ai-insight-row {
         "label primary details"
         "label insight insight";
     gap: 32px;
-    padding: 32px 64px 64px 64px; /* Reduced top padding (1) to 32px */
+    padding: 48px 56px; /* More balanced padding */
     background: rgba(255, 255, 255, 0.01);
     border-radius: 24px;
     border: 1px solid var(--border-soft);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .ai-row-label { 
