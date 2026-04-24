@@ -3038,9 +3038,9 @@ html[data-theme="light"] .ai-insight-row {
 /* ── AI Indicators Circular (Parallel) ── */
 .ai-indicators-parallel {
     display: flex;
-    gap: 16px;
+    gap: 20px;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: center; /* Centered indicators */
 }
 
 .ai-indicator-item {
@@ -3146,9 +3146,9 @@ html[data-theme="light"] .ai-insight-row {
 .ai-content-body {
     display: flex;
     align-items: center;
-    justify-content: space-around; /* Spread out gauge and details */
-    gap: 40px;
-    padding: 10px 0;
+    justify-content: center; /* Centered entire content group */
+    gap: 60px; /* Increased gap for better balance when centered */
+    padding: 20px 0;
 }
 
 .ai-row-primary { 
