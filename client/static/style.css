@@ -2793,7 +2793,7 @@ html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 .ai-insight-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px; /* Matched to AI Buy Report spacing */
+    gap: 16px; /* Reduced gap */
     margin-top: 16px;
 }
 
@@ -2920,7 +2920,7 @@ html[data-theme="light"] .ai-insight-row {
 .ai-insight-grid {
     display: flex;
     flex-direction: column;
-    gap: 24px; /* Matched to AI Buy Report spacing */
+    gap: 16px; /* Reduced gap */
 }
 
 .unit-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
@@ -3141,7 +3141,7 @@ html[data-theme="light"] .ai-insight-row {
     color: var(--text-main);
     font-size: 1.1rem;
     font-weight: 700;
-    margin-bottom: 24px; /* Matched to AI Buy Report header spacing */
+    margin-bottom: 12px; /* Reduced from 24px */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 12px;
     width: 100%; /* Ensure full width for centering */
@@ -3157,8 +3157,8 @@ html[data-theme="light"] .ai-insight-row {
     flex-wrap: wrap; /* Enable wrapping for responsiveness */
     align-items: center;
     justify-content: center; /* Centered entire content group */
-    gap: 40px 60px; /* Vertical and horizontal gap */
-    padding: 30px 0;
+    gap: 20px 40px; /* Reduced gaps */
+    padding: 15px 0; /* Reduced padding */
 }
 
 .ai-row-primary { 
