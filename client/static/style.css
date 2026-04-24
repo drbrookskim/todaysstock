@@ -994,6 +994,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .search-card {
+    position: relative;
     width: 100%;
     max-width: 1200px; /* Matches standard container width */
     background-color: var(--bg-card);
@@ -1018,6 +1019,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .search-card .search-wrapper {
+    position: relative;
     display: flex;
     gap: 8px;
     background-color: var(--bg-app);
@@ -1153,7 +1155,7 @@ html[data-theme="light"] .theme-icon-btn i {
 /* ── Suggest Dropdown ── */
 .suggest-dropdown {
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + 8px);
     left: 0;
     right: 0;
     background: var(--bg-card);
