@@ -5910,7 +5910,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 /* ── Macro Dashboard (Split View) ── */
 .macro-dashboard {
     display: grid;
-    grid-template-columns: 350px 1fr;
+    grid-template-columns: minmax(320px, 350px) 1fr;
     gap: 24px;
     background: var(--bg-card);
     border: 1px solid var(--border-soft);
@@ -5956,7 +5956,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     background: var(--primary-soft);
     border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(81, 84, 238, 0.2);
-    transform: translateX(4px);
+    transform: translateY(-2px); /* Vertical lift instead of horizontal push to avoid clipping */
 }
 
 .index-item.active .indicator-label {
