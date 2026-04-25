@@ -240,7 +240,7 @@ function initNavigation() {
                                 
                                 // NXT Extended Hours Logic
                                 let extendedHtml = '';
-                                const isNXT = (currentStock.code === 'NXT' || currentStock.ticker === 'NXT' || (currentStock.name && currentStock.name.toUpperCase().includes('NXT')));
+                                const isNXT = (currentStock.code === 'NXT' || currentStock.ticker === 'NXT' || (currentStock.name?.toUpperCase().includes('NXT')));
                                 if (isNXT && data.extended_price) {
                                     extendedHtml = ` <span class="analysis-extended-price" style="font-size:0.85rem; color:var(--text-muted); opacity:0.8;">| 시간 외 거래가 ${data.extended_price.toLocaleString()}원</span>`;
                                 }
