@@ -5940,7 +5940,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: 12px 28px; /* Increased padding to narrow the internal gap by approx 20% */
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -6052,7 +6052,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .indicator-values {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; /* Slightly tighter gap for better grouping */
     text-align: right;
 }
 
