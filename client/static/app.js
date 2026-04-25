@@ -1824,13 +1824,15 @@ function renderAnalysisReport(data) {
 
     // Reset Classes
     const cfg = trendConfig[data.trend] || trendConfig.neutral;
-    trendBadge.className = `trend-pill ${data.trend}`;
+    trendBadge.className = `trend-pill glass-mode ${data.trend}`;
     trendIcon.textContent = cfg.icon;
     
-    // [UI REFINEMENT] Wrap tactical guidance in smaller font as requested (10% smaller)
-    trendLabel.innerHTML = data.trend_label
+    // [UI REFINEMENT] Use a span for color-coded label text
+    const cleanLabel = data.trend_label
         .replace(' (', '<br><span style="font-size: 0.88rem; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px;">(')
         .replace(')', ')</span>');
+    
+    trendLabel.innerHTML = `<span class="trend-label-text">${cleanLabel}</span>`;
 
     // [VISUAL] Apply Signal Strength Gauge V2 Logic (Matching Fear & Greed)
     const trendSignalTile = document.getElementById('trendSignalTile');
