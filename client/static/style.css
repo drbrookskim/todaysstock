@@ -2793,7 +2793,7 @@ html[data-theme="light"] .ma120-label { color: #6D28D9; } /* Darker Purple */
 .ai-insight-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px; /* Reduced gap */
+    gap: 24px; /* Standardized to 24px */
     margin-top: 16px;
 }
 
@@ -2934,7 +2934,7 @@ html[data-theme="light"] .price-pill.red { background: #fef2f2; color: #dc2626; 
 .ai-insight-grid {
     display: flex;
     flex-direction: column;
-    gap: 16px; /* Reduced gap */
+    gap: 24px; /* Standardized to 24px */
 }
 
 .stat-unit {
@@ -3179,8 +3179,8 @@ html[data-theme="dark"] .ai-indicator-item {
     color: var(--text-main);
     font-size: 1.05rem;
     font-weight: 700;
-    margin-bottom: 10px;
-    margin-top: 24px; /* Distinct space between rows */
+    margin-bottom: 12px;
+    margin-top: 32px; /* Increased to maintain 24px rhythm with preceding row */
     display: flex;
     align-items: center;
     gap: 10px;
