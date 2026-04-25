@@ -3072,17 +3072,17 @@ html[data-theme="light"] .price-pill.red { background: #fef2f2; color: #dc2626; 
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(255, 255, 255, 0.05); /* Glass base */
+    background: rgba(255, 255, 255, 0.05); /* Pure glass base */
     backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     padding: 12px 20px;
-    border-radius: 9999px; /* Pill shape instead of rectangle */
+    border-radius: 9999px; /* Smooth pill shape */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    width: auto; /* Fluid width */
-    min-width: 150px;
-    height: 64px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 155px;
+    height: 66px;
     justify-content: center;
-    box-shadow: none; /* No boxy shadow */
+    box-shadow: none;
 }
 
 html[data-theme="dark"] .ai-indicator-item {
@@ -3099,23 +3099,27 @@ html[data-theme="dark"] .ai-indicator-item {
 /* ── Main Gauge Icons ── */
 .ai-gauge-icon-labels {
     position: absolute;
-    width: 100%;
+    width: 130%; /* Expand beyond gauge */
     display: flex;
     justify-content: space-between;
-    padding: 0 10px;
-    top: 35px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     pointer-events: none;
+    z-index: 1;
 }
 
 .gauge-icon {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.65rem;
-    font-weight: 700;
-    opacity: 0.5;
-    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    opacity: 0.7;
 }
+
+.gauge-icon.sell { color: var(--accent-blue); }
+.gauge-icon.buy { color: var(--accent-red); }
 
 .gauge-icon i {
     font-size: 1.1rem;
