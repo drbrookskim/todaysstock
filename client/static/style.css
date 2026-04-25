@@ -8417,7 +8417,17 @@ body.vc-fullscreen-active .main-content {
     }
 }
 
-/* --- Premium Glassmorphism Trend Analysis (v167) --- */
+/* --- Premium Glassmorphism Trend Analysis (v168) --- */
+#trendContainer {
+    display: flex;
+    flex-direction: column; /* Stacked for better centering across widths */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 28px;
+    padding: 10px 0;
+}
+
 .trend-signal-tile.gauge-v2-mode {
     background: transparent !important;
     border: none !important;
@@ -8427,18 +8437,17 @@ body.vc-fullscreen-active .main-content {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
 }
 
 .trend-gauge-v2 {
-    width: 180px;
-    height: 90px;
+    width: 200px; /* Slightly larger for presence */
+    height: 100px;
     position: relative;
     overflow: hidden;
-    border-top-left-radius: 90px;
-    border-top-right-radius: 90px;
+    border-top-left-radius: 100px;
+    border-top-right-radius: 100px;
     background: var(--border-soft);
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .trend-gauge-v2-bg {
@@ -8446,9 +8455,9 @@ body.vc-fullscreen-active .main-content {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, 
-        rgba(239, 68, 68, 0.6) 0%, 
-        rgba(245, 158, 11, 0.6) 50%, 
-        rgba(59, 130, 246, 0.6) 100%
+        rgba(239, 68, 68, 0.7) 0%, 
+        rgba(245, 158, 11, 0.7) 50%, 
+        rgba(59, 130, 246, 0.7) 100%
     );
 }
 
@@ -8458,7 +8467,7 @@ body.vc-fullscreen-active .main-content {
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--bg-card);
+    background: var(--bg-card); /* Theme-aware background */
     transform-origin: bottom center;
     transform: rotate(0deg);
     transition: transform 1.5s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -8469,81 +8478,96 @@ body.vc-fullscreen-active .main-content {
     bottom: 0;
     left: 50%;
     width: 4px;
-    height: 85px;
-    background: #fff; /* White needle for contrast */
+    height: 95px;
+    background: var(--text-main); /* Theme-aware contrast */
     transform-origin: bottom center;
     transform: rotate(-90deg);
     transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 10;
-    box-shadow: 0 0 15px rgba(255,255,255,0.4);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
 .trend-gauge-labels {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-top: 8px;
     gap: 4px;
 }
 
 .gauge-v2-value {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 900;
     font-family: 'Space Grotesk', sans-serif;
     color: var(--text-main);
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
 }
 
-/* Glassmorphism Trend Pill (MA Style) */
+.signal-desc {
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+/* Glassmorphism Trend Pill (Theme Optimized) */
 .trend-pill.glass-mode {
     background: var(--glass-bg) !important;
-    backdrop-filter: var(--glass-blur, blur(12px)) saturate(180%) !important;
-    -webkit-backdrop-filter: var(--glass-blur, blur(12px)) saturate(180%) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
     border: 1px solid var(--glass-border) !important;
     box-shadow: var(--glass-shadow), var(--glass-highlight) !important;
-    padding: 12px 24px !important;
-    border-radius: 40px !important; /* Perfect Pill */
+    padding: 14px 28px !important;
+    border-radius: 40px !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 6px;
-    transition: all 0.3s ease;
+    max-width: 90%; /* Prevent overflow on very narrow screens */
 }
 
-.trend-pill.bullish { border-color: rgba(239, 68, 68, 0.3) !important; }
-.trend-pill.bearish { border-color: rgba(59, 130, 246, 0.3) !important; }
-
-/* Signal-based Colors */
+/* Signal-based Colors (Vivid for both themes) */
 .signal-strong .gauge-v2-value, 
 .signal-strong .signal-desc,
 .trend-bullish .trend-label-text {
-    color: #f87171 !important; /* Vibrant Red */
+    color: #ef4444 !important; /* Standardized Bullish Red */
 }
 
 .signal-weak .gauge-v2-value, 
 .signal-weak .signal-desc,
 .trend-bearish .trend-label-text {
-    color: #60a5fa !important; /* Vibrant Blue */
+    color: #3b82f6 !important; /* Standardized Bearish Blue */
 }
 
 .signal-medium .gauge-v2-value,
 .signal-medium .signal-desc {
-    color: #fbbf24 !important;
+    color: #f59e0b !important;
 }
 
 #trendBadge {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#trendBadge:hover {
-    transform: scale(1.02) translateY(-2px);
+#trendLabel {
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.5;
+    letter-spacing: -0.02em;
 }
 
-#trendLabel {
-    font-size: 1.1rem;
-    font-weight: 800;
-    line-height: 1.4;
-    letter-spacing: -0.02em;
+@media (max-width: 1024px) {
+    .trend-gauge-v2 {
+        width: 160px;
+        height: 80px;
+        border-top-left-radius: 80px;
+        border-top-right-radius: 80px;
+    }
+    .trend-gauge-v2-needle {
+        height: 75px;
+    }
+    .gauge-v2-value {
+        font-size: 1.8rem;
+    }
 }
 
 @media (max-width: 1024px) {
