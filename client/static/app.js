@@ -1832,10 +1832,11 @@ function renderAnalysisReport(data) {
         .replace(' (', '<br><span style="font-size: 0.88rem; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px;">(')
         .replace(')', ')</span>');
 
-    // [VISUAL] Apply Signal Strength Gauge Logic
+    // [VISUAL] Apply Signal Strength Gauge V2 Logic (Matching Fear & Greed)
     const trendSignalTile = document.getElementById('trendSignalTile');
     const trendSignalDesc = document.getElementById('trendSignalDesc');
-    const trendNeedleGroup = document.getElementById('trendNeedleGroup');
+    const trendGaugeFill = document.getElementById('trendGaugeFill');
+    const trendGaugeNeedle = document.getElementById('trendGaugeNeedle');
     const strength = data.trend_strength || 0;
     
     if (trendSignalTile) {
@@ -1849,13 +1850,15 @@ function renderAnalysisReport(data) {
             signalText = '중간 신호';
         }
         
-        trendSignalTile.className = `trend-signal-tile gauge-mode ${signalClass}`;
+        trendSignalTile.className = `trend-signal-tile gauge-v2-mode ${signalClass}`;
         if (trendSignalDesc) trendSignalDesc.textContent = signalText;
         
-        // Needle Rotation: -90 (0%) to 90 (100%)
-        if (trendNeedleGroup) {
-            const rotation = (strength / 100) * 180 - 90;
-            trendNeedleGroup.style.transform = `rotate(${rotation}deg)`;
+        // Gauge V2 Rotation (Matching F&G)
+        if (trendGaugeFill && trendGaugeNeedle) {
+            const needleRotation = (strength / 100) * 180 - 90;
+            const fillRotation = (strength / 100) * 180;
+            trendGaugeNeedle.style.transform = `rotate(${needleRotation}deg)`;
+            trendGaugeFill.style.transform = `rotate(${fillRotation}deg)`;
         }
     }
 
