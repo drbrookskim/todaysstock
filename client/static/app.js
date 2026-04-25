@@ -4774,10 +4774,10 @@ const HELP_CONTENT = {
 
             <div class="card" style="background: var(--bg-app); border-left: 4px solid var(--primary); margin-top: 20px; border-radius: 12px;">
                 <h3 style="color: var(--primary); display: flex; align-items: center; gap: 8px; font-size: 1rem;">
-                    <i class="ph ph-lightning"></i> 심층 분석 팁: 평균대세(Heikin-Ashi) 활용
+                    <i class="ph ph-lightning"></i> 심층 분석 팁: 평균대세 활용
                 </h3>
                 <p style="margin-top: 8px; font-size: 0.95rem; color: var(--text-main);">
-                    AI 추세 분석과 함께 **평균대세(HA)** 차트를 사용해 보세요. 
+                    AI 추세 분석과 함께 **평균대세** 차트를 사용해 보세요. 
                     장중의 미세한 가격 흔들림(노이즈)을 제거하여, 현재의 상승/하강 추세가 얼마나 견고한지 시각적으로 한눈에 파악할 수 있도록 도와줍니다.
                 </p>
                 <div style="margin-top: 12px; font-size: 0.85rem; color: var(--text-sub);">
@@ -5177,10 +5177,10 @@ const HELP_CONTENT = {
                 </div>
             </div>
 
-            <!-- 🕯️ 평균대세(Heikin-Ashi) 상세 가이드 추가 -->
+            <!-- 🕯️ 평균대세 상세 가이드 추가 -->
             <div class="card" style="background: var(--bg-app); border-top: 4px solid var(--primary); margin-top: 40px; border-radius: 12px; padding: 24px;">
                 <h2 style="color: var(--primary); font-size: 1.4rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-                    <i class="ph ph-sparkle" style="font-size: 1.8rem;"></i> 평균대세 (Heikin-Ashi) 가이드
+                    <i class="ph ph-sparkle" style="font-size: 1.8rem;"></i> 평균대세 가이드
                 </h2>
                 
                 <p style="font-size: 1rem; line-height: 1.7; color: var(--text-main); margin-bottom: 20px;">
@@ -5193,7 +5193,7 @@ const HELP_CONTENT = {
                             <tr>
                                 <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">비교 항목</th>
                                 <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">일반 캔들</th>
-                                <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">평균대세 (HA)</th>
+                                <th style="padding: 12px; border-bottom: 2px solid var(--primary); text-align: left; font-size: 0.9rem; color: var(--primary);">평균대세</th>
                             </tr>
                         </thead>
                         <tbody>
