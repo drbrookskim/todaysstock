@@ -1464,10 +1464,10 @@ async function renderMacroIndicators() {
                 const change = idx.change || '-';
                 const trendClass = idx.up ? 'up' : 'down';
                 return `
-                    <div class="index-item" 
+                    <div class="indicator-row clickable" 
                          data-id="${idx.id}" 
                          data-name="${idx.name}" 
-                         onclick="renderIndexChart('${idx.id}', '${idx.name}'); document.querySelectorAll('.index-item').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                         onclick="renderIndexChart('${idx.id}', '${idx.name}'); document.querySelectorAll('.indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
                         <span class="indicator-label">${idx.name}</span>
                         <div class="indicator-values">
                             <span class="indicator-price">${price}</span>
@@ -1478,9 +1478,9 @@ async function renderMacroIndicators() {
             }).join('');
 
             // Auto-select KOSPI if not already selecting something
-            const activeItem = indexList.querySelector('.index-item.active');
+            const activeItem = indexList.querySelector('.indicator-row.clickable.active');
             if (!activeItem) {
-                const kospi = indexList.querySelector('.index-item[data-id="KOSPI"]');
+                const kospi = indexList.querySelector('.indicator-row.clickable[data-id="KOSPI"]');
                 if (kospi) {
                     kospi.classList.add('active');
                     renderIndexChart('KOSPI', 'KOSPI');

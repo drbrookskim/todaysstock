@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=170">
+    <link rel="stylesheet" href="./static/style.css?v=171">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -301,25 +301,22 @@
                             <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
                         </div>
     
-                        <div class="macro-dashboard">
-                            <!-- Left Panel: Index List -->
-                            <div class="index-list-panel">
+                        <div class="macro-grid">
+                            <!-- Card 1: Market Indices -->
+                            <div class="macro-card">
                                 <h4 class="card-subtitle">시장 지수</h4>
                                 <div id="indexList" class="index-list">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
-    
-                            <!-- Right Panel: Index Chart -->
-                            <div class="index-chart-panel">
-                                <h4 class="card-subtitle" id="selectedIndexName">KOSPI 1개월 차트</h4>
-                                <div id="indexChart" class="index-chart-container">
+
+                            <!-- Card 2: Index Chart -->
+                            <div class="macro-card" style="min-height: 400px; display: flex; flex-direction: column;">
+                                <h4 class="card-subtitle" id="selectedIndexName">지수 차트 분석</h4>
+                                <div id="indexChart" class="index-chart-container" style="flex: 1;">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
-                        </div>
-    
-                        <div class="macro-grid" style="margin-top: 24px;">
     
                             <!-- Card 2: Economy Indicators -->
                             <div class="macro-card">
@@ -1277,7 +1274,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=170"></script>
+    <script src="./static/app.js?v=171"></script>
 </body>
 
 </html>
