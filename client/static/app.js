@@ -1832,40 +1832,6 @@ function renderAnalysisReport(data) {
         .replace(' (', '<br><span style="font-size: 0.88rem; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px;">(')
         .replace(')', ')</span>');
 
-    // [VISUAL] Apply dynamic badge icons based on trend
-    const aiTrendBlock = document.getElementById('aiTrendBlock');
-    const trendBadgeImg = document.getElementById('trendBadgeImg');
-    
-    if (aiTrendBlock) {
-        // Remove legacy background images
-        aiTrendBlock.style.backgroundImage = 'none';
-        aiTrendBlock.style.backgroundSize = 'initial';
-        aiTrendBlock.style.backgroundPosition = 'initial';
-        
-        // Ensure the content glass background is cleaned up to allow badge visibility
-        const content = aiTrendBlock.querySelector('.workout-content');
-        if (content) {
-            content.style.background = 'transparent';
-            content.style.backdropFilter = 'none';
-        }
-    }
-
-    if (trendBadgeImg) {
-        const badgeMap = {
-            bullish: './static/img/badge_bullish.png',
-            bearish: './static/img/badge_bearish.png',
-            neutral: './static/img/trend_neutral.jpg' // Use telescope image if needed or hide
-        };
-        const badgeSrc = badgeMap[data.trend];
-        if (badgeSrc && (data.trend === 'bullish' || data.trend === 'bearish')) {
-            trendBadgeImg.src = badgeSrc;
-            trendBadgeImg.classList.remove('hidden');
-        } else {
-            // For neutral, we might hide the badge if it doesn't look like a badge
-            trendBadgeImg.classList.add('hidden');
-        }
-    }
-
     trendFill.style.width = '0%';
     
     // Apply matching bar colors
