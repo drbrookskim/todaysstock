@@ -3175,24 +3175,25 @@ html[data-theme="dark"] .ai-indicator-item {
     gap: 24px;
 }
 
-.ai-content-header {
+.ai-insight-category-title {
+    color: var(--text-main);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    margin-top: 24px; /* Distinct space between rows */
     display: flex;
     align-items: center;
-    justify-content: center; /* Center header content */
-    gap: 12px;
-    color: var(--text-main);
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 12px; /* Reduced from 24px */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 12px;
-    width: 100%; /* Ensure full width for centering */
+    gap: 10px;
+    padding-left: 4px; 
 }
 
-.ai-content-header i {
+.ai-insight-category-title i {
     color: var(--primary);
-    font-size: 1.4rem;
+    font-size: 1.3rem;
 }
+
+/* Remove old internal header */
+.ai-content-header { display: none; }
 
 .ai-content-body {
     display: flex;

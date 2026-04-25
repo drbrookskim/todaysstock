@@ -2367,12 +2367,12 @@ function renderAiInsights(data) {
         const mainOffset = mainCircumference - (score / 100) * mainCircumference;
 
         probHtml = `
+        <div class="ai-insight-category-title">
+            <i class="ph ph-target"></i>
+            <span>매수 확률</span>
+        </div>
         <div class="ai-insight-row">
             <div class="ai-row-main-content">
-                <div class="ai-content-header">
-                    <i class="ph ph-target"></i>
-                    <span>매수 확률</span>
-                </div>
                 <div class="ai-content-body">
                     <div class="ai-row-primary">
                         <div class="ai-gauge-container">
@@ -2408,12 +2408,12 @@ function renderAiInsights(data) {
     if (atr) {
         const rrColor = (atr.rr_ratio ?? 0) >= 1.5 ? '#10b981' : '#f59e0b';
         atrHtml = `
+        <div class="ai-insight-category-title">
+            <i class="ph ph-chart-line"></i>
+            <span>목표 / 손절</span>
+        </div>
         <div class="ai-insight-row">
             <div class="ai-row-main-content">
-                <div class="ai-content-header">
-                    <i class="ph ph-chart-line"></i>
-                    <span>목표 / 손절</span>
-                </div>
                 <div class="ai-content-body">
                     <div class="ai-row-primary">
                         <div class="ai-price-pill-group">
@@ -2445,12 +2445,12 @@ function renderAiInsights(data) {
     let volHtml = '';
     if (vol) {
         volHtml = `
+        <div class="ai-insight-category-title">
+            <i class="ph ph-wave-sine"></i>
+            <span>거래량 이상</span>
+        </div>
         <div class="ai-insight-row">
             <div class="ai-row-main-content">
-                <div class="ai-content-header">
-                    <i class="ph ph-wave-sine"></i>
-                    <span>거래량 이상</span>
-                </div>
                 <div class="ai-content-body">
                     <div class="ai-row-primary">
                         <div class="status-pill premium ${vol.level}">
