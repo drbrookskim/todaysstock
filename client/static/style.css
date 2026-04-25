@@ -3072,32 +3072,58 @@ html[data-theme="light"] .price-pill.red { background: #fef2f2; color: #dc2626; 
     display: flex;
     align-items: center;
     gap: 14px;
-    background: var(--bg-card); /* Theme-aware background */
-    padding: 12px 18px;
-    border-radius: 14px;
-    border: 1px solid var(--border-soft);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-}
-
-html[data-theme="light"] .ai-indicator-item {
-    background: #ffffff; /* Solid white for light mode as requested */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.05); /* Glass base */
+    backdrop-filter: blur(12px) saturate(180%);
+    padding: 12px 20px;
+    border-radius: 9999px; /* Pill shape instead of rectangle */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    width: auto; /* Fluid width */
+    min-width: 150px;
+    height: 64px;
+    justify-content: center;
+    box-shadow: none; /* No boxy shadow */
 }
 
 html[data-theme="dark"] .ai-indicator-item {
-    background: rgba(255, 255, 255, 0.02);
-}
-    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    width: 160px; /* Reverted to original size */
-    height: 72px; /* Reverted to original size */
-    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .ai-indicator-item:hover {
     transform: translateY(-3px);
     border-color: var(--primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
 }
+
+/* ── Main Gauge Icons ── */
+.ai-gauge-icon-labels {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    top: 35px;
+    pointer-events: none;
+}
+
+.gauge-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    opacity: 0.5;
+    color: var(--text-muted);
+}
+
+.gauge-icon i {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.gauge-icon.sell { color: #f87171; } /* Reddish for Sell */
+.gauge-icon.buy { color: #34d399; } /* Greenish for Buy */
 
 .ai-indicator-svg {
     display: flex;

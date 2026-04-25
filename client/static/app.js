@@ -2377,6 +2377,10 @@ function renderAiInsights(data) {
                     <div class="ai-row-primary">
                         <div class="ai-gauge-container">
                             <div class="ai-gauge-main">
+                                <div class="ai-gauge-icon-labels">
+                                    <div class="gauge-icon sell"><i class="ph ph-hand-palm"></i><span>매도</span></div>
+                                    <div class="gauge-icon buy"><i class="ph ph-rocket"></i><span>매수</span></div>
+                                </div>
                                 <svg viewBox="0 0 100 100" width="100" height="100">
                                     <!-- Background Circle -->
                                     <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"/>
