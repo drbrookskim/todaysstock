@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=154">
+    <link rel="stylesheet" href="./static/style.css?v=155">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -588,8 +588,13 @@
                                             <button class="help-trigger" onclick="openHelpModal('lesson1')"><i class="ph ph-question"></i></button>
                                         </div>
                                     </div>
-                                    <div class="workout-body" style="padding: 24px;">
-                                        <div id="trendContainer" class="trend-container hidden">
+                                    <div class="workout-body" style="padding: 24px; display: flex; align-items: center; gap: 32px;">
+                                        <!-- Trend Badge Icon (Left) -->
+                                        <div class="trend-badge-container">
+                                            <img id="trendBadgeImg" class="trend-badge-img hidden" src="" alt="Trend Badge">
+                                        </div>
+                                        
+                                        <div id="trendContainer" class="trend-container hidden" style="flex: 1;">
                                             <div class="trend-strength-wrap" style="display: flex; align-items: center; gap: 20px; flex: 1;">
                                                 <span id="trendStrengthText" class="trend-strength-pct" style="font-size: 1.8rem; font-weight: 800; min-width: 80px;">0%</span>
                                                 <div class="trend-strength-bar" style="flex: 1; height: 10px; background: var(--border-soft); border-radius: 5px; overflow: hidden;">
@@ -1262,7 +1267,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=154"></script>
+    <script src="./static/app.js?v=155"></script>
 </body>
 
 </html>
