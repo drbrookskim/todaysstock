@@ -8367,3 +8367,52 @@ body.vc-fullscreen-active .main-content {
         font-size: 1.8rem;
     }
 }
+
+/* --- Gauge Mode for Trend Signal --- */
+.trend-signal-tile.gauge-mode {
+    padding: 12px 20px;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trend-gauge-container {
+    position: relative;
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 1.6 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trend-gauge-svg {
+    width: 100%;
+    height: auto;
+}
+
+.gauge-center-value {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--text-main);
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -1px;
+}
+
+.trend-signal-tile.gauge-mode .signal-desc {
+    margin-top: 4px;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+}
+
+@media (max-width: 1024px) {
+    .trend-gauge-container {
+        max-width: 160px;
+    }
+    .gauge-center-value {
+        font-size: 1.5rem;
+    }
+}

@@ -1832,9 +1832,10 @@ function renderAnalysisReport(data) {
         .replace(' (', '<br><span style="font-size: 0.88rem; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px;">(')
         .replace(')', ')</span>');
 
-    // [VISUAL] Apply Signal Strength Tile Logic (Inspired by Attachment)
+    // [VISUAL] Apply Signal Strength Gauge Logic
     const trendSignalTile = document.getElementById('trendSignalTile');
     const trendSignalDesc = document.getElementById('trendSignalDesc');
+    const trendNeedleGroup = document.getElementById('trendNeedleGroup');
     const strength = data.trend_strength || 0;
     
     if (trendSignalTile) {
@@ -1848,8 +1849,14 @@ function renderAnalysisReport(data) {
             signalText = '중간 신호';
         }
         
-        trendSignalTile.className = `trend-signal-tile ${signalClass}`;
+        trendSignalTile.className = `trend-signal-tile gauge-mode ${signalClass}`;
         if (trendSignalDesc) trendSignalDesc.textContent = signalText;
+        
+        // Needle Rotation: -90 (0%) to 90 (100%)
+        if (trendNeedleGroup) {
+            const rotation = (strength / 100) * 180 - 90;
+            trendNeedleGroup.style.transform = `rotate(${rotation}deg)`;
+        }
     }
 
     trendText.textContent = `${strength}%`;
