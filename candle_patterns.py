@@ -1200,19 +1200,19 @@ def analyze_candle_patterns(df):
 
     if total_score == 0:
         trend = "neutral"
-        trend_label = "중립 (패턴 미감지)"
+        trend_label = "중립"
         trend_strength = 50
     elif bullish_score > bearish_score:
         trend = "bullish"
-        trend_label = "상승세 (저항선 부근 분할 매도로 수익 실현 고려)"
+        trend_label = "상승세 (저항선 부근 분할매도 권장)"
         trend_strength = min(95, int(50 + (bullish_score / total_score) * 50))
     elif bearish_score > bullish_score:
         trend = "bearish"
-        trend_label = "하락세 (섣부른 물타기 금지, 지지선 반등 확인 후 접근)"
+        trend_label = "하락세 (반등 확인 후 접근 권장)"
         trend_strength = min(95, int(50 + (bearish_score / total_score) * 50))
     else:
         trend = "neutral"
-        trend_label = "중립 (방향성 탐색 중, 관망 권고)"
+        trend_label = "중립 (관망 및 방향성 탐색)"
         trend_strength = 50
 
     # ── 이동평균선 계산 ──
