@@ -1832,21 +1832,27 @@ function renderAnalysisReport(data) {
         .replace(' (', '<br><span style="font-size: 0.88rem; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px;">(')
         .replace(')', ')</span>');
 
-    trendFill.style.width = '0%';
+    // [VISUAL] Apply Signal Strength Tile Logic (Inspired by Attachment)
+    const trendSignalTile = document.getElementById('trendSignalTile');
+    const trendSignalDesc = document.getElementById('trendSignalDesc');
+    const strength = data.trend_strength || 0;
     
-    // Apply matching bar colors
-    let barColor = 'rgba(107, 114, 128, 0.8)';
-    if (data.trend === 'bullish') barColor = 'rgba(239, 68, 68, 0.8)';
-    if (data.trend === 'bearish') barColor = 'rgba(59, 130, 246, 0.8)';
-    trendFill.style.backgroundColor = barColor;
+    if (trendSignalTile) {
+        let signalClass = 'signal-weak';
+        let signalText = '약한 신호';
+        if (strength >= 70) {
+            signalClass = 'signal-strong';
+            signalText = '강한 신호';
+        } else if (strength >= 50) {
+            signalClass = 'signal-medium';
+            signalText = '중간 신호';
+        }
+        
+        trendSignalTile.className = `trend-signal-tile ${signalClass}`;
+        if (trendSignalDesc) trendSignalDesc.textContent = signalText;
+    }
 
-    trendFill.style.transition = 'width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) 0.1s';
-
-    observeElement(trendFill, (el) => {
-        el.style.width = `${data.trend_strength}%`;
-    });
-
-    trendText.textContent = `${data.trend_strength}%`;
+    trendText.textContent = `${strength}%`;
 
 
         // ── Legacy UX Restore: Rating & Financials ──

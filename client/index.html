@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=161">
+    <link rel="stylesheet" href="./static/style.css?v=162">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -590,12 +590,12 @@
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="trendContainer" class="trend-container hidden" style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 32px;">
-                                            <div class="trend-strength-wrap" style="display: flex; align-items: center; gap: 20px; flex: 1;">
-                                                <span id="trendStrengthText" class="trend-strength-pct" style="font-size: 1.8rem; font-weight: 800; min-width: 80px;">0%</span>
-                                                <div class="trend-strength-bar" style="flex: 1; height: 10px; background: var(--border-soft); border-radius: 5px; overflow: hidden;">
-                                                    <div id="trendStrengthFill" class="trend-strength-fill" style="height: 100%; width: 0%; transition: width 1.2s ease;"></div>
-                                                </div>
+                                            <!-- AI Signal Strength Tile (Left) -->
+                                            <div id="trendSignalTile" class="trend-signal-tile">
+                                                <span id="trendStrengthText" class="signal-value">0%</span>
+                                                <span id="trendSignalDesc" class="signal-desc">신호 분석 중</span>
                                             </div>
+
                                             <div id="trendBadge" class="trend-pill" style="min-width: 160px; flex-shrink: 0;">
                                                 <span id="trendIcon"></span>
                                                 <span id="trendLabel"></span>
@@ -1262,7 +1262,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=161"></script>
+    <script src="./static/app.js?v=162"></script>
 </body>
 
 </html>
