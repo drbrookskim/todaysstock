@@ -7658,7 +7658,8 @@ body.vc-fullscreen-active {
 }
 
 body.vc-fullscreen-active .top-bar,
-body.vc-fullscreen-active .main-sidebar {
+body.vc-fullscreen-active .main-sidebar,
+body.vc-fullscreen-active .app-footer {
     display: none !important;
 }
 
