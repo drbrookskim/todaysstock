@@ -1826,7 +1826,37 @@ function renderAnalysisReport(data) {
     const cfg = trendConfig[data.trend] || trendConfig.neutral;
     trendBadge.className = `trend-pill ${data.trend}`;
     trendIcon.textContent = cfg.icon;
-    trendLabel.innerHTML = data.trend_label.replace(' (', '<br>(');
+    
+    // [UI REFINEMENT] Wrap tactical guidance in smaller font as requested (10% smaller)
+    trendLabel.innerHTML = data.trend_label
+        .replace(' (', '<br><span style="font-size: 0.88rem; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px;">(')
+        .replace(')', ')</span>');
+
+    // [VISUAL] Apply dynamic background images based on trend
+    const aiTrendBlock = document.getElementById('aiTrendBlock');
+    if (aiTrendBlock) {
+        const bgMap = {
+            bullish: 'url("./static/img/trend_bullish.png")',
+            bearish: 'url("./static/img/trend_bearish.png")',
+            neutral: 'url("./static/img/trend_neutral.jpg")'
+        };
+        const bgUrl = bgMap[data.trend] || bgMap.neutral;
+        aiTrendBlock.style.backgroundImage = `${bgUrl}`;
+        aiTrendBlock.style.backgroundSize = 'contain';
+        aiTrendBlock.style.backgroundPosition = 'right center';
+        aiTrendBlock.style.backgroundRepeat = 'no-repeat';
+        // Add a subtle overlay to ensure text readability against the illustration
+        aiTrendBlock.style.position = 'relative';
+        
+        // Ensure the content stays on top
+        const content = aiTrendBlock.querySelector('.workout-content');
+        if (content) {
+            content.style.position = 'relative';
+            content.style.zIndex = '2';
+            content.style.background = 'rgba(255, 255, 255, 0.05)'; // Super subtle glass
+            content.style.backdropFilter = 'blur(2px)';
+        }
+    }
     trendFill.style.width = '0%';
     
     // Apply matching bar colors
