@@ -3149,12 +3149,17 @@ html[data-theme="dark"] .ai-indicator-item {
 }
 
 .ai-gauge-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.8rem;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: 6px 12px;
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    min-width: 90px; /* Standardized width */
+    text-align: center;
 }
 
 /* ── AI Insight Row Adjustment ── */
