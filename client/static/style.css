@@ -8372,14 +8372,14 @@ body.vc-fullscreen-active .main-content {
     border: 1px solid var(--glass-border) !important;
     box-shadow: var(--glass-shadow), var(--glass-highlight) !important;
     padding: 24px 32px !important;
-    border-radius: 60px !important; /* Larger Pill */
+    border-radius: 60px !important;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    gap: 10px;
-    max-width: 450px;
-    flex: 1 1 350px;
+    align-items: center; /* Centered content by default */
+    text-align: center;   /* Centered text for better narrow view balance */
+    gap: 12px;
+    max-width: 500px;
+    flex: 0 1 auto; /* Don't force full width, allow centering */
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -8394,6 +8394,7 @@ body.vc-fullscreen-active .main-content {
     color: var(--primary);
     display: flex;
     align-items: center;
+    justify-content: center; /* Center icon/text */
     gap: 6px;
     margin: 0;
 }
@@ -8525,11 +8526,12 @@ body.vc-fullscreen-active .main-content {
 
 @media (max-width: 1200px) {
     #trendContainer {
-        gap: 24px;
+        gap: 32px;
+        flex-direction: column; /* Force stack for perfect centering */
     }
     .trend-tip-pill.glass-mode {
         max-width: 90%;
-        flex: 1 1 100%;
+        border-radius: 40px !important; /* Slightly tighter radius for mobile */
     }
 }
 
