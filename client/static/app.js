@@ -2323,11 +2323,8 @@ function renderAiInsights(data) {
     let probHtml = '';
     if (prob) {
         const score = prob.score;
-        const scoreColor = score >= 75 ? '#10b981'
-            : score >= 60 ? '#34d399'
-                : score >= 40 ? '#f59e0b'
-                    : score >= 25 ? '#f97316'
-                        : '#ef4444';
+        // User Preference: Buy(High) = Blue, Sell(Low) = Red
+        const scoreColor = score >= 50 ? '#3b82f6' : '#ef4444';
         const bd = prob.breakdown || {};
         const items = [
             { label: 'MA배열', val: bd.ma_alignment ?? 0, max: 35 },
@@ -2361,10 +2358,11 @@ function renderAiInsights(data) {
                 </div>`;
         }).join('');
 
-        // ── 메인 원형 확률 게이지 (Unified Solid Style) ──
+        // ── 메인 세미 서클 확률 게이지 (Speedometer Style) ──
         const mainR = 40;
-        const mainCircumference = 2 * Math.PI * mainR; // ~251.3
-        const mainOffset = mainCircumference - (score / 100) * mainCircumference;
+        // Semi-circle circumference for 180 degrees
+        const arcLength = Math.PI * mainR; // ~125.6
+        const mainOffset = arcLength - (score / 100) * arcLength;
 
         probHtml = `
         <div class="ai-insight-category-title">
@@ -2375,22 +2373,22 @@ function renderAiInsights(data) {
             <div class="ai-row-main-content">
                 <div class="ai-content-body">
                     <div class="ai-row-primary">
-                        <div class="ai-gauge-container">
+                        <div class="ai-gauge-container semi-circle">
                             <div class="ai-gauge-main">
                                 <div class="ai-gauge-icon-labels">
                                     <div class="gauge-icon sell"><i class="ph ph-hand-palm"></i><span>매도</span></div>
                                     <div class="gauge-icon buy"><i class="ph ph-rocket"></i><span>매수</span></div>
                                 </div>
-                                <svg viewBox="0 0 100 100" width="100" height="100">
-                                    <!-- Background Circle -->
-                                    <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="var(--border-soft)" stroke-width="10"/>
-                                    <!-- Progress Circle -->
-                                    <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
-                                        stroke-dasharray="${mainCircumference}" stroke-dashoffset="${mainOffset}"
-                                        stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
-                                    <text x="50" y="55" text-anchor="middle" font-size="32" font-weight="900" fill="var(--text-main)">${score}%</text>
+                                <svg viewBox="0 0 100 60" width="160" height="100">
+                                    <!-- Background Arc -->
+                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--border-soft)" stroke-width="10" stroke-linecap="round"/>
+                                    <!-- Progress Arc -->
+                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="${scoreColor}" stroke-width="10" 
+                                        stroke-dasharray="${arcLength}" stroke-dashoffset="${mainOffset}"
+                                        stroke-linecap="round" style="transition: stroke-dashoffset 1.5s ease-out;"/>
+                                    <text x="50" y="45" text-anchor="middle" font-size="24" font-weight="900" fill="var(--text-main)">${score}%</text>
                                 </svg>
-                                <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
+                                <span class="ai-gauge-label" style="background:${scoreColor}15; color:${scoreColor}">${prob.label}</span>
                             </div>
                         </div>
                     </div>
