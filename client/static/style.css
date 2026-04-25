@@ -5934,6 +5934,7 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     flex-direction: column;
     gap: 8px;
     overflow-y: auto;
+    padding: 6px 4px; /* Added padding to prevent clipping when items lift */
 }
 
 .index-item {

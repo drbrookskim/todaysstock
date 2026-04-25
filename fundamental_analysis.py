@@ -393,13 +393,15 @@ def get_macro(ecos_key: str) -> dict:
                 # 52주 고가/저가는 별도 처리가 필요할 수 있으나 속도를 위해 현재가 위주로 구성
             except: pass
 
-        # 2. Fear & Greed Index (VIX 기반 추정)
+        # 2. Fear & Greed Index (VIX 기반 정밀 추정)
         if "vix" in m:
             v = m["vix"]
-            if v <= 15:   m["fear_greed"] = 75
-            elif v <= 20: m["fear_greed"] = 55
-            elif v <= 30: m["fear_greed"] = 35
-            else:         m["fear_greed"] = 15
+            # 선형 보간 (Linear Interpolation) 적용하여 더욱 정확한 값 산출
+            if v <= 12:    m["fear_greed"] = round(90 - (v - 10) * 3) if v > 10 else 90
+            elif v <= 18:  m["fear_greed"] = round(75 - (v - 15) * 5)
+            elif v <= 25:  m["fear_greed"] = round(55 - (v - 20) * 3)
+            elif v <= 40:  m["fear_greed"] = round(35 - (v - 30) * 1.5)
+            else:          m["fear_greed"] = max(5, round(15 - (v - 45) * 1))
         else:
             m["fear_greed"] = 50
 
