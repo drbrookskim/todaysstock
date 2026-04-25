@@ -3080,10 +3080,10 @@ html[data-theme="light"] .price-pill.red { background: #fef2f2; color: #dc2626; 
     display: flex;
     align-items: center;
     gap: 14px;
-    background: rgba(255, 255, 255, 0.03);
+    background: transparent; /* Removed gray background */
     padding: 12px 18px;
     border-radius: 14px;
-    border: 1px solid var(--border-soft);
+    border: 1px solid var(--border-soft); /* Subtle theme-aware border */
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
     width: 160px; /* Reverted to original size */
     height: 72px; /* Reverted to original size */

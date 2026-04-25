@@ -228,16 +228,10 @@ function initNavigation() {
                                 const min = now.getMinutes();
                                 const isMarketOpen = (hour > 9 || (hour === 9 && min >= 0)) && (hour < 15 || (hour === 15 && min <= 30));
                                 
-                                // Price Selection: Open if market open, Close if market closed
-                                let displayPrice = data.price;
-                                let priceLabel = isMarketOpen ? "시가" : "종가";
+                                let priceLabel = "종가"; // Fixed to 종가 as requested
                                 
-                                // [Advanced] If we have specific OHLC data in context
-                                if (isMarketOpen && data.open) {
-                                    displayPrice = data.open;
-                                } else if (!isMarketOpen && data.close) {
-                                    displayPrice = data.close;
-                                }
+                                // Price Selection: Close as requested
+                                let displayPrice = data.close || data.price;
                                 
                                 const price = displayPrice ? displayPrice.toLocaleString() : '0';
                                 const change = data.change || 0;
@@ -1834,7 +1828,7 @@ function renderAnalysisReport(data) {
     const cfg = trendConfig[data.trend] || trendConfig.neutral;
     trendBadge.className = `trend-pill ${data.trend}`;
     trendIcon.textContent = cfg.icon;
-    trendLabel.textContent = data.trend_label;
+    trendLabel.innerHTML = data.trend_label.replace(' (', '<br>(');
     trendFill.style.width = '0%';
     
     // Apply matching bar colors
@@ -2390,7 +2384,7 @@ function renderAiInsights(data) {
                                     <circle cx="50" cy="50" r="${mainR}" fill="none" stroke="${scoreColor}" stroke-width="10"
                                         stroke-dasharray="${mainCircumference}" stroke-dashoffset="${mainOffset}"
                                         stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1s ease;"/>
-                                    <text x="50" y="55" text-anchor="middle" font-size="44" font-weight="900" fill="var(--text-main)">${score}%</text>
+                                    <text x="50" y="55" text-anchor="middle" font-size="32" font-weight="900" fill="var(--text-main)">${score}%</text>
                                 </svg>
                                 <span class="ai-gauge-label" style="background:${scoreColor}20; color:${scoreColor}">${prob.label}</span>
                             </div>
