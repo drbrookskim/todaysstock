@@ -8417,15 +8417,16 @@ body.vc-fullscreen-active .main-content {
     }
 }
 
-/* --- Premium Glassmorphism Trend Analysis (v168) --- */
+/* --- Premium Glassmorphism Trend Analysis (v170) --- */
 #trendContainer {
     display: flex;
-    flex-direction: column; /* Stacked for better centering across widths */
+    flex-direction: row; /* Side-by-side as requested */
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     width: 100%;
-    gap: 28px;
-    padding: 10px 0;
+    gap: 40px; /* Increased gap for clarity */
+    padding: 15px 0;
 }
 
 .trend-signal-tile.gauge-v2-mode {
@@ -8439,13 +8440,56 @@ body.vc-fullscreen-active .main-content {
     justify-content: center;
 }
 
+/* Glassmorphism Trend Tip (Large Pill Style) */
+.trend-tip-pill.glass-mode {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(15px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow), var(--glass-highlight) !important;
+    padding: 24px 32px !important;
+    border-radius: 60px !important; /* Larger Pill */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 10px;
+    max-width: 450px;
+    flex: 1 1 350px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.trend-tip-pill:hover {
+    transform: scale(1.02) translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2), var(--glass-highlight) !important;
+}
+
+.tip-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.tip-text {
+    font-size: 0.94rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    opacity: 0.9;
+    margin: 0;
+    word-break: keep-all;
+}
+
 .trend-gauge-v2 {
-    width: 200px; /* Slightly larger for presence */
-    height: 100px;
+    width: 180px;
+    height: 90px;
     position: relative;
     overflow: hidden;
-    border-top-left-radius: 100px;
-    border-top-right-radius: 100px;
+    border-top-left-radius: 90px;
+    border-top-right-radius: 90px;
     background: var(--border-soft);
     box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
 }
@@ -8467,7 +8511,7 @@ body.vc-fullscreen-active .main-content {
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--bg-card); /* Theme-aware background */
+    background: var(--bg-card);
     transform-origin: bottom center;
     transform: rotate(0deg);
     transition: transform 1.5s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -8478,8 +8522,8 @@ body.vc-fullscreen-active .main-content {
     bottom: 0;
     left: 50%;
     width: 4px;
-    height: 95px;
-    background: var(--text-main); /* Theme-aware contrast */
+    height: 85px;
+    background: var(--text-main);
     transform-origin: bottom center;
     transform: rotate(-90deg);
     transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -8496,15 +8540,15 @@ body.vc-fullscreen-active .main-content {
 }
 
 .gauge-v2-value {
-    font-size: 2.2rem;
+    font-size: 2rem;
     font-weight: 900;
     font-family: 'Space Grotesk', sans-serif;
     color: var(--text-main);
-    letter-spacing: -1.5px;
+    letter-spacing: -1px;
 }
 
 .signal-desc {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     opacity: 0.9;
 }
@@ -8516,27 +8560,27 @@ body.vc-fullscreen-active .main-content {
     -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
     border: 1px solid var(--glass-border) !important;
     box-shadow: var(--glass-shadow), var(--glass-highlight) !important;
-    padding: 14px 28px !important;
+    padding: 16px 28px !important;
     border-radius: 40px !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 6px;
-    max-width: 90%; /* Prevent overflow on very narrow screens */
+    flex-shrink: 0;
 }
 
-/* Signal-based Colors (Vivid for both themes) */
+/* Signal-based Colors */
 .signal-strong .gauge-v2-value, 
 .signal-strong .signal-desc,
 .trend-bullish .trend-label-text {
-    color: #ef4444 !important; /* Standardized Bullish Red */
+    color: #ef4444 !important;
 }
 
 .signal-weak .gauge-v2-value, 
 .signal-weak .signal-desc,
 .trend-bearish .trend-label-text {
-    color: #3b82f6 !important; /* Standardized Bearish Blue */
+    color: #3b82f6 !important;
 }
 
 .signal-medium .gauge-v2-value,
@@ -8549,24 +8593,37 @@ body.vc-fullscreen-active .main-content {
 }
 
 #trendLabel {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 800;
     line-height: 1.5;
     letter-spacing: -0.02em;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
+    #trendContainer {
+        gap: 24px;
+    }
+    .trend-tip-pill.glass-mode {
+        max-width: 90%;
+        flex: 1 1 100%;
+    }
+}
+
+@media (max-width: 768px) {
     .trend-gauge-v2 {
-        width: 160px;
-        height: 80px;
-        border-top-left-radius: 80px;
-        border-top-right-radius: 80px;
+        width: 140px;
+        height: 70px;
+        border-top-left-radius: 70px;
+        border-top-right-radius: 70px;
     }
     .trend-gauge-v2-needle {
-        height: 75px;
+        height: 65px;
     }
     .gauge-v2-value {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+    }
+    .trend-pill.glass-mode {
+        padding: 12px 20px;
     }
 }
 
