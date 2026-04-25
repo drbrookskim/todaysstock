@@ -3099,8 +3099,8 @@ html[data-theme="dark"] .ai-indicator-item {
 /* ── Main Gauge Icons ── */
 .ai-gauge-icon-labels {
     position: absolute;
-    width: 120%; /* Safely expand beyond gauge */
-    max-width: calc(100% + 40px);
+    width: 125%; /* Pushed further out for better breathing room */
+    max-width: calc(100% + 50px);
     display: flex;
     justify-content: space-between;
     top: 50%;
