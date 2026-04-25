@@ -3080,10 +3080,21 @@ html[data-theme="light"] .price-pill.red { background: #fef2f2; color: #dc2626; 
     display: flex;
     align-items: center;
     gap: 14px;
-    background: transparent; /* Removed gray background */
+    background: var(--bg-card); /* Theme-aware background */
     padding: 12px 18px;
     border-radius: 14px;
-    border: 1px solid var(--border-soft); /* Subtle theme-aware border */
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+html[data-theme="light"] .ai-indicator-item {
+    background: #ffffff; /* Solid white for light mode as requested */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+html[data-theme="dark"] .ai-indicator-item {
+    background: rgba(255, 255, 255, 0.02);
+}
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
     width: 160px; /* Reverted to original size */
     height: 72px; /* Reverted to original size */
@@ -5700,13 +5711,16 @@ html:not([data-theme="light"]) .company-quote {
 
 .trend-pill {
     display: flex;
+    flex-direction: column; /* To handle <br> correctly */
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 9999px;
+    justify-content: center;
+    text-align: center;
+    gap: 4px;
+    padding: 10px 20px;
+    border-radius: 20px; /* More of a rounded box now */
     font-weight: 700;
-    font-size: 0.95rem; /* Reduced by 5% */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-size: 0.95rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 /* Base states for Trend Pill */
