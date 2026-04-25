@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=147">
+    <link rel="stylesheet" href="./static/style.css?v=148">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -590,15 +590,15 @@
                                     </div>
                                     <div class="workout-body" style="padding: 24px;">
                                         <div id="trendContainer" class="trend-container hidden">
-                                            <div id="trendBadge" class="trend-pill">
+                                            <div class="trend-strength-wrap" style="display: flex; align-items: center; gap: 20px; flex: 1;">
+                                                <span id="trendStrengthText" class="trend-strength-pct" style="font-size: 1.8rem; font-weight: 800; min-width: 80px;">0%</span>
+                                                <div class="trend-strength-bar" style="flex: 1; height: 10px; background: var(--border-soft); border-radius: 5px; overflow: hidden;">
+                                                    <div id="trendStrengthFill" class="trend-strength-fill" style="height: 100%; width: 0%; transition: width 1.2s ease;"></div>
+                                                </div>
+                                            </div>
+                                            <div id="trendBadge" class="trend-pill" style="min-width: 140px;">
                                                 <span id="trendIcon"></span>
                                                 <span id="trendLabel"></span>
-                                            </div>
-                                            <div class="trend-strength-wrap">
-                                                <div class="trend-strength-bar">
-                                                    <div id="trendStrengthFill" class="trend-strength-fill"></div>
-                                                </div>
-                                                <span id="trendStrengthText" class="trend-strength-pct" style="font-size: 1.8rem; font-weight: 800;">0%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1262,7 +1262,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=147"></script>
+    <script src="./static/app.js?v=148"></script>
 </body>
 
 </html>
