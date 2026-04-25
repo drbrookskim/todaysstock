@@ -473,11 +473,11 @@ function showSection(id) {
         resSec.style.setProperty('display', 'none', 'important');
     }
 
-    if (id === 'dashboardHome') {
+    if (id === 'dashboardHome' || id === 'watchlistSection') {
         renderRecentSearches();
         // [CRITICAL FIX] Ensure search results are visible and prioritize display stability via inline-block-important
         if (currentStock) {
-            console.log('[DEBUG] Home visible - hard-forcing result card display for', currentStock.name);
+            console.log(`[DEBUG] ${id} visible - hard-forcing result card display for`, currentStock.name);
             requestAnimationFrame(() => {
                 const resSecMem = document.getElementById('resultSection');
                 if (resSecMem) {
@@ -487,16 +487,11 @@ function showSection(id) {
                     resSecMem.style.setProperty('visibility', 'visible', 'important');
                     resSecMem.style.setProperty('opacity', '1', 'important');
                 }
-                // const searchHero = document.getElementById('mainSearchHero');
-                // if (searchHero) {
-                //     searchHero.classList.add('hidden');
-                //     searchHero.style.setProperty('display', 'none', 'important');
-                // }
                 // Robust scroll position restoration
                 window.scrollTo({ top: 0, behavior: 'instant' });
             });
         }
-        resetDashboardHome(false); 
+        if (id === 'dashboardHome') resetDashboardHome(false); 
     } else if (id === 'analysisSection') {
         // Logo Reset
         const logoLink = document.querySelector('.logo-link');
@@ -962,6 +957,9 @@ async function selectStock(item, origin = 'search') {
     
     if (searchInput) searchInput.value = item.name;
     currentStock = item;
+    
+    // [PERSISTENCE] Save last stock for refresh recovery
+    localStorage.setItem('signnith_last_stock', JSON.stringify(item));
 
     // Update watchlist button & sidebar highlight
     updateWatchlistBtn();
@@ -3327,6 +3325,20 @@ function startApp() {
             searchBtn?.click();
         }
     });
+
+    // [PERSISTENCE] Restore last searched stock if it exists to maintain context after refresh
+    const lastStockStr = localStorage.getItem('signnith_last_stock');
+    if (lastStockStr) {
+        try {
+            const lastStock = JSON.parse(lastStockStr);
+            console.log('[DEBUG] Restoring last searched stock from storage:', lastStock.name);
+            // Delay slightly to ensure all initializers are ready
+            setTimeout(() => selectStock(lastStock, 'restore'), 300);
+        } catch (e) {
+            console.error('[ERROR] Failed to restore last stock:', e);
+            localStorage.removeItem('signnith_last_stock');
+        }
+    }
 }
 
 if (document.readyState === 'loading') {
