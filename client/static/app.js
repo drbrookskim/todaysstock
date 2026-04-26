@@ -963,16 +963,21 @@ function showStockLoadingState(item) {
     const codeEl = document.getElementById('stockCode');
     if (codeEl) codeEl.textContent = item.code;
     
-    // 2. Clear previous data with placeholders
+    // 2. Clear previous data with premium glassmorphism placeholders
     const priceEl = document.getElementById('stockPrice');
     if (priceEl) {
-        priceEl.textContent = '---';
-        priceEl.className = 'current-price price-neutral';
+        priceEl.innerHTML = '<div class="price-skeleton"></div>';
+        priceEl.className = 'current-price';
     }
     const changeEl = document.getElementById('stockChange');
     if (changeEl) {
-        changeEl.textContent = '분석 진행 중...';
-        changeEl.className = 'price-change price-neutral';
+        changeEl.innerHTML = `
+            <div class="glass-loading-pill">
+                <i class="ph ph-circle-notch ph-spin"></i>
+                <span>분석 진행 중...</span>
+            </div>
+        `;
+        changeEl.className = 'price-change';
     }
     
     // 3. Toggle Inline Loaders
