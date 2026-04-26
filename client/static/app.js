@@ -820,6 +820,7 @@ searchInput.addEventListener('keydown', (e) => {
         e.preventDefault();
         navigateSuggestion(-1);
     } else if (e.key === 'Enter') {
+        if (e.isComposing) return; // [v184] Prevent Korean IME character duplication on Enter
         e.preventDefault();
         if (activeIndex >= 0 && activeIndex < suggestItems.length) {
             selectStock(suggestItems[activeIndex]);
@@ -1018,7 +1019,8 @@ async function selectStock(item, origin = 'search') {
     // Add to recent
     saveRecentSearch(item);
     
-    if (searchInput) searchInput.value = ''; // Clear search box after selection per user request
+    // [v184] Keep search term in input box for better context per user request
+    if (searchInput) searchInput.value = item.name; 
     currentStock = item;
     
     // [PERSISTENCE] Save last stock for refresh recovery
@@ -3486,6 +3488,7 @@ function startApp() {
     // Enter Key Search
     searchInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && activeIndex === -1) {
+            if (e.isComposing) return; // [v184] Prevent IME duplication
             searchBtn?.click();
         }
     });
