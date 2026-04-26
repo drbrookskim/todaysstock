@@ -1911,8 +1911,8 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .ohlv-value {
     font-family: 'Space Grotesk', monospace;
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 1.8rem;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
@@ -1940,7 +1940,7 @@ html[data-theme="light"] .theme-icon-btn i {
 
 .valuation-value {
     font-family: 'Space Grotesk', monospace;
-    font-size: 0.95rem;
+    font-size: 1.8rem;
     font-weight: 700;
 }
 
