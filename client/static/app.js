@@ -949,6 +949,63 @@ function updateActiveHighlight() {
 window.setActiveIndex = (idx) => { activeIndex = idx; updateActiveHighlight(); };
 window.selectStockByIndex = (idx) => { selectStock(suggestItems[idx]); };
 
+// ── Inline Loading State for Results ──
+function showStockLoadingState(item) {
+    // 1. Basic Info Header
+    const marketBadge = document.getElementById('stockMarketBadge');
+    if (marketBadge) {
+        marketBadge.textContent = item.market || '...';
+        marketBadge.style.display = 'inline-block';
+        marketBadge.className = `market-badge ${item.market ? item.market.toLowerCase() : ''}`;
+    }
+    const nameEl = document.getElementById('stockName');
+    if (nameEl) nameEl.textContent = item.name;
+    const codeEl = document.getElementById('stockCode');
+    if (codeEl) codeEl.textContent = item.code;
+    
+    // 2. Clear previous data with placeholders
+    const priceEl = document.getElementById('stockPrice');
+    if (priceEl) {
+        priceEl.textContent = '---';
+        priceEl.className = 'current-price price-neutral';
+    }
+    const changeEl = document.getElementById('stockChange');
+    if (changeEl) {
+        changeEl.textContent = '분석 진행 중...';
+        changeEl.className = 'price-change price-neutral';
+    }
+    
+    // 3. Toggle Inline Loaders
+    document.querySelectorAll('.ai-inline-loader, .fund-inline-loader').forEach(el => el.classList.remove('hidden'));
+    document.getElementById('recentWeekAnalysis')?.classList.add('hidden');
+    document.getElementById('fundSignalTile')?.classList.add('hidden');
+    document.getElementById('fundSummaryText')?.classList.add('hidden');
+
+    // 4. Chart Area Placeholder
+    const chartContainer = document.getElementById('chartContainer');
+    if (chartContainer) {
+        chartContainer.innerHTML = `
+            <div class="chart-inline-loading">
+                <i class="ph ph-chart-line-up ph-spin"></i>
+                <span>차트 데이터를 불러오는 중...</span>
+            </div>
+        `;
+    }
+
+    // 5. Ensure blocks are visible
+    document.getElementById('aiSummaryBlock')?.classList.remove('hidden');
+    document.getElementById('aiSummaryBlock')?.classList.add('visible');
+    document.getElementById('fundSummaryBlock')?.classList.remove('hidden');
+    document.getElementById('fundSummaryBlock')?.classList.add('visible');
+
+    // 6. Reveal Result Section
+    const resSec = document.getElementById('resultSection');
+    if (resSec) {
+        resSec.classList.remove('hidden');
+        resSec.style.setProperty('display', 'block', 'important');
+    }
+}
+
 // ── Select & Fetch Stock Detail ──
 async function selectStock(item, origin = 'search') {
     hideSuggestions();
@@ -967,12 +1024,12 @@ async function selectStock(item, origin = 'search') {
     
     console.log(`[DEBUG] selectStock - origin: ${origin}, stock: ${item.name}`);
 
+    // [v179] Show Inline Loading UI
+    showStockLoadingState(item);
+
     // Fetch basic stock data (Always needed for chart/summary)
     const url = `${API_BASE_URL}/api/stock?code=${item.code}&market=${item.market}&name=${encodeURIComponent(item.name)}`;
     try {
-        if (loadingSpinner) loadingSpinner.classList.remove('hidden');
-        if (resultSection) resultSection.classList.add('hidden');
-        
         const response = await fetchWithTimeout(url, { timeout: 30000 });
         if (!response.ok) throw new Error('데이터를 불러오는데 실패했습니다.');
         const data = await response.json();
@@ -985,7 +1042,10 @@ async function selectStock(item, origin = 'search') {
             // Navigate to Home section
             navigateToSection('navHome');
             
-            // Smoothly scroll to the result ONLY for fresh searches, not restoration
+            // Render the results (this will eventually hide the loaders)
+            renderResult(data);
+            
+            // Smoothly scroll to the result ONLY for fresh searches
             if (origin === 'search') {
                 requestAnimationFrame(() => {
                     const resSec = document.getElementById('resultSection');
@@ -1029,9 +1089,11 @@ async function selectStock(item, origin = 'search') {
     }
 }
 
+// [v179] renderAnalysisReport moved to its original location (around line 1880)
+
+
 async function triggerFullDeepAnalysis(code) {
     const globalLoading = document.getElementById('analysisGlobalLoading');
-    const loadingText = document.getElementById('analysisLoadingText');
     const patternReportSection = document.getElementById('patternReportSection');
     const emptyState = document.getElementById('analysisEmptyState');
     const contentWrapper = document.getElementById('analysisContentWrapper');
@@ -1062,21 +1124,26 @@ async function triggerFullDeepAnalysis(code) {
             return; 
         }
 
-        // Reset UI state for FRESH loading ONLY
-        if (emptyState) emptyState.classList.add('hidden');
-        if (contentWrapper) contentWrapper.classList.remove('hidden');
-        if (globalLoading) {
-            globalLoading.classList.remove('hidden');
-            if (loadingText) loadingText.textContent = 'AI 캔들 패턴 및 추세 분석 중...';
-        }
-        
+        // [v179] Deactivate Global Loading Screen
+        if (globalLoading) globalLoading.classList.add('hidden');
+
+        // Show all blocks in Loading State (Localized)
         allBlocks.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
-                el.classList.add('hidden');
-                el.classList.remove('visible');
+                el.classList.remove('hidden');
+                el.classList.add('visible');
             }
         });
+
+        // Toggle specific inline loaders
+        document.querySelectorAll('.ai-inline-loader, .fund-inline-loader').forEach(el => el.classList.remove('hidden'));
+        document.getElementById('recentWeekAnalysis')?.classList.add('hidden');
+        document.getElementById('fundSignalTile')?.classList.add('hidden');
+        document.getElementById('fundSummaryText')?.classList.add('hidden');
+        // Hide other sub-blocks during load
+        document.getElementById('aiSignalsGrid')?.classList.add('hidden');
+        document.getElementById('aiPatternsGrid')?.classList.add('hidden');
         // Step 1: Fetch AI Analysis
         const analysisData = await fetchAnalysisReport(currentStock || { code });
         
@@ -1812,13 +1879,23 @@ async function updateTileData(code) {
 }
 
 function renderAnalysisReport(data) {
-    _lastAnalysisData = data;
+    // [v179] Hide all inline loaders first
+    document.querySelectorAll('.ai-inline-loader, .fund-inline-loader').forEach(el => el.classList.add('hidden'));
+    document.getElementById('recentWeekAnalysis')?.classList.remove('hidden');
+    document.getElementById('fundSignalTile')?.classList.remove('hidden');
+    document.getElementById('fundSummaryText')?.classList.remove('hidden');
+
+    _lastAnalysisData = data; 
     
     // Ensure parent container is visible immediately
     const contentWrapper = document.getElementById('analysisContentWrapper');
     const emptyState = document.getElementById('analysisEmptyState');
     if (contentWrapper) contentWrapper.classList.remove('hidden');
     if (emptyState) emptyState.classList.add('hidden');
+
+    const globalLoading = document.getElementById('analysisGlobalLoading');
+    if (globalLoading) globalLoading.classList.add('hidden');
+
 
     const hasBuyReport = data.buy_report && data.buy_report !== null;
     const hasSellReport = data.sell_report && data.sell_report !== null;
