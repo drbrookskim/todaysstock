@@ -5919,6 +5919,16 @@ html:not([data-theme="light"]) .trend-pill.bullish {
     gap: 16px;
 }
 
+.macro-card.wide-card {
+    grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+    .macro-card.wide-card {
+        grid-column: span 1;
+    }
+}
+
 .macro-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px -12px rgba(0,0,0,0.15);
