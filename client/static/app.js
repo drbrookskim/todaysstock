@@ -1103,8 +1103,9 @@ async function triggerFullDeepAnalysis(code) {
     const emptyState = document.getElementById('analysisEmptyState');
     const contentWrapper = document.getElementById('analysisContentWrapper');
 
+    const fundBlocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
     const aiBlocks = ['aiTrendBlock', 'aiBuySignalBlock', 'aiSellSignalBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
-    const allBlocks = [...aiBlocks, 'fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
+    const allBlocks = [...fundBlocks, ...aiBlocks];
 
     try {
         console.log(`[DEBUG] triggerFullDeepAnalysis for ${code}`);
@@ -1905,13 +1906,12 @@ function renderAnalysisReport(data) {
     const hasBuyReport = data.buy_report && data.buy_report !== null;
     const hasSellReport = data.sell_report && data.sell_report !== null;
     
-    // Sequential Reveal Logic
-    const blocks = ['aiTrendBlock'];
+    // Sequential Reveal Logic (Updated v181 to match Top-Down hierarchy)
+    const blocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
+    blocks.push('aiTrendBlock');
     if (hasBuyReport) blocks.push('aiBuySignalBlock');
     if (hasSellReport) blocks.push('aiSellSignalBlock');
     blocks.push('aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock');
-    // Add Fundamental blocks for standard UI reveal
-    blocks.push('fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock');
     
     blocks.forEach((id, index) => {
         const el = document.getElementById(id);
