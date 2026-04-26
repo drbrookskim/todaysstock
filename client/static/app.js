@@ -1444,41 +1444,34 @@ async function renderMacroIndicators() {
         const us10yChg = data.us10y_chg != null ? `${data.us10y_chg > 0 ? '+' : ''}${data.us10y_chg.toFixed(3)}` : '-';
 
         const economyData = [
-            { name: 'USD/KRW 환율', price: getVal('usd_krw'), ...getChg('usd_krw') },
-            { name: '미 국채 10년물', price: us10yVal, change: us10yChg, up: data.us10y_chg > 0 },
-            { name: '공포지수 (VIX)', price: getVal('vix'), ...getChg('vix') }
+            { id: 'USD/KRW', name: 'USD/KRW 환율', price: getVal('usd_krw'), ...getChg('usd_krw') },
+            { id: 'US10Y', name: '미 국채 10년물', price: us10yVal, change: us10yChg, up: data.us10y_chg > 0 },
+            { id: 'VIX', name: '공포지수 (VIX)', price: getVal('vix'), ...getChg('vix') }
         ];
 
         const cryptoData = [
-            { name: '비트코인 (BTC)', price: getVal('btc'), ...getChg('btc') },
-            { name: '이더리움 (ETH)', price: getVal('eth'), ...getChg('eth') },
-            { name: '테더 (USDT)', price: getVal('usdt'), ...getChg('usdt') }
+            { id: 'BTC', name: '비트코인 (BTC)', price: getVal('btc'), ...getChg('btc') },
+            { id: 'ETH', name: '이더리움 (ETH)', price: getVal('eth'), ...getChg('eth') },
+            { id: 'USDT', name: '테더 (USDT)', price: getVal('usdt'), ...getChg('usdt') }
         ];
 
-        const fearGreedValue = data.fear_greed || 50;
-
-        // Render Indices List
+        // 1. Render Indices List
         if (indexList) {
-            indexList.innerHTML = indexData.map(idx => {
-                const price = idx.price || '-';
-                const change = idx.change || '-';
-                const trendClass = idx.up ? 'up' : 'down';
-                return `
-                    <div class="indicator-row clickable" 
-                         data-id="${idx.id}" 
-                         data-name="${idx.name}" 
-                         onclick="renderIndexChart('${idx.id}', '${idx.name}'); document.querySelectorAll('.indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
-                        <span class="indicator-label">${idx.name}</span>
-                        <div class="indicator-values">
-                            <span class="indicator-price">${price}</span>
-                            <span class="indicator-change ${trendClass}">${change}</span>
-                        </div>
+            indexList.innerHTML = indexData.map(idx => `
+                <div class="indicator-row clickable" 
+                     data-id="${idx.id}" 
+                     data-name="${idx.name}" 
+                     onclick="renderIndexChart('${idx.id}', '${idx.name}'); document.querySelectorAll('.indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                    <span class="indicator-label">${idx.name}</span>
+                    <div class="indicator-values">
+                        <span class="indicator-price">${idx.price || '-'}</span>
+                        <span class="indicator-change ${idx.up ? 'up' : 'down'}">${idx.change || '-'}</span>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
 
             // Auto-select KOSPI if not already selecting something
-            const activeItem = indexList.querySelector('.indicator-row.clickable.active');
+            const activeItem = document.querySelector('.indicator-row.clickable.active');
             if (!activeItem) {
                 const kospi = indexList.querySelector('.indicator-row.clickable[data-id="KOSPI"]');
                 if (kospi) {
@@ -1488,21 +1481,29 @@ async function renderMacroIndicators() {
             }
         }
 
-        // Render Economy
-        economyGrid.innerHTML = economyData.map(eco => `
-            <div class="indicator-row">
-                <span class="indicator-label">${eco.name}</span>
-                <div class="indicator-values">
-                    <span class="indicator-price">${eco.price}</span>
-                    <span class="indicator-change ${eco.up ? 'up' : 'down'}">${eco.change}</span>
+        // 2. Render Economy List
+        if (economyGrid) {
+            economyGrid.innerHTML = economyData.map(eco => `
+                <div class="indicator-row clickable" 
+                     data-id="${eco.id}" 
+                     data-name="${eco.name}"
+                     onclick="renderIndexChart('${eco.id}', '${eco.name}'); document.querySelectorAll('.indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                    <span class="indicator-label">${eco.name}</span>
+                    <div class="indicator-values">
+                        <span class="indicator-price">${eco.price}</span>
+                        <span class="indicator-change ${eco.up ? 'up' : 'down'}">${eco.change}</span>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+        }
 
-        // Render Crypto
+        // 3. Render Crypto List
         if (cryptoGrid) {
             cryptoGrid.innerHTML = cryptoData.map(cry => `
-                <div class="indicator-row">
+                <div class="indicator-row clickable" 
+                     data-id="${cry.id}" 
+                     data-name="${cry.name}"
+                     onclick="renderIndexChart('${cry.id}', '${cry.name}'); document.querySelectorAll('.indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
                     <span class="indicator-label">${cry.name}</span>
                     <div class="indicator-values">
                         <span class="indicator-price">$${cry.price}</span>
@@ -1514,9 +1515,6 @@ async function renderMacroIndicators() {
 
         // Update Top Status Chips (기존 기능 유지)
         updateStatusChips(data);
-
-        // Render Fear & Greed
-        updateFearGreed(fearGreedValue);
 
     } catch (err) {
         console.error("renderMacroIndicators error:", err);
@@ -4772,7 +4770,18 @@ const HELP_CONTENT = {
                 <p>신뢰도 수치는 <strong>"반드시 그렇게 된다"</strong>는 뜻이 아닙니다. 확률 기반의 예측이므로 캔들 패턴·재무 지표와 함께 종합 판단해야 합니다.</p>
             </div>
 
-
+            <div class="card" style="background: var(--bg-app); border-left: 4px solid var(--primary); margin-top: 20px; border-radius: 12px;">
+                <h3 style="color: var(--primary); display: flex; align-items: center; gap: 8px; font-size: 1rem;">
+                    <i class="ph ph-lightning"></i> 심층 분석 팁: 평균대세 활용
+                </h3>
+                <p style="margin-top: 8px; font-size: 0.95rem; color: var(--text-main);">
+                    AI 추세 분석과 함께 **평균대세** 차트를 사용해 보세요. 
+                    장중의 미세한 가격 흔들림(노이즈)을 제거하여, 현재의 상승/하강 추세가 얼마나 견고한지 시각적으로 한눈에 파악할 수 있도록 도와줍니다.
+                </p>
+                <div style="margin-top: 12px; font-size: 0.85rem; color: var(--text-sub);">
+                    * 하단 차트 우측 상단의 [평균대세] 버튼으로 즉시 전환 가능합니다.
+                </div>
+            </div>
         `
     },
 

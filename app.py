@@ -1066,13 +1066,22 @@ def market_index_history():
     
     # 심볼 매핑
     mapping = {
+        # 시장 지수
         "KOSPI": "^KS11",
         "KOSDAQ": "^KQ11",
         "S&P 500": "^GSPC",
         "NASDAQ": "^IXIC",
         "PHLX SEMI": "^SOX",
         "DXY": "DX=F",
-        "WTI": "CL=F"
+        "WTI": "CL=F",
+        # 주요 경제 지표
+        "USD/KRW": "KRW=X",
+        "US10Y": "^TNX",
+        "VIX": "^VIX",
+        # 디지털 자산
+        "BTC": "BTC-USD",
+        "ETH": "ETH-USD",
+        "USDT": "USDT-USD"
     }
     
     ticker_symbol = mapping.get(symbol_name)
