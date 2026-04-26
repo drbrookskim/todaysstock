@@ -1104,6 +1104,7 @@ async function triggerFullDeepAnalysis(code) {
     const patternReportSection = document.getElementById('patternReportSection');
     const emptyState = document.getElementById('analysisEmptyState');
     const contentWrapper = document.getElementById('analysisContentWrapper');
+    const loadingText = document.getElementById('analysisLoadingText');
 
     const fundBlocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
     const aiBlocks = ['aiTrendBlock', 'aiBuySignalBlock', 'aiSellSignalBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
