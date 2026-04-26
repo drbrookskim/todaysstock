@@ -1144,7 +1144,14 @@ async function triggerFullDeepAnalysis(code) {
 
         // Toggle specific inline loaders
         document.querySelectorAll('.ai-inline-loader, .fund-inline-loader').forEach(el => el.classList.remove('hidden'));
-        document.getElementById('recentWeekAnalysis')?.classList.add('hidden');
+        
+        // Show containers but hide lists while loading
+        document.getElementById('recentWeekAnalysis')?.classList.remove('hidden');
+        document.getElementById('recentWeekList')?.classList.add('hidden');
+        
+        document.getElementById('fundSummaryCard')?.classList.remove('hidden');
+        document.getElementById('fundSummaryList')?.classList.add('hidden');
+        
         document.getElementById('fundSignalTile')?.classList.add('hidden');
         document.getElementById('fundSummaryText')?.classList.add('hidden');
         // Hide other sub-blocks during load
@@ -1887,7 +1894,13 @@ async function updateTileData(code) {
 function renderAnalysisReport(data) {
     // [v179] Hide all inline loaders first
     document.querySelectorAll('.ai-inline-loader, .fund-inline-loader').forEach(el => el.classList.add('hidden'));
+    
+    // Restore list visibility
     document.getElementById('recentWeekAnalysis')?.classList.remove('hidden');
+    document.getElementById('recentWeekList')?.classList.remove('hidden');
+    document.getElementById('fundSummaryCard')?.classList.remove('hidden');
+    document.getElementById('fundSummaryList')?.classList.remove('hidden');
+    
     document.getElementById('fundSignalTile')?.classList.remove('hidden');
     document.getElementById('fundSummaryText')?.classList.remove('hidden');
 

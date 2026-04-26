@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=182">
+    <link rel="stylesheet" href="./static/style.css?v=183">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -587,6 +587,10 @@
                                 </div>
                                 <div class="workout-body" style="padding: 24px;">
                                     <div id="fundSummaryCard" class="recent-week-card" style="border: none; box-shadow: none; padding: 0; margin-top: 0;">
+                                        <div class="fund-inline-loader ai-inline-loading hidden">
+                                            <div class="skeleton-shimmer"></div>
+                                            <p><i class="ph ph-brain ph-spin"></i> 기업 분석 진행 중...</p>
+                                        </div>
                                         <ul id="fundSummaryList" class="recent-list">
                                             <li class="fund-signal-reason" style="list-style: none; font-size: 0.9rem; color: var(--text-muted);">데이터 분석 중…</li>
                                         </ul>
@@ -1278,7 +1282,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=182"></script>
+    <script src="./static/app.js?v=183"></script>
 </body>
 
 </html>
