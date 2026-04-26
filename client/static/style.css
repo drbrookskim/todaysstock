@@ -1904,7 +1904,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .ohlv-label {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 400;
 }
@@ -1933,7 +1933,7 @@ html[data-theme="light"] .theme-icon-btn i {
 }
 
 .valuation-label {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 500;
 }
