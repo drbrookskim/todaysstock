@@ -8594,10 +8594,13 @@ body.vc-fullscreen-active .main-content {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
-    background: rgba(15, 23, 42, 0.4);
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: var(--radius-lg);
-    border: 1px dashed var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
     margin: 10px 0;
     position: relative;
     overflow: hidden;
