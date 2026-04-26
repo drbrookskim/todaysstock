@@ -1467,7 +1467,7 @@ async function renderMacroIndicators() {
                 <div class="indicator-row clickable" 
                      data-id="${idx.id}" 
                      data-name="${idx.name}" 
-                     onclick="renderMacroChart('${idx.id}', '${idx.name}'); document.querySelectorAll('.macro-card .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                     onclick="renderMacroSplitChart('${idx.id}', '${idx.name}', 'market'); document.querySelectorAll('#indexList .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
                     <span class="indicator-label">${idx.name}</span>
                     <div class="indicator-values">
                         <span class="indicator-price">${idx.price || '-'}</span>
@@ -1477,12 +1477,12 @@ async function renderMacroIndicators() {
             `).join('');
 
             // Auto-select KOSPI
-            const activeItem = document.querySelector('.macro-card .indicator-row.clickable.active');
+            const activeItem = indexList.querySelector('.indicator-row.clickable.active');
             if (!activeItem) {
                 const kospi = indexList.querySelector('.indicator-row.clickable[data-id="KOSPI"]');
                 if (kospi) {
                     kospi.classList.add('active');
-                    renderMacroChart('KOSPI', 'KOSPI');
+                    renderMacroSplitChart('KOSPI', 'KOSPI', 'market');
                 }
             }
         }
@@ -1493,7 +1493,7 @@ async function renderMacroIndicators() {
                 <div class="indicator-row clickable" 
                      data-id="${eco.id}" 
                      data-name="${eco.name}"
-                     onclick="renderMacroChart('${eco.id}', '${eco.name}'); document.querySelectorAll('.macro-card .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                     onclick="renderMacroSplitChart('${eco.id}', '${eco.name}', 'economy'); document.querySelectorAll('#economyGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
                     <span class="indicator-label">${eco.name}</span>
                     <div class="indicator-values">
                         <span class="indicator-price">${eco.price}</span>
@@ -1501,16 +1501,26 @@ async function renderMacroIndicators() {
                     </div>
                 </div>
             `).join('');
+
+            // Auto-select USD/KRW
+            const activeEco = economyGrid.querySelector('.indicator-row.clickable.active');
+            if (!activeEco) {
+                const usd = economyGrid.querySelector('.indicator-row.clickable[data-id="USD/KRW"]');
+                if (usd) {
+                    usd.classList.add('active');
+                    renderMacroSplitChart('USD/KRW', 'USD/KRW 환율', 'economy');
+                }
+            }
         }
 
-        // 3. Render Commodity List (New v175)
+        // 3. Render Commodity List
         const commodityGrid = document.getElementById('commodityGrid');
         if (commodityGrid) {
             commodityGrid.innerHTML = commodityData.map(com => `
                 <div class="indicator-row clickable" 
                      data-id="${com.id}" 
                      data-name="${com.name}"
-                     onclick="renderMacroChart('${com.id}', '${com.name}'); document.querySelectorAll('.macro-card .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                     onclick="renderMacroSplitChart('${com.id}', '${com.name}', 'commodity'); document.querySelectorAll('#commodityGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
                     <span class="indicator-label">${com.name}</span>
                     <div class="indicator-values">
                         <span class="indicator-price">${com.price}</span>
@@ -1518,15 +1528,25 @@ async function renderMacroIndicators() {
                     </div>
                 </div>
             `).join('');
+
+            // Auto-select Gold
+            const activeCom = commodityGrid.querySelector('.indicator-row.clickable.active');
+            if (!activeCom) {
+                const gold = commodityGrid.querySelector('.indicator-row.clickable[data-id="GOLD"]');
+                if (gold) {
+                    gold.classList.add('active');
+                    renderMacroSplitChart('GOLD', '금 (Gold)', 'commodity');
+                }
+            }
         }
 
-        // 4. Render Crypto List (Separate Chart)
+        // 4. Render Crypto List
         if (cryptoGrid) {
             cryptoGrid.innerHTML = cryptoData.map(cry => `
                 <div class="indicator-row clickable" 
                      data-id="${cry.id}" 
                      data-name="${cry.name}"
-                     onclick="renderCryptoChart('${cry.id}', '${cry.name}'); document.querySelectorAll('#cryptoGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
+                     onclick="renderMacroSplitChart('${cry.id}', '${cry.name}', 'crypto'); document.querySelectorAll('#cryptoGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
                     <span class="indicator-label">${cry.name}</span>
                     <div class="indicator-values">
                         <span class="indicator-price">$${cry.price}</span>
@@ -1535,13 +1555,13 @@ async function renderMacroIndicators() {
                 </div>
             `).join('');
 
-            // Auto-select BTC for Crypto Chart
-            const activeCrypto = cryptoGrid.querySelector('.indicator-row.clickable.active');
-            if (!activeCrypto) {
+            // Auto-select BTC
+            const activeCry = cryptoGrid.querySelector('.indicator-row.clickable.active');
+            if (!activeCry) {
                 const btc = cryptoGrid.querySelector('.indicator-row.clickable[data-id="BTC"]');
                 if (btc) {
                     btc.classList.add('active');
-                    renderCryptoChart('BTC', '비트코인 (BTC)');
+                    renderMacroSplitChart('BTC', '비트코인 (BTC)', 'crypto');
                 }
             }
         }
@@ -1573,45 +1593,41 @@ async function renderMacroIndicators() {
     }
 }
 
-// ── 전역 차트 인스턴스 관리 ──
-let currentMacroChart = null;
-let currentCryptoChart = null;
+// ── 전역 차트 인스턴스 관리 (v176) ──
+let macroCharts = {
+    market: null,
+    economy: null,
+    commodity: null,
+    crypto: null
+};
 
-// ── 통합 매크로 차트 렌더링 ──
-async function renderMacroChart(symbol, name) {
-    await renderGenericChart(symbol, name, 'indexChart', 'selectedIndexName', 'macro');
-}
+// ── 분할 뷰 전용 차트 렌더링 ──
+async function renderMacroSplitChart(symbol, name, category) {
+    const containerMap = {
+        market: { id: 'marketChart', title: 'marketChartTitle', color: '#3b82f6' },
+        economy: { id: 'economyChart', title: 'economyChartTitle', color: '#10b981' },
+        commodity: { id: 'commodityChart', title: 'commodityChartTitle', color: '#f59e0b' },
+        crypto: { id: 'cryptoChart', title: 'cryptoChartTitle', color: '#8b5cf6' }
+    };
 
-// ── 디지털 자산 전용 차트 렌더링 ──
-async function renderCryptoChart(symbol, name) {
-    await renderGenericChart(symbol, name, 'cryptoChart', 'selectedCryptoName', 'crypto');
-}
-
-// ── Lightweight Charts 범용 렌더링 엔진 ──
-async function renderGenericChart(symbol, name, containerId, titleId, type) {
-    const titleElem = document.getElementById(titleId);
-    const container = document.getElementById(containerId);
+    const target = containerMap[category];
+    const titleElem = document.getElementById(target.title);
+    const container = document.getElementById(target.id);
     
-    if (titleElem) {
-        const typeLabel = type === 'crypto' ? '시세' : '지표';
-        titleElem.textContent = `${name} ${typeLabel} 차트 (분석 중)`;
-    }
+    if (titleElem) titleElem.textContent = `${name} 상세 분석`;
     if (!container) return;
 
     // Clear existing
-    container.innerHTML = '<div class="loading-chart">데이터를 불러오는 중...</div>';
+    container.innerHTML = '<div class="loading-chart">로딩 중...</div>';
     
-    if (type === 'crypto' && currentCryptoChart) {
-        currentCryptoChart.remove();
-        currentCryptoChart = null;
-    } else if (type === 'macro' && currentMacroChart) {
-        currentMacroChart.remove();
-        currentMacroChart = null;
+    if (macroCharts[category]) {
+        macroCharts[category].remove();
+        macroCharts[category] = null;
     }
 
     try {
         const resp = await fetchWithTimeout(`${API_BASE_URL}/api/market-index/history?symbol=${encodeURIComponent(symbol)}`);
-        if (!resp.ok) throw new Error('History Fetch Failed');
+        if (!resp.ok) throw new Error('데이터 수집 실패');
         const data = await resp.json();
 
         container.innerHTML = '';
@@ -1623,7 +1639,7 @@ async function renderGenericChart(symbol, name, containerId, titleId, type) {
         const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-        const themeColor = type === 'crypto' ? '#f59e0b' : '#3b82f6'; // Crypto uses orange-ish, Macro uses blue
+        const themeColor = target.color;
 
         const chartOptions = {
             width: container.clientWidth || 400,
@@ -1631,50 +1647,45 @@ async function renderGenericChart(symbol, name, containerId, titleId, type) {
             layout: { 
                 background: { type: 'solid', color: 'transparent' },
                 textColor: textColor,
-                fontSize: 11,
-                fontFamily: 'Space Grotesk, sans-serif'
+                fontSize: 10,
+                fontFamily: 'Inter, sans-serif'
             },
             grid: {
                 vertLines: { color: gridColor },
                 horzLines: { color: gridColor },
             },
-            rightPriceScale: { borderColor: gridColor },
-            timeScale: { 
-                borderColor: gridColor, 
-                timeVisible: true,
-                mouseWheel: true,
-                pinchZoom: true
-            },
+            rightPriceScale: { borderColor: gridColor, borderVisible: false },
+            timeScale: { borderColor: gridColor, borderVisible: false, timeVisible: true },
             handleScroll: true,
             handleScale: true,
         };
 
         const chart = LightweightCharts.createChart(container, chartOptions);
         const areaSeries = chart.addAreaSeries({
-            topColor: `${themeColor}66`, // 40% alpha
+            topColor: `${themeColor}44`,
             bottomColor: `${themeColor}00`,
             lineColor: themeColor,
             lineWidth: 2,
+            priceFormat: { type: 'price', precision: symbol.includes('USD') || symbol.includes('TNX') ? 3 : 2 },
         });
 
         if (data.history && data.history.length > 0) {
             areaSeries.setData(data.history);
         }
 
-        if (data.history && data.history.length > 22) {
+        if (data.history && data.history.length > 30) {
             const last = data.history[data.history.length - 1].time;
-            const first = data.history[data.history.length - 22].time;
+            const first = data.history[data.history.length - 30].time;
             chart.timeScale().setVisibleRange({ from: first, to: last });
         } else {
             chart.timeScale().fitContent();
         }
 
-        if (type === 'crypto') currentCryptoChart = chart;
-        else currentMacroChart = chart;
+        macroCharts[category] = chart;
 
     } catch (err) {
-        console.error("renderGenericChart error:", err);
-        container.innerHTML = `<div class="error-msg">차트 로드 실패: ${err.message}</div>`;
+        console.error(`[Chart Error] ${category}:`, err);
+        container.innerHTML = `<div class="error-msg">데이터 없음</div>`;
     }
 }
 

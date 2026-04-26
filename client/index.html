@@ -35,7 +35,7 @@
     <!-- Microsoft -->
     <meta name="msapplication-TileImage" content="./static/icons/icon-192.png">
     <meta name="msapplication-TileColor" content="#0a0f1e">
-    <link rel="stylesheet" href="./static/style.css?v=175">
+    <link rel="stylesheet" href="./static/style.css?v=176">
     <style>
         .nav-item.hidden {
             display: none !important;
@@ -296,58 +296,60 @@
                     </div>
     
                     <!-- Global Macro Indicators Section -->
-                    <div id="macroIndicatorSection" class="macro-section">
-                        <div class="section-header">
-                            <h3><i class="ph ph-globe" style="margin-right: 8px;"></i>글로벌 매크로 지표</h3>
+                    <div class="macro-grid">
+                        <!-- 1. Market Indices Section -->
+                        <div class="macro-card wide-card split-view">
+                            <div class="macro-side-list">
+                                <h4 class="card-subtitle">시장 지표</h4>
+                                <div id="indexList" class="macro-indicator-list">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            <div class="macro-side-chart">
+                                <h4 class="card-subtitle" id="marketChartTitle">지수 분석 차트</h4>
+                                <div id="marketChart" class="index-chart-container"></div>
+                            </div>
                         </div>
-    
-                        <div class="macro-grid">
-                            <!-- Card 1: Market Indices -->
-                            <div class="macro-card">
-                                <h4 class="card-subtitle">시장 지수</h4>
-                                <div id="indexList" class="index-list">
-                                    <!-- Populated by JS -->
-                                </div>
-                            </div>
 
-                            <!-- Card 2: Index Chart -->
-                            <div class="macro-card wide-card" style="min-height: 400px; display: flex; flex-direction: column;">
-                                <h4 class="card-subtitle" id="selectedIndexName">매크로 지표 차트 분석</h4>
-                                <div id="indexChart" class="index-chart-container" style="flex: 1;">
-                                    <!-- Populated by JS -->
-                                </div>
-                            </div>
-    
-                            <!-- Card 2: Economy Indicators -->
-                            <div class="macro-card">
+                        <!-- 2. Economic Indicators Section -->
+                        <div class="macro-card wide-card split-view">
+                            <div class="macro-side-list">
                                 <h4 class="card-subtitle">주요 경제 지표</h4>
-                                <div id="economyGrid" class="economy-grid">
+                                <div id="economyGrid" class="macro-indicator-list">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
+                            <div class="macro-side-chart">
+                                <h4 class="card-subtitle" id="economyChartTitle">경제 지표 차트</h4>
+                                <div id="economyChart" class="index-chart-container"></div>
+                            </div>
+                        </div>
 
-                            <!-- Card 3: Global Commodities (New v175) -->
-                            <div class="macro-card">
+                        <!-- 3. Global Commodities Section -->
+                        <div class="macro-card wide-card split-view">
+                            <div class="macro-side-list">
                                 <h4 class="card-subtitle">글로벌 원자재</h4>
-                                <div id="commodityGrid" class="commodity-grid">
+                                <div id="commodityGrid" class="macro-indicator-list">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
+                            <div class="macro-side-chart">
+                                <h4 class="card-subtitle" id="commodityChartTitle">원자재 차트</h4>
+                                <div id="commodityChart" class="index-chart-container"></div>
+                            </div>
+                        </div>
 
-                            <!-- Card 4: Digital Assets -->
-                            <div class="macro-card">
+                        <!-- 4. Digital Assets Section -->
+                        <div class="macro-card wide-card split-view">
+                            <div class="macro-side-list">
                                 <h4 class="card-subtitle">디지털 자산 시세</h4>
-                                <div id="cryptoGrid" class="crypto-grid">
+                                <div id="cryptoGrid" class="macro-indicator-list">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
-
-                            <!-- Card 5: Crypto Chart (New v175) -->
-                            <div class="macro-card wide-card" style="min-height: 400px; display: flex; flex-direction: column;">
-                                <h4 class="card-subtitle" id="selectedCryptoName">디지털 자산 차트 분석</h4>
-                                <div id="cryptoChart" class="index-chart-container" style="flex: 1;">
-                                    <!-- Populated by JS -->
-                                </div>
+                            <div class="macro-side-chart">
+                                <h4 class="card-subtitle" id="cryptoChartTitle">가상자산 분석 차트</h4>
+                                <div id="cryptoChart" class="index-chart-container"></div>
                             </div>
                         </div>
                     </div>
@@ -1275,7 +1277,7 @@
         </div>
     </div>
 
-    <script src="./static/app.js?v=175"></script>
+    <script src="./static/app.js?v=176"></script>
 </body>
 
 </html>

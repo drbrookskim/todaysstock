@@ -6007,6 +6007,59 @@ html:not([data-theme="light"]) .trend-pill.bullish {
 .indicator-change.up { background: rgba(239, 68, 68, 0.1); color: var(--color-up); }
 .indicator-change.down { background: rgba(59, 130, 246, 0.1); color: var(--color-down); }
 
+/* ── Macro Dashboard Split-View (v176) ── */
+.macro-card.split-view {
+    display: flex;
+    flex-direction: row;
+    padding: 0 !important;
+    overflow: hidden;
+    min-height: 420px;
+}
+
+.macro-side-list {
+    width: 320px;
+    padding: 24px;
+    border-right: 1px solid var(--border-soft);
+    background: var(--bg-app); /* Subtle contrast */
+    display: flex;
+    flex-direction: column;
+}
+
+.macro-side-chart {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Important for flex child with charts */
+}
+
+.macro-indicator-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+    overflow-y: auto;
+}
+
+/* Mobile Responsive for Split-View */
+@media (max-width: 992px) {
+    .macro-card.split-view {
+        flex-direction: column;
+        min-height: auto;
+    }
+    .macro-side-list {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-soft);
+    }
+}
+
+.index-chart-container {
+    flex: 1;
+    min-height: 300px;
+    position: relative;
+}
+
 /* ── Fear & Greed Gauge (Removed v174) ── */
 /* Watchlist Section & Layout */
 .watchlist-section {
