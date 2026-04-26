@@ -364,7 +364,8 @@ function resetDashboardHome(force = false) {
                 // }
             });
             
-            if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
+            // No longer auto-filling searchInput to keep it clean for next search per user request
+            // if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
 
             // [FIX] Always ensure results are rendered if they exist in memory
             if (resSec && currentStock.data) {
@@ -955,7 +956,7 @@ async function selectStock(item, origin = 'search') {
     // Add to recent
     saveRecentSearch(item);
     
-    if (searchInput) searchInput.value = item.name;
+    if (searchInput) searchInput.value = ''; // Clear search box after selection per user request
     currentStock = item;
     
     // [PERSISTENCE] Save last stock for refresh recovery
