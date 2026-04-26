@@ -1081,7 +1081,11 @@ def market_index_history():
         # 디지털 자산
         "BTC": "BTC-USD",
         "ETH": "ETH-USD",
-        "USDT": "USDT-USD"
+        "USDT": "USDT-USD",
+        # 글로벌 원자재
+        "GOLD": "GC=F",
+        "SILVER": "SI=F",
+        "COPPER": "HG=F"
     }
     
     ticker_symbol = mapping.get(symbol_name)

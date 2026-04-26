@@ -365,7 +365,10 @@ def get_macro(ecos_key: str) -> dict:
         "sox":     "^SOX",
         "btc":     "BTC-USD",
         "eth":     "ETH-USD",
-        "usdt":    "USDT-USD"
+        "usdt":    "USDT-USD",
+        "gold":    "GC=F",
+        "silver":  "SI=F",
+        "copper":  "HG=F"
     }
 
     try:
