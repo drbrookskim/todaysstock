@@ -1019,8 +1019,8 @@ async function selectStock(item, origin = 'search') {
     // Add to recent
     saveRecentSearch(item);
     
-    // [v184] Keep search term in input box for better context per user request
-    if (searchInput) searchInput.value = item.name; 
+    // [v185] Clear search box after selection/restoration per user request
+    if (searchInput) searchInput.value = ''; 
     currentStock = item;
     
     // [PERSISTENCE] Save last stock for refresh recovery
