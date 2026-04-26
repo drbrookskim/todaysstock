@@ -979,20 +979,21 @@ async function selectStock(item, origin = 'search') {
         
         if (loadingSpinner) loadingSpinner.classList.add('hidden');
 
-        if (origin === 'search') {
+        if (origin === 'search' || origin === 'restore') {
             homeStockContext = { item, data, analysis: null };
             
             // Navigate to Home section
             navigateToSection('navHome');
             
-            // Smoothly scroll to the result ONLY if we're not explicitly resetting to a clean Home
-            requestAnimationFrame(() => {
-                const resSec = document.getElementById('resultSection');
-                // Only scroll if result is visible and we didn't just force a home reset
-                if (resSec && !resSec.classList.contains('hidden')) {
-                    resSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
+            // Smoothly scroll to the result ONLY for fresh searches, not restoration
+            if (origin === 'search') {
+                requestAnimationFrame(() => {
+                    const resSec = document.getElementById('resultSection');
+                    if (resSec && !resSec.classList.contains('hidden')) {
+                        resSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            }
         } 
         else if (origin === 'watchlist') {
             // Deep Analysis View: Navigate to Full AI & Fundamental Analysis
