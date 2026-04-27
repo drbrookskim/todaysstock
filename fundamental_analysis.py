@@ -510,12 +510,7 @@ def _build_signal(quant: dict, events: list,
 
 def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     """
-    [v190] 고도화된 5단계 퀀트 밸류에이션 프레임워크 적용
-    1. 동적 할인율(k) 산출
-    2. Forward ROE 반영
-    3. 섹터 멀티플 보정
-    4. 시장 심리(Sentiment) 버퍼
-    5. 시나리오 밴드 (Bear/Base/Bull)
+    [v192] 섹터별 프리미엄(HBM 등) 및 시장 지위 가중치 강화
     """
     if not shares or not current_price:
         return None
@@ -529,49 +524,63 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     bps = equity / shares
 
     # 1. 동적 할인율 (k) 산출
-    # 국고채/미국채 금리 기반 + 섹터별 리스크 프리미엄(Beta)
     rf = (macro.get("us10y") or macro.get("base_rate") or 4.2) / 100.0
+    # 성장 섹터는 리스크(Beta)가 높지만, 동시에 프리미엄(Multiple)도 높음
     beta_map = {
-        "IDM": 1.25, "EQUIPMENT": 1.35, "BATTERY": 1.5, "BIO": 1.6, 
-        "EV": 1.1, "INTERNET": 1.3, "FINANCE": 0.8, "TELECOM": 0.7, 
-        "ENERGY": 0.9, "GENERAL": 1.0
+        "IDM": 1.15, "EQUIPMENT": 1.25, "BATTERY": 1.4, "BIO": 1.5, 
+        "EV": 1.0, "INTERNET": 1.2, "FINANCE": 0.75, "TELECOM": 0.65, 
+        "ENERGY": 0.85, "GENERAL": 1.0
     }
     beta = beta_map.get(ctype, 1.0)
-    erp = 0.055 # Equity Risk Premium (평균 5.5%)
-    k = rf + (beta * erp) # CAPM 기반 할인율
+    erp = 0.05 # ERP 보수적 조정
+    k = rf + (beta * erp)
     
     # 2. Forward ROE 반영 (성장성 모멘텀 가중)
-    # 최근 분기 성장률이 양수면 ROE 상향 조정, 음수면 하향 조정 (±20% 제한)
+    # 한미반도체와 같은 HBM 관련주는 높은 성장성을 반영하여 Forward ROE 가중치 상향
     growth_adj = (qnt.get("qtr_growth") or 0) / 100.0
-    roe_fwd = roe_hist * (1 + max(-0.2, min(0.3, growth_adj * 0.5)))
-    roe_dec = max(2.0, roe_fwd) / 100.0 # 최소 ROE 2% 방어선
+    # 성장 섹터(HBM 등)는 성장률 반영 민감도를 0.5 -> 0.8로 상향
+    sensitivity = 0.8 if ctype in ("EQUIPMENT", "IDM", "BATTERY", "BIO") else 0.5
+    roe_fwd = roe_hist * (1 + max(-0.25, min(0.6, growth_adj * sensitivity)))
+    roe_dec = max(2.0, roe_fwd) / 100.0
 
-    # 3. 섹터 멀티플 & 4. 시장 심리 보정
-    # Fear & Greed Index 반영 (과열 시 보수적, 공포 시 공격적)
+    # 3. 섹터 멀티플 (Sector Premium) - [핵심 업데이트]
+    # 단순히 이론 가치에 그치지 않고, HBM/AI 등 산업 사이클의 프리미엄 반영
+    sector_premiums = {
+        "IDM": 1.8,       # 삼성전자/하이닉스 (HBM 가치)
+        "EQUIPMENT": 2.2, # 한미반도체 등 핵심 장비 (High Multiplier)
+        "BATTERY": 2.0,   # 이차전지 성장성
+        "BIO": 2.5,       # 신약 모멘텀
+        "EV": 1.2, "INTERNET": 1.5, "FINANCE": 0.8, "TELECOM": 0.8, 
+        "ENERGY": 1.0, "GENERAL": 1.0
+    }
+    premium = sector_premiums.get(ctype, 1.0)
+
+    # 4. 시장 심리 보정
     fg = macro.get("fear_greed", 50)
-    sentiment_buffer = (fg - 50) / 500.0 # -0.1 ~ +0.1 보정
+    sentiment_buffer = (fg - 50) / 400.0
     
-    # 5. 시나리오별 적정가 산출 (S-RIM 변형 모델)
-    def calc_scenario(r_val, k_val, sent):
-        # 가치 = BPS * (ROE / k) * (1 + Sentiment)
-        # 초과이익이 지속된다고 가정하는 영구 성장 모델의 보수적 변형
-        val = bps * (r_val / k_val) * (1 - sent) # sent가 높으면(과열) 가치 할인
+    # 5. 시나리오별 적정가 산출
+    def calc_scenario(r_val, k_val, sent, prem):
+        # 초과이익 모델 (S-RIM) + 섹터 프리미엄
+        # 공식: BPS * (ROE / k) * Premium * (1 - Sentiment)
+        theoretical_val = bps * (r_val / k_val)
+        val = theoretical_val * prem * (1 - sent)
         return val
 
     # Base Scenario
-    base_price = calc_scenario(roe_dec, k, sentiment_buffer)
+    base_price = calc_scenario(roe_dec, k, sentiment_buffer, premium)
     
-    # Bear Scenario (ROE -25%, k +1.5%)
-    bear_price = calc_scenario(roe_dec * 0.75, k + 0.015, 0.05)
+    # Bear Scenario (ROE -30%, Premium -20%)
+    bear_price = calc_scenario(roe_dec * 0.7, k + 0.02, 0.05, premium * 0.8)
     
-    # Bull Scenario (ROE +25%, k -1.0%)
-    bull_price = calc_scenario(roe_dec * 1.25, k - 0.01, -0.05)
+    # Bull Scenario (ROE +40%, Premium +30%)
+    bull_price = calc_scenario(roe_dec * 1.4, k - 0.01, -0.05, premium * 1.3)
 
-    # 기대 수익률 (Expected Return)
+    # 기대 수익률
     expected_return = ((base_price - current_price) / current_price) * 100
     
     status = "적정"
-    if expected_return > 25:   status = "강력 저평가"
+    if expected_return > 30:   status = "강력 저평가"
     elif expected_return > 10:  status = "저평가"
     elif expected_return > -5:  status = "적정"
     elif expected_return > -20: status = "고평가"
@@ -585,7 +594,8 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
         "status":          status,
         "k_rate":          _safe_num(k * 100, 2),
         "forward_roe":     _safe_num(roe_fwd, 2),
-        "method":          "5-Step Quant Valuation (CAPM/Fwd-ROE)",
+        "premium":         _safe_num(premium, 1),
+        "method":          "5-Step High-Growth Premium Framework",
         "shares":          _safe_num(shares, 0)
     }
 

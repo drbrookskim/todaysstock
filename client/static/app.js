@@ -2445,14 +2445,18 @@ async function renderFundamentalReport(stockCode) {
                 </div>
 
                 <!-- Quant Alpha Metrics -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">동적 할인율 (k)</span>
-                        <span style="font-size:1.1rem; font-weight:800; color:var(--accent-indigo);">${target.k_rate}%</span>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; padding:16px; background:rgba(255,255,255,0.03); border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="display:flex; flex-direction:column; gap:4px; text-align:center;">
+                        <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">할인율(k)</span>
+                        <span style="font-size:1rem; font-weight:800; color:var(--accent-indigo);">${target.k_rate}%</span>
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; border-left:1px solid rgba(255,255,255,0.1); padding-left:16px;">
-                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Forward ROE</span>
-                        <span style="font-size:1.1rem; font-weight:800; color:var(--accent-emerald);">${target.forward_roe}%</span>
+                    <div style="display:flex; flex-direction:column; gap:4px; text-align:center; border-left:1px solid rgba(255,255,255,0.1); border-right:1px solid rgba(255,255,255,0.1);">
+                        <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">Fwd ROE</span>
+                        <span style="font-size:1rem; font-weight:800; color:var(--accent-emerald);">${target.forward_roe}%</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; text-align:center;">
+                        <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">프리미엄</span>
+                        <span style="font-size:1rem; font-weight:800; color:#fbbf24;">${target.premium}x</span>
                     </div>
                 </div>
 
