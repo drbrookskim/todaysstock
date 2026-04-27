@@ -109,7 +109,7 @@ _ACCT = {
     "영업이익": "op",       "영업손실": "op",       "영업이익(손실)": "op",
     "당기순이익": "net",    "당기순손실": "net",    "당기순이익(손실)": "net", "분기순이익": "net", "분기순이익(손실)": "net",
     "자산총계": "assets",   "부채총계": "liab",
-    "자본총계": "equity",   "자본총계(자본금)": "equity", "총자본": "equity",
+    "자본총계": "equity",   "총자본": "equity", "지배기업소유주지분": "equity", "지배기업의소유주에게귀속되는자본": "equity",
     "재고자산": "inv",
 }
 
@@ -205,9 +205,9 @@ def compute_quant(financials: dict) -> dict:
         rev_c, rev_p = _v("rev", "qtr")
     op_c, _   = _v("op",     "ann") if ann.get("op", {}).get("cur") else _v("op", "qtr")
     net_c, _  = _v("net",    "ann") if ann.get("net", {}).get("cur") else _v("net", "qtr")
-    eq_c, _   = _v("equity", "ann")
-    liab_c, _ = _v("liab",   "ann")
-    inv_c, _  = _v("inv",    "ann")
+    eq_c, _   = _v("equity", "qtr") if qtr.get("equity", {}).get("cur") else _v("equity", "ann")
+    liab_c, _ = _v("liab",   "qtr") if qtr.get("liab", {}).get("cur") else _v("liab",   "ann")
+    inv_c, _  = _v("inv",    "qtr") if qtr.get("inv", {}).get("cur") else _v("inv",    "ann")
     qtr_c, qtr_p = _v("rev", "qtr")
 
     def sd(a, b):
