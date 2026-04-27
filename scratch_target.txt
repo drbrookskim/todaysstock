@@ -1,0 +1,12 @@
+                    <div id="analysisContentWrapper" class="hidden">
+                        <!-- ── Global Loading State ── -->
+                        <div id="analysisGlobalLoading" class="analysis-loading hidden">
+                            <div class="spinner"></div>
+                            <p id="analysisLoadingText">심층 분석 엔진을 가동 중입니다...</p>
+                        </div>
+
+                        <!-- AI Candle & Pattern Analysis Report (Integrated) -->
+                        <div id="patternReportSection" class="pattern-report-section hidden">
+                            
+                            <!-- 1. Trend Analysis Block -->
+                            <div id="aiTrendBlock" class="workout-style ai-trend reveal-fade hidden">

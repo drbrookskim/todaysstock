@@ -520,97 +520,123 @@ def _build_signal(quant: dict, events: list,
 
 def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     """
-    [v193] 현실성 기반 밸류에이션 보정 (Conservative & Realistic)
+    [v196] 3중 혼합 밸류에이션 모델 (증권사 수준 고도화)
+    - S-RIM (30%) + 목표PBR*BPS (50%) + 목표PER*EPS (20%)
+    - Forward ROE 3단계 가중 (과거:섹터평균:성장보정 = 30:20:50)
+    - VIX 기반 심리 보정 +-15%
+    - 5단계 밴드 반환 (liquidation / bear / base / bull / analyst)
     """
     if not shares or not current_price:
         return None
 
-    macro = macro or {}
-    roe_hist = qnt.get("roe", 10.0)
-    equity = qnt.get("equity_raw", 0)
+    macro    = macro or {}
+    roe_hist = qnt.get("roe") or 10.0
+    equity   = qnt.get("equity_raw", 0) or 0
+    net_inc  = qnt.get("net_income_raw", 0) or 0
+
     if not equity or not shares:
         return None
-    
-    bps = equity / shares
 
-    # 1. 동적 할인율 (k) 산출
-    # 국고채 금리에 리스크 프리미엄을 더한 요구수익률 (최소 6% ~ 최대 15% 제한)
-    rf = (macro.get("us10y") or macro.get("base_rate") or 4.2) / 100.0
+    bps = equity / shares
+    eps = net_inc / shares if shares else 0
+
+    # 1. 동적 할인율 (k)
+    base_rate = macro.get("base_rate") or 0
+    us10y     = macro.get("us10y") or 4.2
+    rf = (base_rate + 1.5) / 100.0 if base_rate > 0 else us10y / 100.0
     beta_map = {
-        "IDM": 1.1, "EQUIPMENT": 1.2, "BATTERY": 1.3, "BIO": 1.4, 
-        "EV": 1.0, "INTERNET": 1.2, "FINANCE": 0.8, "TELECOM": 0.7, 
+        "IDM": 1.1, "EQUIPMENT": 1.2, "BATTERY": 1.3, "BIO": 1.4,
+        "EV": 1.0, "INTERNET": 1.2, "FINANCE": 0.8, "TELECOM": 0.7,
         "ENERGY": 0.9, "GENERAL": 1.0
     }
     beta = beta_map.get(ctype, 1.0)
-    erp = 0.06 # 현실적인 주식 프리미엄
-    k = max(0.06, min(0.15, rf + (beta * erp)))
-    
-    # 2. Forward ROE 반영 (현실적인 캡 적용)
-    growth_adj = (qnt.get("qtr_growth") or 0) / 100.0
-    sensitivity = 0.6 if ctype in ("EQUIPMENT", "IDM", "BATTERY", "BIO") else 0.4
-    # ROE가 과거 대비 너무 급격하게 변하지 않도록 ±30% 캡 적용
-    roe_fwd = roe_hist * (1 + max(-0.3, min(0.4, growth_adj * sensitivity)))
-    roe_dec = max(3.0, min(50.0, roe_fwd)) / 100.0
+    erp  = 0.055
+    k    = max(0.055, min(0.18, rf + beta * erp))
 
-    # 3. 섹터 프리미엄 (현실적인 범위로 축소: 0.8 ~ 1.8)
-    sector_premiums = {
-        "IDM": 1.3,       # HBM 프리미엄
-        "EQUIPMENT": 1.5, # 핵심 장비 프리미엄
-        "BATTERY": 1.4,   
-        "BIO": 1.7,       
-        "EV": 1.1, "INTERNET": 1.4, "FINANCE": 0.7, "TELECOM": 0.7, 
-        "ENERGY": 0.9, "GENERAL": 1.0
+    # 2. Forward ROE — 3단계 가중 평균
+    sector_means = _SECTOR_MEANS.get(ctype, _SECTOR_MEANS["GENERAL"])
+    roe_sector   = sector_means.get("roe", 10.0)
+    growth_adj   = (qnt.get("qtr_growth") or 0) / 100.0
+    sensitivity  = 0.6 if ctype in ("EQUIPMENT", "IDM", "BATTERY", "BIO") else 0.4
+    roe_growth   = roe_hist * (1 + max(-0.35, min(0.5, growth_adj * sensitivity)))
+    roe_blended  = roe_hist * 0.30 + roe_sector * 0.20 + roe_growth * 0.50
+    roe_dec      = max(3.0, min(55.0, roe_blended)) / 100.0
+
+    # 3. 목표 PBR / PER + 섹터 사이클 프리미엄
+    target_pbr   = sector_means.get("pbr", 1.2)
+    target_per   = sector_means.get("per", 12.0)
+    premium_map  = {
+        "IDM": 1.15, "EQUIPMENT": 1.20, "BATTERY": 1.10, "BIO": 1.15,
+        "EV": 1.05, "INTERNET": 1.10, "FINANCE": 0.95, "TELECOM": 0.90,
+        "ENERGY": 0.95, "GENERAL": 1.0
     }
-    premium = sector_premiums.get(ctype, 1.0)
+    cycle_factor = premium_map.get(ctype, 1.0)
+    target_pbr  *= cycle_factor
+    target_per  *= cycle_factor
 
-    # 4. 시장 심리 보정 (영향력 축소)
-    fg = macro.get("fear_greed", 50)
-    sentiment_buffer = (fg - 50) / 1000.0 # 0.05 이내 보정
-    
-    # 5. 시나리오별 적정가 산출 (S-RIM 정석 모델 기반 보정)
-    def calc_scenario(r_val, k_val, sent, prem):
-        # 표준 S-RIM: BPS + (BPS * (ROE - k) / k)
-        # 고도화 모델: BPS * (ROE / k) * Premium * (1 - Sentiment)
-        # 두 모델의 가중 평균을 통해 현실성 확보
-        srim_std = bps + (bps * (r_val - k_val) / k_val)
-        multi_val = bps * (r_val / k_val) * prem
-        
-        # 정석 모델 60% : 멀티플 모델 40% 혼합
-        val = (srim_std * 0.6 + multi_val * 0.4) * (1 - sent)
-        return val
+    # 4. VIX 기반 심리 보정 (+-15%)
+    vix = macro.get("vix", 20)
+    if   vix >= 35: sentiment_factor = 1.15
+    elif vix >= 28: sentiment_factor = 1.08
+    elif vix >= 22: sentiment_factor = 1.02
+    elif vix <= 13: sentiment_factor = 0.88
+    elif vix <= 16: sentiment_factor = 0.94
+    elif vix <= 19: sentiment_factor = 0.98
+    else:           sentiment_factor = 1.00
 
-    # Base Scenario
-    base_price = calc_scenario(roe_dec, k, sentiment_buffer, premium)
-    
-    # Bear Scenario
-    bear_price = calc_scenario(roe_dec * 0.8, k + 0.01, 0.03, premium * 0.9)
-    
-    # Bull Scenario
-    bull_price = calc_scenario(roe_dec * 1.2, k - 0.01, -0.03, premium * 1.2)
+    # 5. 3중 모델 혼합 산출
+    def _s_rim(r, kk):
+        return max(bps, bps + bps * (r - kk) / kk)
 
-    # 기대 수익률
-    expected_return = ((base_price - current_price) / current_price) * 100
-    
-    status = "적정"
-    if expected_return > 30:   status = "강력 저평가"
-    elif expected_return > 12:  status = "저평가"
-    elif expected_return > -5:  status = "적정"
-    elif expected_return > -20: status = "고평가"
-    else:                      status = "극단적 과열"
+    def _pbr_val(pbr_mult):
+        return bps * pbr_mult
+
+    def _per_val(per_mult):
+        if eps > 0:
+            return eps * per_mult
+        return bps * (sector_means.get("pbr", 1.0) * 0.8)
+
+    def mixed(r, kk, pbr_m, per_m, sf):
+        srim = _s_rim(r, kk)
+        pbr  = _pbr_val(pbr_m)
+        per  = _per_val(per_m)
+        return (srim * 0.30 + pbr * 0.50 + per * 0.20) * sf
+
+    base_price    = mixed(roe_dec, k, target_pbr, target_per, sentiment_factor)
+    bear_price    = mixed(roe_dec * 0.75, k + 0.01, target_pbr * 0.80, target_per * 0.80, min(sentiment_factor, 0.97))
+    bull_price    = mixed(roe_dec * 1.25, k - 0.005, target_pbr * 1.20, target_per * 1.20, max(sentiment_factor, 1.03))
+    analyst_price = mixed(roe_dec * 1.10, k, target_pbr * 1.5, target_per * 1.5, 1.0)
+    liquidation   = bps
+
+    # 상태 판정 (현재가 vs 밴드 위치)
+    current_pbr = current_price / bps if bps > 0 else 0
+    upside      = ((base_price - current_price) / current_price) * 100
+
+    if   current_price <= bear_price:    status = "강력 저평가"
+    elif current_price <= base_price:    status = "저평가"
+    elif current_price <= bull_price:    status = "적정 (성장 반영)"
+    elif current_price <= analyst_price: status = "고평가 (업황 기대 선반영)"
+    else:                                status = "시장 프리미엄 구간"
 
     return {
-        "value":           _safe_num(base_price, 0),
-        "bear":            _safe_num(bear_price, 0),
-        "bull":            _safe_num(bull_price, 0),
-        "upside":          _safe_num(expected_return, 1),
-        "status":          status,
-        "k_rate":          _safe_num(k * 100, 2),
-        "forward_roe":     _safe_num(roe_fwd, 2),
-        "premium":         _safe_num(premium, 2),
-        "method":          "Hybrid S-RIM & Multiplier Framework",
-        "shares":          _safe_num(shares, 0)
+        "liquidation": _safe_num(liquidation, 0),
+        "bear":        _safe_num(bear_price, 0),
+        "value":       _safe_num(base_price, 0),
+        "bull":        _safe_num(bull_price, 0),
+        "analyst":     _safe_num(analyst_price, 0),
+        "upside":      _safe_num(upside, 1),
+        "status":      status,
+        "current_pbr": _safe_num(current_pbr, 2),
+        "target_pbr":  _safe_num(target_pbr, 2),
+        "k_rate":      _safe_num(k * 100, 2),
+        "forward_roe": _safe_num(roe_blended, 2),
+        "premium":     _safe_num(cycle_factor, 2),
+        "sentiment":   _safe_num(sentiment_factor, 2),
+        "bps":         _safe_num(bps, 0),
+        "eps":         _safe_num(eps, 0),
+        "method":      "3-Model Hybrid (S-RIM 30% + PBR 50% + PER 20%)",
+        "shares":      _safe_num(shares, 0),
     }
-
 
 # ════════════════════════════════════════════════════════════
 # 7.  메인 API
