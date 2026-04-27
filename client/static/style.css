@@ -1431,7 +1431,7 @@ html[data-theme="light"] .theme-icon-btn i {
 .workout-style.fundamental {
     padding: 0;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    background: rgba(255, 255, 255, 0.03); /* Translucent glass base */
+    background: var(--bg-card); /* Match AI Trend block */
     backdrop-filter: blur(28px) saturate(180%);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1446,15 +1446,15 @@ html[data-theme="light"] .theme-icon-btn i {
 .ai-summary,
 .fundamental,
 .fundamental-axis {
-    background: var(--glass-bg);
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-shadow), var(--glass-highlight);
+    background: var(--bg-card);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-premium);
 }
 
 .ai-summary .workout-header,
 .fundamental .workout-header,
 .fundamental-axis .workout-header {
-    background: linear-gradient(90deg, rgba(148, 163, 184, 0.08), transparent);
+    background: transparent;
 }
 
 [data-theme="dark"] .ai-summary .workout-header,

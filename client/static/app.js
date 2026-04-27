@@ -2346,7 +2346,7 @@ async function renderFundamentalReport(stockCode) {
             <table class="fund-metric-table" style="width:100%;">
                 ${qRows.map(([k, v]) => `<tr><td style="color:var(--text-muted); font-size:0.85rem;">${k}</td><td style="text-align:right; font-weight:700; color:var(--text-main);">${v}</td></tr>`).join('')}
             </table>
-            <div class="fund-score-desc" style="font-size:0.85rem; color:var(--text-sub); background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; line-height:1.6;">
+            <div class="fund-score-desc" style="font-size:0.85rem; color:var(--text-sub); background:transparent; border: 1px solid var(--border-soft); padding:12px; border-radius:12px; line-height:1.6;">
                 ${q.score >= 75 ? '🔥 <b>매우 우수</b> - 강력한 펀더멘탈 기반' : q.score >= 55 ? '✅ <b>평균 이상</b> - 재무 안정성 확보' : '⚠️ <b>기준 미달</b> - 리스크 관리 필요'}
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted); text-align:right;">${q.period || ''} ${q.qtr_period ? ' / ' + q.qtr_period : ''}</div>
@@ -2391,7 +2391,7 @@ async function renderFundamentalReport(stockCode) {
                     ${s.name || '종합'} 업종 평균 대비
                 </div>
                 ${comps.map(c => `
-                <div class="fund-event-item" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:12px 16px; border-radius:12px;">
+                <div class="fund-event-item" style="width:100%; background:transparent; border:1px solid var(--border-soft); padding:12px 16px; border-radius:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="font-size:0.8rem; color:var(--text-muted); font-weight:700;">${c.label}</span>
                         <span style="font-size:0.75rem; font-weight:900; color:${c.status === '우위' || c.status === '저평가' ? '#10b981' : '#ef4444'}; background:rgba(0,0,0,0.25); padding:2px 12px; border-radius:99px;">
@@ -2432,7 +2432,7 @@ async function renderFundamentalReport(stockCode) {
             <div style="display:flex; flex-direction:column; gap:24px; width:100%; padding:10px 0;">
 
                 <!-- 1. AI Estimated Fair Value (Large & Centered like the image) -->
-                <div style="text-align:center; padding:40px 20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:32px; position:relative; overflow:hidden;">
+                <div style="text-align:center; padding:40px 20px; background:transparent; border:1px solid rgba(255,255,255,0.06); border-radius:32px; position:relative; overflow:hidden;">
                     <div style="font-size:0.95rem; color:var(--text-muted); font-weight:600; margin-bottom:16px; letter-spacing:0.5px;">AI 예상 적정 가치</div>
                     <div style="font-size:3.8rem; font-weight:950; color:#ff7a5c; letter-spacing:-2px; line-height:1;">
                         ${Number(target.value).toLocaleString()}<span style="font-size:1.5rem; margin-left:4px;">원</span>
@@ -2445,11 +2445,11 @@ async function renderFundamentalReport(stockCode) {
 
                 <!-- 2. S-RIM vs BPS Info Cards (Two Columns like the image) -->
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:24px; border-radius:24px; text-align:center;">
+                    <div style="background:transparent; border:1px solid rgba(255,255,255,0.08); padding:24px; border-radius:24px; text-align:center;">
                         <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px; font-weight:700;">S-RIM 기반 가치</div>
                         <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">${Number(target.value).toLocaleString()} <span style="font-size:0.9rem;">원</span></div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:24px; border-radius:24px; text-align:center;">
+                    <div style="background:transparent; border:1px solid rgba(255,255,255,0.08); padding:24px; border-radius:24px; text-align:center;">
                         <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px; font-weight:700;">청산 가치 (BPS)</div>
                         <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">${Number(target.liquidation).toLocaleString()} <span style="font-size:0.9rem;">원</span></div>
                     </div>
