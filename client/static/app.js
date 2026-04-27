@@ -2409,31 +2409,60 @@ async function renderFundamentalReport(stockCode) {
     // ── Target Analysis ──
     const target = d.target;
     if (target) {
-        const color = target.status === '저평가' || target.status === '매력' ? '#10b981' : (target.status === '고평가' ? '#ef4444' : '#6366f1');
+        // [v190] 5단계 퀀트 프레임워크 전용 색상 맵
+        const statusColors = {
+            '강력 저평가': '#10b981', // Emerald
+            '저평가': '#34d399',      // Teal
+            '적정': '#6366f1',        // Indigo
+            '고평가': '#f59e0b',      // Amber
+            '극단적 과열': '#ef4444'   // Red
+        };
+        const color = statusColors[target.status] || '#6366f1';
+        
         document.getElementById('fundTargetContent').innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:16px; width:100%;">
-                <div style="text-align:center; padding:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:20px; box-shadow: 0 4px 30px rgba(0,0,0,0.2);">
-                    <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px; font-weight:700; letter-spacing:0.5px;">AI 예상 적정 가치</div>
-                    <div style="font-size:2.2rem; font-weight:950; color:${color}; letter-spacing:-1px; line-height:1.1;">${Number(target.value).toLocaleString()}원</div>
-                    <div style="font-size:1rem; margin-top:12px; display:flex; justify-content:center; align-items:center; gap:10px;">
-                        <span style="background:${color}; color:white; padding:4px 14px; border-radius:99px; font-weight:900; font-size:0.85rem;">${target.status}</span>
-                        <span style="color:var(--text-main); font-weight:700;">(기대수익: <span style="color:${target.upside > 0 ? '#10b981' : '#ef4444'}">${target.upside > 0 ? '+' : ''}${target.upside}%</span>)</span>
+            <div style="display:flex; flex-direction:column; gap:20px; width:100%;">
+                <!-- Main Value Card (Base Scenario) -->
+                <div style="text-align:center; padding:28px; background:linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.1); border-radius:24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:${color}; opacity:0.6;"></div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">현실적 적정 가치 (Base)</div>
+                    <div style="font-size:2.6rem; font-weight:950; color:${color}; letter-spacing:-1.5px; line-height:1.0;">${Number(target.value).toLocaleString()}원</div>
+                    <div style="font-size:1rem; margin-top:16px; display:flex; justify-content:center; align-items:center; gap:12px;">
+                        <span style="background:${color}; color:white; padding:5px 16px; border-radius:12px; font-weight:900; font-size:0.9rem; box-shadow:0 4px 15px ${color}44;">${target.status}</span>
+                        <span style="color:var(--text-main); font-weight:700; font-size:1.1rem;">기대수익 <span style="color:${target.upside > 0 ? '#10b981' : '#ef4444'}">${target.upside > 0 ? '+' : ''}${target.upside}%</span></span>
                     </div>
                 </div>
+
+                <!-- Valuation Band (Scenario) -->
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                    <div class="fund-tile-v2" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">
-                        <div class="tile-label" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">S-RIM 기반 가치</div>
-                        <div class="tile-value" style="font-size:1.1rem; font-weight:800;">${Number(target.srim).toLocaleString()}<span style="font-size:0.8rem; margin-left:2px; opacity:0.7;">원</span></div>
+                    <div style="background:rgba(239, 68, 68, 0.05); padding:16px; border-radius:18px; border:1px solid rgba(239, 68, 68, 0.1);">
+                        <div style="font-size:0.75rem; color:#ef4444; margin-bottom:4px; font-weight:700; opacity:0.8;">비관 (Bear)</div>
+                        <div style="font-size:1.25rem; font-weight:800; color:#ef4444; opacity:0.9;">${Number(target.bear).toLocaleString()}<span style="font-size:0.8rem; margin-left:2px;">원</span></div>
                     </div>
-                    <div class="fund-tile-v2" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06);">
-                        <div class="tile-label" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">청산 가치 (BPS)</div>
-                        <div class="tile-value" style="font-size:1.1rem; font-weight:800;">${Number(target.basic).toLocaleString()}<span style="font-size:0.8rem; margin-left:2px; opacity:0.7;">원</span></div>
+                    <div style="background:rgba(16, 185, 129, 0.05); padding:16px; border-radius:18px; border:1px solid rgba(16, 185, 129, 0.1);">
+                        <div style="font-size:0.75rem; color:#10b981; margin-bottom:4px; font-weight:700; opacity:0.8;">낙관 (Bull)</div>
+                        <div style="font-size:1.25rem; font-weight:800; color:#10b981; opacity:0.9;">${Number(target.bull).toLocaleString()}<span style="font-size:0.8rem; margin-left:2px;">원</span></div>
                     </div>
                 </div>
-                <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; opacity:0.6; line-height:1.4;">
-                    * ${target.method} (현금흐름할인법) 및 업종 멀티플 가중치 적용
+
+                <!-- Quant Alpha Metrics -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">동적 할인율 (k)</span>
+                        <span style="font-size:1.1rem; font-weight:800; color:var(--accent-indigo);">${target.k_rate}%</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; border-left:1px solid rgba(255,255,255,0.1); padding-left:16px;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Forward ROE</span>
+                        <span style="font-size:1.1rem; font-weight:800; color:var(--accent-emerald);">${target.forward_roe}%</span>
+                    </div>
+                </div>
+
+                <div style="font-size:0.82rem; color:var(--text-sub); text-align:center; padding:0 12px; line-height:1.5; opacity:0.8;">
+                    💡 <b>고급 퀀트 프레임워크 적용</b>: 국고채 금리 연동 할인율, 미래 수익성(Forward ROE), 섹터 프리미엄 및 시장 심리(Sentiment)를 모두 반영한 결과입니다.
                 </div>
             </div>`;
+    } else {
+        document.getElementById('fundTargetContent').innerHTML = `
+            <div class="fund-no-data" style="padding:40px; text-align:center; color:var(--text-muted);">재무 데이터 부족으로 적정 가치 산출 불가</div>`;
     } else {
         document.getElementById('fundTargetContent').innerHTML = `
             <div class="fund-no-data" style="padding:30px;">재무 데이터 부족으로 산출 불가</div>`;

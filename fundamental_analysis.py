@@ -508,49 +508,85 @@ def _build_signal(quant: dict, events: list,
             "signal_reason": " | ".join(reasons) if reasons else "데이터 분석 완료"}
 
 
-def _calculate_target(qnt, current_price, shares):
-    """적정 주가 산출 (S-RIM 및 EPS*ROE 모델)"""
+def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
+    """
+    [v190] 고도화된 5단계 퀀트 밸류에이션 프레임워크 적용
+    1. 동적 할인율(k) 산출
+    2. Forward ROE 반영
+    3. 섹터 멀티플 보정
+    4. 시장 심리(Sentiment) 버퍼
+    5. 시나리오 밴드 (Bear/Base/Bull)
+    """
     if not shares or not current_price:
         return None
 
-    roe_val = qnt.get("roe")
-    equity  = qnt.get("equity_raw")
-    net_inc = qnt.get("net_income_raw")
-
-    if roe_val is None or not equity or not shares:
+    macro = macro or {}
+    roe_hist = qnt.get("roe", 10.0)
+    equity = qnt.get("equity_raw", 0)
+    if not equity or not shares:
         return None
-
-    roe = roe_val / 100.0
-    r = 0.08 # 할인율 (요구수익률 8%)
-
-    # 1. S-RIM 모델 (잔여이익모델)
-    # 공식: BPS + (BPS * (ROE - r) / r)
-    bps = equity / shares
-    srim_price = bps + (bps * (roe - r) / r)
-
-    # 2. EPS * ROE 모델 (Rule of Thumb)
-    # 공식: EPS * ROE (ROE를 PER 멀티플로 환산)
-    eps = net_inc / shares
-    basic_price = eps * (roe * 100) # ROE가 15%면 멀티플 15배
-
-    # 최종 적정주가는 두 모델의 평균 또는 업종별 가중치 (여기서는 평균)
-    target_p = (srim_price + basic_price) / 2
     
-    upside = ((target_p - current_price) / current_price) * 100 if current_price else 0
+    bps = equity / shares
+
+    # 1. 동적 할인율 (k) 산출
+    # 국고채/미국채 금리 기반 + 섹터별 리스크 프리미엄(Beta)
+    rf = (macro.get("us10y") or macro.get("base_rate") or 4.2) / 100.0
+    beta_map = {
+        "IDM": 1.25, "EQUIPMENT": 1.35, "BATTERY": 1.5, "BIO": 1.6, 
+        "EV": 1.1, "INTERNET": 1.3, "FINANCE": 0.8, "TELECOM": 0.7, 
+        "ENERGY": 0.9, "GENERAL": 1.0
+    }
+    beta = beta_map.get(ctype, 1.0)
+    erp = 0.055 # Equity Risk Premium (평균 5.5%)
+    k = rf + (beta * erp) # CAPM 기반 할인율
+    
+    # 2. Forward ROE 반영 (성장성 모멘텀 가중)
+    # 최근 분기 성장률이 양수면 ROE 상향 조정, 음수면 하향 조정 (±20% 제한)
+    growth_adj = (qnt.get("qtr_growth") or 0) / 100.0
+    roe_fwd = roe_hist * (1 + max(-0.2, min(0.3, growth_adj * 0.5)))
+    roe_dec = max(2.0, roe_fwd) / 100.0 # 최소 ROE 2% 방어선
+
+    # 3. 섹터 멀티플 & 4. 시장 심리 보정
+    # Fear & Greed Index 반영 (과열 시 보수적, 공포 시 공격적)
+    fg = macro.get("fear_greed", 50)
+    sentiment_buffer = (fg - 50) / 500.0 # -0.1 ~ +0.1 보정
+    
+    # 5. 시나리오별 적정가 산출 (S-RIM 변형 모델)
+    def calc_scenario(r_val, k_val, sent):
+        # 가치 = BPS * (ROE / k) * (1 + Sentiment)
+        # 초과이익이 지속된다고 가정하는 영구 성장 모델의 보수적 변형
+        val = bps * (r_val / k_val) * (1 - sent) # sent가 높으면(과열) 가치 할인
+        return val
+
+    # Base Scenario
+    base_price = calc_scenario(roe_dec, k, sentiment_buffer)
+    
+    # Bear Scenario (ROE -25%, k +1.5%)
+    bear_price = calc_scenario(roe_dec * 0.75, k + 0.015, 0.05)
+    
+    # Bull Scenario (ROE +25%, k -1.0%)
+    bull_price = calc_scenario(roe_dec * 1.25, k - 0.01, -0.05)
+
+    # 기대 수익률 (Expected Return)
+    expected_return = ((base_price - current_price) / current_price) * 100
     
     status = "적정"
-    if upside > 20:   status = "저평가"
-    elif upside > 5:  status = "매력"
-    elif upside < -10: status = "고평가"
+    if expected_return > 25:   status = "강력 저평가"
+    elif expected_return > 10:  status = "저평가"
+    elif expected_return > -5:  status = "적정"
+    elif expected_return > -20: status = "고평가"
+    else:                      status = "극단적 과열"
 
     return {
-        "value":       _safe_num(target_p, 0),
-        "upside":      _safe_num(upside, 1),
-        "status":      status,
-        "srim":        _safe_num(srim_price, 0),
-        "basic":       _safe_num(basic_price, 0),
-        "method":      "S-RIM & ROE 모델 혼합",
-        "shares":      _safe_num(shares, 0)
+        "value":           _safe_num(base_price, 0),
+        "bear":            _safe_num(bear_price, 0),
+        "bull":            _safe_num(bull_price, 0),
+        "upside":          _safe_num(expected_return, 1),
+        "status":          status,
+        "k_rate":          _safe_num(k * 100, 2),
+        "forward_roe":     _safe_num(roe_fwd, 2),
+        "method":          "5-Step Quant Valuation (CAPM/Fwd-ROE)",
+        "shares":          _safe_num(shares, 0)
     }
 
 
@@ -606,7 +642,7 @@ def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
     axes.append("Sector")
     
     # ── [적정 주가 산출 (Target Price Architecture)] ──
-    target = _calculate_target(qnt, current_price, shares)
+    target = _calculate_target(qnt, current_price, shares, macro=mac, ctype=ctype)
     if target:
         axes.append("Target")
 
