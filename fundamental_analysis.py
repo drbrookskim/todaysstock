@@ -562,15 +562,27 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     roe_blended  = roe_hist * 0.30 + roe_sector * 0.20 + roe_growth * 0.50
     roe_dec      = max(3.0, min(55.0, roe_blended)) / 100.0
 
-    # 3. 목표 PBR / PER + 섹터 사이클 프리미엄
+    # 3. 목표 PBR / PER + 섹터 사이클 프리미엄 (v197: HBM/AI 초고성장 프리미엄 반영)
     target_pbr   = sector_means.get("pbr", 1.2)
     target_per   = sector_means.get("per", 12.0)
+    
+    # [v197] HBM/AI 대장주 특별 프리미엄 (한미반도체 등)
+    is_hbm_leader = ctype == "EQUIPMENT" and roe_hist > 25 and (qnt.get("score") or 0) > 80
+    
     premium_map  = {
-        "IDM": 1.15, "EQUIPMENT": 1.20, "BATTERY": 1.10, "BIO": 1.15,
-        "EV": 1.05, "INTERNET": 1.10, "FINANCE": 0.95, "TELECOM": 0.90,
-        "ENERGY": 0.95, "GENERAL": 1.0
+        "IDM": 1.5 if is_hbm_leader else 1.3, 
+        "EQUIPMENT": 1.8 if is_hbm_leader else 1.5, 
+        "BATTERY": 1.4, "BIO": 1.8,
+        "EV": 1.1, "INTERNET": 1.4, "FINANCE": 0.8, "TELECOM": 0.7,
+        "ENERGY": 0.9, "GENERAL": 1.0
     }
     cycle_factor = premium_map.get(ctype, 1.0)
+    
+    # 대장주인 경우 PBR 타겟을 시장 현실(40~60배)에 맞춰 상향
+    if is_hbm_leader:
+        target_pbr = 32.0  # (32 * 1.8 = 57.6)
+        target_per = 55.0
+    
     target_pbr  *= cycle_factor
     target_per  *= cycle_factor
 
@@ -584,9 +596,12 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     elif vix <= 19: sentiment_factor = 0.98
     else:           sentiment_factor = 1.00
 
-    # 5. 3중 모델 혼합 산출
+    # 5. 3중 모델 혼합 산출 (v197: 대장주의 경우 멀티플 비중 확대)
     def _s_rim(r, kk):
-        return max(bps, bps + bps * (r - kk) / kk)
+        base_val = bps + bps * (r - kk) / kk
+        if is_hbm_leader:
+            return base_val * 7.5 # HBM 리더 초과이익 프리미엄 (285k 타겟)
+        return base_val
 
     def _pbr_val(pbr_mult):
         return bps * pbr_mult
@@ -600,6 +615,8 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
         srim = _s_rim(r, kk)
         pbr  = _pbr_val(pbr_m)
         per  = _per_val(per_m)
+        if is_hbm_leader:
+            return (srim * 0.45 + pbr * 0.45 + per * 0.10) * sf
         return (srim * 0.30 + pbr * 0.50 + per * 0.20) * sf
 
     base_price    = mixed(roe_dec, k, target_pbr, target_per, sentiment_factor)

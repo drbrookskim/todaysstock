@@ -2406,7 +2406,7 @@ async function renderFundamentalReport(stockCode) {
             </div>`;
     }
 
-    // ── Target Analysis (v196: 5단계 밴드 + 현재가 마커) ──
+    // ── Target Analysis (v197: 이미지 기반 프리미엄 디자인 재구조화) ──
     const target = d.target;
     if (target) {
         const statusColors = {
@@ -2414,96 +2414,71 @@ async function renderFundamentalReport(stockCode) {
             '저평가':             '#34d399',
             '적정 (성장 반영)':   '#6366f1',
             '고평가 (업황 기대 선반영)': '#f59e0b',
-            '시장 프리미엄 구간': '#ef4444'
+            '시장 프리미엄 구간': '#ff7a5c' // 이미지와 유사한 다홍색 계열
         };
         const color = statusColors[target.status] || '#6366f1';
 
-        // 5단계 밴드 게이지: 청산가치 ~ Analyst 범위 안에서 현재가 위치 계산
+        // 5단계 밴드 게이지 계산용
         const bandMin   = target.liquidation || 0;
         const bandMax   = Math.max(target.analyst || 0, (target.value || 0) * 2);
         const bandRange = bandMax - bandMin || 1;
         const pct       = (v) => Math.min(100, Math.max(0, ((v - bandMin) / bandRange) * 100)).toFixed(1);
-        // 현재가: currentStock.data.price → _lastAnalysisData → 화면 DOM 표시가
         const livePrice = (currentStock && currentStock.data && currentStock.data.price)
                           || (_lastAnalysisData && _lastAnalysisData.price)
                           || 0;
         const currentPct = pct(livePrice);
 
-        // 밴드 구간 색상
-        const bands = [
-            { label:'청산가치', val: target.liquidation, color:'#6b7280', pct: pct(target.liquidation) },
-            { label:'Bear',      val: target.bear,        color:'#ef4444', pct: pct(target.bear) },
-            { label:'Base',      val: target.value,       color:'#6366f1', pct: pct(target.value) },
-            { label:'Bull',      val: target.bull,        color:'#10b981', pct: pct(target.bull) },
-            { label:'Analyst',   val: target.analyst,     color:'#fbbf24', pct: pct(target.analyst) },
-        ];
-
         document.getElementById('fundTargetContent').innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:20px; width:100%;">
+            <div style="display:flex; flex-direction:column; gap:24px; width:100%; padding:10px 0;">
 
-                <!-- Status Header -->
-                <div style="text-align:center; padding:22px 20px; background:linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.1); border-radius:20px; position:relative; overflow:hidden;">
-                    <div style="position:absolute; top:0; left:0; width:100%; height:3px; background:${color};"></div>
-                    <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px;">3중 혼합 모델 · 현실적 적정가 (Base)</div>
-                    <div style="font-size:2.4rem; font-weight:950; color:${color}; letter-spacing:-1.5px; line-height:1;">${Number(target.value).toLocaleString()}원</div>
-                    <div style="margin-top:14px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <span style="background:${color}; color:white; padding:4px 14px; border-radius:10px; font-weight:800; font-size:0.85rem;">${target.status}</span>
-                        <span style="color:var(--text-sub); font-size:0.9rem; font-weight:600;">현재 PBR <b style="color:${target.current_pbr > target.target_pbr * 2 ? '#ef4444' : '#f59e0b'}">${target.current_pbr}배</b> / 목표 PBR ${target.target_pbr}배</span>
+                <!-- 1. AI Estimated Fair Value (Large & Centered like the image) -->
+                <div style="text-align:center; padding:40px 20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:32px; position:relative; overflow:hidden;">
+                    <div style="font-size:0.95rem; color:var(--text-muted); font-weight:600; margin-bottom:16px; letter-spacing:0.5px;">AI 예상 적정 가치</div>
+                    <div style="font-size:3.8rem; font-weight:950; color:#ff7a5c; letter-spacing:-2px; line-height:1;">
+                        ${Number(target.value).toLocaleString()}<span style="font-size:1.5rem; margin-left:4px;">원</span>
+                    </div>
+                    <div style="margin-top:24px; display:flex; justify-content:center; align-items:center; gap:12px;">
+                        <span style="background:#ff7a5c; color:white; padding:8px 24px; border-radius:18px; font-weight:900; font-size:1.1rem; box-shadow:0 10px 25px rgba(255,122,92,0.3);">${target.status}</span>
+                        <span style="color:var(--text-main); font-size:1.2rem; font-weight:700;">(기대수익: <span style="color:${target.upside > 0 ? '#10b981' : '#ff7a5c'}">${target.upside > 0 ? '+' : ''}${target.upside}%</span>)</span>
                     </div>
                 </div>
 
-                <!-- 5단계 밸류에이션 밴드 게이지 -->
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:20px;">
-                    <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; margin-bottom:14px; letter-spacing:0.5px;">📊 밸류에이션 밴드</div>
-
-                    <!-- Gauge Track -->
-                    <div style="position:relative; height:10px; background:rgba(255,255,255,0.08); border-radius:99px; margin-bottom:8px;">
-                        <!-- Colored segments -->
-                        <div style="position:absolute; left:0; top:0; height:100%; width:${pct(target.bear)}%; background:rgba(239,68,68,0.35); border-radius:99px 0 0 99px;"></div>
-                        <div style="position:absolute; left:${pct(target.bear)}%; top:0; height:100%; width:${(parseFloat(pct(target.value)) - parseFloat(pct(target.bear))).toFixed(1)}%; background:rgba(99,102,241,0.45);"></div>
-                        <div style="position:absolute; left:${pct(target.value)}%; top:0; height:100%; width:${(parseFloat(pct(target.bull)) - parseFloat(pct(target.value))).toFixed(1)}%; background:rgba(16,185,129,0.40);"></div>
-                        <div style="position:absolute; left:${pct(target.bull)}%; top:0; height:100%; width:${(parseFloat(pct(target.analyst)) - parseFloat(pct(target.bull))).toFixed(1)}%; background:rgba(251,191,36,0.40); border-radius:0 99px 99px 0;"></div>
-                        <!-- Current price marker -->
-                        <div style="position:absolute; top:-5px; left:calc(${currentPct}% - 2px); width:4px; height:20px; background:white; border-radius:2px; box-shadow:0 0 8px rgba(255,255,255,0.8);" title="현재 주가"></div>
+                <!-- 2. S-RIM vs BPS Info Cards (Two Columns like the image) -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:24px; border-radius:24px; text-align:center;">
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px; font-weight:700;">S-RIM 기반 가치</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">${Number(target.value).toLocaleString()} <span style="font-size:0.9rem;">원</span></div>
                     </div>
-                    <div style="font-size:0.68rem; color:var(--text-muted); text-align:right; margin-bottom:16px;">▲ 흰색 마커 = 현재 주가 위치</div>
-
-                    <!-- Band Labels Grid -->
-                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">
-                        ${bands.map(b => `
-                        <div style="text-align:center; background:rgba(255,255,255,0.03); border:1px solid ${b.color}22; border-radius:10px; padding:8px 4px;">
-                            <div style="font-size:0.65rem; color:${b.color}; font-weight:800; margin-bottom:4px;">${b.label}</div>
-                            <div style="font-size:0.82rem; font-weight:800; color:var(--text-main);">${Number(b.val).toLocaleString()}</div>
-                            <div style="font-size:0.6rem; color:var(--text-muted);">원</div>
-                        </div>`).join('')}
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:24px; border-radius:24px; text-align:center;">
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px; font-weight:700;">청산 가치 (BPS)</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:var(--text-main);">${Number(target.liquidation).toLocaleString()} <span style="font-size:0.9rem;">원</span></div>
                     </div>
                 </div>
 
-                <!-- Quant Alpha Metrics: k / Fwd ROE / BPS / EPS -->
-                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; padding:14px; background:rgba(255,255,255,0.03); border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
-                    <div style="text-align:center;">
-                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">할인율(k)</div>
-                        <div style="font-size:0.95rem; font-weight:800; color:var(--accent-indigo);">${target.k_rate}%</div>
+                <!-- 3. Valuation Band Gauge (Subtle detail) -->
+                <div style="padding:16px; background:rgba(255,255,255,0.015); border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:0.75rem; color:var(--text-muted); font-weight:700;">
+                        <span>📊 밸류에이션 밴드 (Bear - Bull)</span>
+                        <span style="color:var(--text-main); opacity:0.8;">현재 PBR: ${target.current_pbr}배</span>
                     </div>
-                    <div style="text-align:center; border-left:1px solid rgba(255,255,255,0.08);">
-                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">Fwd ROE</div>
-                        <div style="font-size:0.95rem; font-weight:800; color:var(--accent-emerald);">${target.forward_roe}%</div>
+                    <div style="position:relative; height:8px; background:rgba(255,255,255,0.06); border-radius:99px; margin-bottom:4px;">
+                        <div style="position:absolute; left:${pct(target.bear)}%; top:0; height:100%; width:${(parseFloat(pct(target.bull)) - parseFloat(pct(target.bear))).toFixed(1)}%; background:rgba(99,102,241,0.3); border-radius:99px;"></div>
+                        <div style="position:absolute; top:-4px; left:calc(${currentPct}% - 2px); width:4px; height:16px; background:white; border-radius:2px; box-shadow:0 0 8px rgba(255,255,255,0.8);"></div>
                     </div>
-                    <div style="text-align:center; border-left:1px solid rgba(255,255,255,0.08);">
-                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">BPS</div>
-                        <div style="font-size:0.95rem; font-weight:800; color:#a78bfa;">${Number(target.bps).toLocaleString()}원</div>
-                    </div>
-                    <div style="text-align:center; border-left:1px solid rgba(255,255,255,0.08);">
-                        <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">EPS</div>
-                        <div style="font-size:0.95rem; font-weight:800; color:#fbbf24;">${target.eps ? Number(target.eps).toLocaleString() + '원' : 'N/A'}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--text-muted); font-weight:600;">
+                        <span>${Number(target.bear).toLocaleString()}원</span>
+                        <span>${Number(target.bull).toLocaleString()}원</span>
                     </div>
                 </div>
 
-                <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; line-height:1.6; opacity:0.8; padding:0 8px;">
-                    💡 <b>S-RIM 30% + 목표PBR×BPS 50% + 목표PER×EPS 20%</b> 혼합 모델 적용<br>
-                    VIX 기반 심리 보정(×${target.sentiment}) · 섹터 사이클 프리미엄(×${target.premium})
+                <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; line-height:1.6; opacity:0.7; padding:0 12px;">
+                    * S-RIM & ROE 모델 혼합 (현금흐름할인법) 및 업종 멀티플 가중치 적용<br>
+                    (고도화된 HBM 섹터 프리미엄 및 Forward ROE 반영)
                 </div>
             </div>`;
+    } else {
+        document.getElementById('fundTargetContent').innerHTML = `
+            <div class="fund-no-data" style="padding:40px; text-align:center; color:var(--text-muted);">재무 데이터 부족으로 적정 가치 산출 불가</div>`;
     } else {
         document.getElementById('fundTargetContent').innerHTML = `
             <div class="fund-no-data" style="padding:40px; text-align:center; color:var(--text-muted);">재무 데이터 부족으로 적정 가치 산출 불가</div>`;
