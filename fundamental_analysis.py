@@ -214,6 +214,18 @@ def compute_quant(financials: dict) -> dict:
         return a / b if b else None
 
     roe        = sd(net_c, eq_c) * 100 if (net_c is not None and eq_c) else None
+    
+    # [v193] 현실성 보정: 분기 데이터 기반일 경우 연환산(Annualize) 처리
+    is_qtr_basis = not ann.get("net", {}).get("cur")
+    if is_qtr_basis and roe is not None:
+        # 분기 순이익이면 x4 (반기면 x2, 3분기면 x1.33 등 정밀화 가능하나 일단 x4 가이드)
+        # qtr_period에 따라 가중치 조절
+        period_lbl = financials.get("quarterly", {}).get("period", "")
+        if "3분기" in period_lbl:   roe = roe * (4/3)
+        elif "반기" in period_lbl: roe = roe * 2
+        elif "1분기" in period_lbl: roe = roe * 4
+        else:                      roe = roe * 4
+
     op_margin  = sd(op_c, rev_c) * 100 if (op_c is not None and rev_c) else None
     rev_growth = (rev_c - rev_p) / rev_p * 100 if (rev_p and rev_c is not None) else None
     qtr_growth = (qtr_c - qtr_p) / qtr_p * 100 if (qtr_p and qtr_c is not None) else None
@@ -510,7 +522,7 @@ def _build_signal(quant: dict, events: list,
 
 def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     """
-    [v192] 섹터별 프리미엄(HBM 등) 및 시장 지위 가중치 강화
+    [v193] 현실성 기반 밸류에이션 보정 (Conservative & Realistic)
     """
     if not shares or not current_price:
         return None
@@ -524,64 +536,66 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
     bps = equity / shares
 
     # 1. 동적 할인율 (k) 산출
+    # 국고채 금리에 리스크 프리미엄을 더한 요구수익률 (최소 6% ~ 최대 15% 제한)
     rf = (macro.get("us10y") or macro.get("base_rate") or 4.2) / 100.0
-    # 성장 섹터는 리스크(Beta)가 높지만, 동시에 프리미엄(Multiple)도 높음
     beta_map = {
-        "IDM": 1.15, "EQUIPMENT": 1.25, "BATTERY": 1.4, "BIO": 1.5, 
-        "EV": 1.0, "INTERNET": 1.2, "FINANCE": 0.75, "TELECOM": 0.65, 
-        "ENERGY": 0.85, "GENERAL": 1.0
+        "IDM": 1.1, "EQUIPMENT": 1.2, "BATTERY": 1.3, "BIO": 1.4, 
+        "EV": 1.0, "INTERNET": 1.2, "FINANCE": 0.8, "TELECOM": 0.7, 
+        "ENERGY": 0.9, "GENERAL": 1.0
     }
     beta = beta_map.get(ctype, 1.0)
-    erp = 0.05 # ERP 보수적 조정
-    k = rf + (beta * erp)
+    erp = 0.06 # 현실적인 주식 프리미엄
+    k = max(0.06, min(0.15, rf + (beta * erp)))
     
-    # 2. Forward ROE 반영 (성장성 모멘텀 가중)
-    # 한미반도체와 같은 HBM 관련주는 높은 성장성을 반영하여 Forward ROE 가중치 상향
+    # 2. Forward ROE 반영 (현실적인 캡 적용)
     growth_adj = (qnt.get("qtr_growth") or 0) / 100.0
-    # 성장 섹터(HBM 등)는 성장률 반영 민감도를 0.5 -> 0.8로 상향
-    sensitivity = 0.8 if ctype in ("EQUIPMENT", "IDM", "BATTERY", "BIO") else 0.5
-    roe_fwd = roe_hist * (1 + max(-0.25, min(0.6, growth_adj * sensitivity)))
-    roe_dec = max(2.0, roe_fwd) / 100.0
+    sensitivity = 0.6 if ctype in ("EQUIPMENT", "IDM", "BATTERY", "BIO") else 0.4
+    # ROE가 과거 대비 너무 급격하게 변하지 않도록 ±30% 캡 적용
+    roe_fwd = roe_hist * (1 + max(-0.3, min(0.4, growth_adj * sensitivity)))
+    roe_dec = max(3.0, min(50.0, roe_fwd)) / 100.0
 
-    # 3. 섹터 멀티플 (Sector Premium) - [핵심 업데이트]
-    # 단순히 이론 가치에 그치지 않고, HBM/AI 등 산업 사이클의 프리미엄 반영
+    # 3. 섹터 프리미엄 (현실적인 범위로 축소: 0.8 ~ 1.8)
     sector_premiums = {
-        "IDM": 1.8,       # 삼성전자/하이닉스 (HBM 가치)
-        "EQUIPMENT": 2.2, # 한미반도체 등 핵심 장비 (High Multiplier)
-        "BATTERY": 2.0,   # 이차전지 성장성
-        "BIO": 2.5,       # 신약 모멘텀
-        "EV": 1.2, "INTERNET": 1.5, "FINANCE": 0.8, "TELECOM": 0.8, 
-        "ENERGY": 1.0, "GENERAL": 1.0
+        "IDM": 1.3,       # HBM 프리미엄
+        "EQUIPMENT": 1.5, # 핵심 장비 프리미엄
+        "BATTERY": 1.4,   
+        "BIO": 1.7,       
+        "EV": 1.1, "INTERNET": 1.4, "FINANCE": 0.7, "TELECOM": 0.7, 
+        "ENERGY": 0.9, "GENERAL": 1.0
     }
     premium = sector_premiums.get(ctype, 1.0)
 
-    # 4. 시장 심리 보정
+    # 4. 시장 심리 보정 (영향력 축소)
     fg = macro.get("fear_greed", 50)
-    sentiment_buffer = (fg - 50) / 400.0
+    sentiment_buffer = (fg - 50) / 1000.0 # 0.05 이내 보정
     
-    # 5. 시나리오별 적정가 산출
+    # 5. 시나리오별 적정가 산출 (S-RIM 정석 모델 기반 보정)
     def calc_scenario(r_val, k_val, sent, prem):
-        # 초과이익 모델 (S-RIM) + 섹터 프리미엄
-        # 공식: BPS * (ROE / k) * Premium * (1 - Sentiment)
-        theoretical_val = bps * (r_val / k_val)
-        val = theoretical_val * prem * (1 - sent)
+        # 표준 S-RIM: BPS + (BPS * (ROE - k) / k)
+        # 고도화 모델: BPS * (ROE / k) * Premium * (1 - Sentiment)
+        # 두 모델의 가중 평균을 통해 현실성 확보
+        srim_std = bps + (bps * (r_val - k_val) / k_val)
+        multi_val = bps * (r_val / k_val) * prem
+        
+        # 정석 모델 60% : 멀티플 모델 40% 혼합
+        val = (srim_std * 0.6 + multi_val * 0.4) * (1 - sent)
         return val
 
     # Base Scenario
     base_price = calc_scenario(roe_dec, k, sentiment_buffer, premium)
     
-    # Bear Scenario (ROE -30%, Premium -20%)
-    bear_price = calc_scenario(roe_dec * 0.7, k + 0.02, 0.05, premium * 0.8)
+    # Bear Scenario
+    bear_price = calc_scenario(roe_dec * 0.8, k + 0.01, 0.03, premium * 0.9)
     
-    # Bull Scenario (ROE +40%, Premium +30%)
-    bull_price = calc_scenario(roe_dec * 1.4, k - 0.01, -0.05, premium * 1.3)
+    # Bull Scenario
+    bull_price = calc_scenario(roe_dec * 1.2, k - 0.01, -0.03, premium * 1.2)
 
     # 기대 수익률
     expected_return = ((base_price - current_price) / current_price) * 100
     
     status = "적정"
     if expected_return > 30:   status = "강력 저평가"
-    elif expected_return > 10:  status = "저평가"
+    elif expected_return > 12:  status = "저평가"
     elif expected_return > -5:  status = "적정"
     elif expected_return > -20: status = "고평가"
     else:                      status = "극단적 과열"
@@ -594,8 +608,8 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL"):
         "status":          status,
         "k_rate":          _safe_num(k * 100, 2),
         "forward_roe":     _safe_num(roe_fwd, 2),
-        "premium":         _safe_num(premium, 1),
-        "method":          "5-Step High-Growth Premium Framework",
+        "premium":         _safe_num(premium, 2),
+        "method":          "Hybrid S-RIM & Multiplier Framework",
         "shares":          _safe_num(shares, 0)
     }
 
