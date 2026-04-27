@@ -2463,9 +2463,6 @@ async function renderFundamentalReport(stockCode) {
     } else {
         document.getElementById('fundTargetContent').innerHTML = `
             <div class="fund-no-data" style="padding:40px; text-align:center; color:var(--text-muted);">재무 데이터 부족으로 적정 가치 산출 불가</div>`;
-    } else {
-        document.getElementById('fundTargetContent').innerHTML = `
-            <div class="fund-no-data" style="padding:30px;">재무 데이터 부족으로 산출 불가</div>`;
     }
 
     // ── 사용 축 태그 ──
