@@ -141,8 +141,6 @@ def _parse_rows(rows: list) -> dict:
         seen.add(nm)
         c = _amt(row.get("thstrm_amount"))
         p = _amt(row.get("frmtrm_amount"))
-        if "손실" in nm:
-            c, p = -c, -p
         out[tgt] = {"cur": c, "prv": p}
     return out
 
