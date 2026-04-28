@@ -1019,8 +1019,8 @@ async function selectStock(item, origin = 'search') {
     // Add to recent
     saveRecentSearch(item);
     
-    // [v185] Clear search box after selection/restoration per user request
-    if (searchInput) searchInput.value = ''; 
+    // [v185] Show selected stock name in search box per user request
+    if (searchInput) searchInput.value = item.name; 
     currentStock = item;
     
     // [PERSISTENCE] Save last stock for refresh recovery
@@ -2128,6 +2128,14 @@ function renderAnalysisReport(data) {
                 </div>
             `;
         }).join('');
+        
+        // [v200] Trigger width animation after render
+        setTimeout(() => {
+            patternsList.querySelectorAll('.confidence-fill').forEach(fill => {
+                const target = fill.getAttribute('data-target-width');
+                if (target) fill.style.width = target + '%';
+            });
+        }, 150);
     }
 
     observeElement(patternsCard, (el) => {
@@ -2554,7 +2562,8 @@ function renderAiInsights(data) {
                             <!-- Progress Circle -->
                             <circle cx="25" cy="25" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="4"
                                 stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
-                                stroke-linecap="round" transform="rotate(-90 25 25)"/>
+                                stroke-linecap="round" transform="rotate(-90 25 25)"
+                                style="transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);"/>
                             <text x="25" y="29" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text-main)">${pct}%</text>
                         </svg>
                     </div>
@@ -2791,23 +2800,23 @@ function renderAiInsights(data) {
 
             <!-- 사이클 상세 설명 -->
             <div class="cyc-desc-box">
-                <div class="cyc-desc-item summary">
+                <div class="cyc-desc-item summary animate-fade-in-up" style="animation-delay: 0.1s;">
                     <strong>💡 현재 사이클 요약:</strong><br/>
                     현재 다음 변곡점(추세가 꺾이는 지점) 도달까지 <strong>${cyc.progress}% 진행</strong>되었으며, 주식 시장이 열리는 날 기준으로 <strong>약 ${cyc.est_remaining_days}일</strong> 정도 남은 것으로 추정됩니다. 과거 주기의 평균이 <strong>${cyc.avg_cycle_days}일</strong>이므로, 이 추세라면 다음 변곡점은 대략 <strong>${cyc.est_next_peak_date ? cyc.est_next_peak_date : '조만간'}</strong>에 나타날 가능성이 높습니다.
                 </div>
-                <div class="cyc-desc-item">
+                <div class="cyc-desc-item animate-fade-in-up" style="animation-delay: 0.2s;">
                     <strong>[진행률] 및 [잔여 거래일]:</strong> 과거 평균을 기준으로 다음 곡점(변곡점)이 오기까지 전체 주기 중 현재 몇 % 지점인지(진행률), 그리고 앞으로 주식 시장이 열리는 날 기준으로 며칠이 남았는지(잔여 거래일)를 알려주는 <strong>'타이밍'</strong> 지표입니다.
                 </div>
-                <div class="cyc-desc-item">
+                <div class="cyc-desc-item animate-fade-in-up" style="animation-delay: 0.3s;">
                     <strong>[예상 도달일] 및 [사이클 통계]:</strong> 주말과 공휴일을 제외하고 계산된 실제 다음 변곡점의 캘린더 날짜(예상 도달일)입니다. '사이클 통계'의 평균은 과거 주기의 평균 일수, 경과는 최근 고점부터 지금까지 지난 일수입니다.
                 </div>
-                <div class="cyc-desc-item">
+                <div class="cyc-desc-item animate-fade-in-up" style="animation-delay: 0.4s;">
                     <strong>사이클 감지 횟수 및 감지 강도:</strong> 과거 차트에서 주기적인 상승/하락 패턴이 몇 번이나 반복되었는지 보여주는 <strong>'감지 횟수'</strong>입니다. 이 횟수가 많을수록 데이터의 표본이 많다는 뜻입니다.
                 </div>
-                <div class="cyc-desc-item">
+                <div class="cyc-desc-item animate-fade-in-up" style="animation-delay: 0.5s;">
                     <strong>[상승/하락] 및 [신뢰도]:</strong> 현재 주가가 고점을 향하고 있는지(상승), 저점을 향하고 있는지(하락)를 나타냅니다. <strong>'신뢰도(높음/보통/낮음)'</strong>는 과거 사이클의 기간 길이나 변동폭이 얼마나 일정했는지를 분석한 결과입니다. 예를 들어 <strong>'하락 신뢰도: 낮음'</strong>이라면 "현재 단기적으로 하락 사이클을 타고 있긴 하지만, 과거 패턴의 주기 편차가 심해서 도착 예정일의 오차가 클 수 있으니 주의하라"는 의미입니다.
                 </div>
-                <div class="cyc-desc-item">
+                <div class="cyc-desc-item animate-fade-in-up" style="animation-delay: 0.6s;">
                     <strong>변수 보정 (피보나치, 저항선, 투자심리):</strong> 단순 일수 계산을 넘어, 황금비율(피보나치 타임존), 마디 가격(ex: 5만원, 10만원) 돌파 대기 시간, 그리고 거래량 폭주와 인간의 탐욕/공포(RSI)로 인한 속도 가속화 현상을 모두 자동 계산해 도달일을 정밀 예측합니다.
                 </div>
             </div>
@@ -2876,7 +2885,7 @@ function renderCycleTimelineChart(cyc) {
     let html = `<svg width="100%" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block;">`;
 
     // Draw horizontal baseline
-    html += `<line x1="${padL}" y1="${lineY}" x2="${svgW - padR}" y2="${lineY}" stroke="${lineFill}" stroke-width="2"/>`;
+    html += `<line x1="${padL}" y1="${lineY}" x2="${svgW - padR}" y2="${lineY}" stroke="${lineFill}" stroke-width="2" class="animate-draw-path" style="stroke-dasharray: 1000; stroke-dashoffset: 1000;"/>`;
 
     // Find the index where future zone starts (between "current" and "future")
     const currentIdx = points.findIndex(p => p.type === 'current');
@@ -2898,7 +2907,7 @@ function renderCycleTimelineChart(cyc) {
         const segColor = p.type === 'future' ? futureColor : (p.type === 'current' ? phaseColor : lineFill);
         const dash = p.type === 'future' ? 'stroke-dasharray="6,5"' : '';
         const opacity = p.type === 'future' ? '0.6' : '0.9';
-        html += `<line x1="${x1}" y1="${lineY}" x2="${x2}" y2="${lineY}" stroke="${segColor}" stroke-width="3.5" ${dash} opacity="${opacity}"/>`;
+        html += `<line x1="${x1}" y1="${lineY}" x2="${x2}" y2="${lineY}" stroke="${segColor}" stroke-width="3.5" ${dash} opacity="${opacity}" class="animate-draw-path" style="stroke-dasharray: 1000; stroke-dashoffset: 1000; animation-delay: ${i * 0.2}s;"/>`;
     });
 
     // Draw dots & labels
@@ -3325,6 +3334,7 @@ function renderBuyReport(report) {
         return false;
     }
     card.classList.remove('hidden');
+    card.classList.add('animate-fade-in-up');
 
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} 분석`;
@@ -3368,6 +3378,7 @@ function renderSellReport(report, atrTargets) {
         return false;
     }
     card.classList.remove('hidden');
+    card.classList.add('animate-fade-in-up');
 
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} 분석`;
