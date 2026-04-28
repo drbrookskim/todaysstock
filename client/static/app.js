@@ -761,7 +761,8 @@ function updateWatchlistBtn() {
     favBtns.forEach(favBtn => {
         if (exists) {
             favBtn.classList.add('active');
-            favBtn.innerHTML = '<i class="ph ph-star ph-fill"></i>';
+            // [v209] Ensure color and fill consistency with chips
+            favBtn.innerHTML = '<i class="ph ph-star ph-fill" style="color: #fbbf24;"></i>';
         } else {
             favBtn.classList.remove('active');
             favBtn.innerHTML = '<i class="ph ph-star"></i>';
@@ -1117,7 +1118,7 @@ async function triggerFullDeepAnalysis(code) {
     const loadingText = document.getElementById('analysisLoadingText');
 
     const fundBlocks = ['fundSummaryBlock', 'fundQuantBlock', 'fundEventBlock', 'fundSectorBlock', 'fundTargetBlock'];
-    const aiBlocks = ['aiTrendBlock', 'aiBuySignalBlock', 'aiSellSignalBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock'];
+    const aiBlocks = ['aiTrendBlock', 'aiBuySignalBlock', 'aiSellSignalBlock', 'aiPatternsBlock', 'aiChartBlock', 'aiSummaryBlock', 'cycleWidgetContainer'];
     const allBlocks = [...fundBlocks, ...aiBlocks];
 
     try {
@@ -1343,7 +1344,15 @@ function renderResult(data) {
     }
 
     // Show result
-    resultSection.classList.remove('hidden');
+    if (resultSection) {
+        resultSection.classList.remove('hidden');
+        // [v209] Match padding logic if nested
+        const parent = resultSection.parentElement;
+        if (parent && parent.id === 'mainResultPlaceholder') {
+            const innerContainer = resultSection.querySelector('.container');
+            if (innerContainer) innerContainer.style.padding = '0';
+        }
+    }
 
     // Reset analysis section
     const patternReportSection = document.getElementById('patternReportSection');

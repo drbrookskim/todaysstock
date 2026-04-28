@@ -1000,7 +1000,7 @@ html[data-theme="light"] .theme-icon-btn i {
     background-color: var(--bg-card);
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-main);
-    padding: 32px;
+    padding: 24px; /* [v209] Matched with stock-header-card for visual symmetry */
     box-shadow: var(--shadow-premium);
 }
 
