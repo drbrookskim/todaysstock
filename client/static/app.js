@@ -284,8 +284,10 @@ function initNavigation() {
 
                 // --- Section Persistence Restore ---
                 if (targetId === 'dashboardHome') {
-                    // [MOD] 주 사용자가 메뉴를 직접 클릭해도 정상적으로 컨텍스트(HTML 노드 위치 및 검색 상태)를 복원해야 결과창이 소실되지 않음
+                    // [MOD] Restore Home state (Macro/Indicators) but keep it clean of stock results
                     resetDashboardHome(false); 
+                    const resSec = document.getElementById('resultSection');
+                    if (resSec) resSec.classList.add('hidden');
                     restoreStockContext('home');
                 } else if (targetId === 'watchlistSection') {
                     // [MOD] If current stock is in watchlist, ensure it's shown in watchlist tab too
@@ -387,27 +389,24 @@ function resetDashboardHome(force = false) {
 }
 
 function restoreStockContext(type) {
-    const context = (type === 'home') ? homeStockContext : watchlistStockContext;
     const resSec = document.getElementById('resultSection');
+
+    // [v206] Do NOT restore stock info on Home as per user request.
+    // Keep Home dedicated to Macro/Indicators.
+    if (type === 'home') {
+        if (resSec) resSec.classList.add('hidden');
+        return;
+    }
+
+    const context = watchlistStockContext;
     
     if (!context.item || !context.data) {
-        // No previously searched stock for this section
-        if (type === 'home') {
-            // Home might show macro cards by default if result is hidden
-        }
+        if (resSec) resSec.classList.add('hidden');
         return;
     }
 
     try {
-        // [MOD] Basic resultSection is visible in Home OR Watchlist (if stock is in watchlist)
-        const placeholderId = (type === 'home') ? 'mainResultPlaceholder' : 'watchlistResultPlaceholder';
-        const placeholder = document.getElementById(placeholderId);
-        
-        // Skip if wrong type and not home (already handled home above)
-        if (type !== 'home' && type !== 'watchlist') {
-            if (resSec) resSec.classList.add('hidden');
-            return;
-        }
+        const placeholder = document.getElementById('watchlistResultPlaceholder');
         
         // [MOD] If in watchlist tab, ensure the stock is actually in the watchlist
         if (type === 'watchlist' && context.item && !isInWatchlist(context.item.code)) {
