@@ -1032,14 +1032,40 @@ async function selectStock(item, origin = 'search') {
         if (loadingSpinner) loadingSpinner.classList.add('hidden');
 
         if (origin === 'search' || origin === 'restore') {
-            // [v206] Do NOT show stock info on Home. Always go to Analysis.
-            homeStockContext = { item, data, analysis: null };
-            watchlistStockContext = { item, data, analysis: null };
+            const isGuest = !authUser || !authUser.logged_in;
             
-            navigateToSection('navAnalysis');
-            
-            // Note: navigateToSection('navAnalysis') handles the initial label update
-            // and starts the AI analysis. We don't need renderResult(data) on Home.
+            if (isGuest) {
+                // [v207] Guest Mode: Stay on Home, show results between hero and macro
+                homeStockContext = { item, data, analysis: null };
+                
+                // Ensure we stay on Home
+                navigateToSection('navHome');
+                
+                // Physical position: Ensure resultSection is at mainResultPlaceholder
+                const resSec = document.getElementById('resultSection');
+                const placeholder = document.getElementById('mainResultPlaceholder');
+                if (resSec && placeholder) {
+                    placeholder.parentNode.insertBefore(resSec, placeholder.nextSibling);
+                    // Force resultSection to be visible (v206 removed this, adding back for guest)
+                    resSec.classList.remove('hidden');
+                    resSec.style.removeProperty('display');
+                }
+                
+                // Render the results (Summary and Metrics)
+                renderResult(data);
+                
+                // Smoothly scroll to the result
+                requestAnimationFrame(() => {
+                    if (resSec && !resSec.classList.contains('hidden')) {
+                        resSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            } else {
+                // Logged-in user: Go to Analysis tab as before (v206)
+                homeStockContext = { item, data, analysis: null };
+                watchlistStockContext = { item, data, analysis: null };
+                navigateToSection('navAnalysis');
+            }
         } 
         else if (origin === 'watchlist') {
             // Deep Analysis View: Navigate to Full AI & Fundamental Analysis
@@ -1304,6 +1330,15 @@ function renderResult(data) {
 
     // --- NXT After-hours ---
     renderNxtCard(data.nxt);
+
+    // [v207] Handle Guest Deep Analysis Pill
+    const isGuest = !authUser || !authUser.logged_in;
+    const guestArea = document.getElementById('guestDeepAnalysisArea');
+    if (isGuest && guestArea) {
+        guestArea.classList.remove('hidden');
+    } else if (guestArea) {
+        guestArea.classList.add('hidden');
+    }
 
     // Show result
     resultSection.classList.remove('hidden');
@@ -3552,6 +3587,13 @@ function startApp() {
     initResizableSidebar();
     document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
+
+    // [v207] Guest Deep Analysis Pill Listener
+    document.getElementById('guestDeepAnalysisBtn')?.addEventListener('click', () => {
+        if (window.showModal) {
+            window.showModal('심층 분석 안내', '심층 분석 서비스는 가입된 사용자만 확인 가능합니다.', 'info');
+        }
+    });
 
     // Search Button Listener
     const searchBtn = document.getElementById('searchBtn');

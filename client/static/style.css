@@ -8732,3 +8732,34 @@ body.vc-fullscreen-active .main-content {
     0%, 100% { transform: scale(1); opacity: 0.8; }
     50% { transform: scale(1.02); opacity: 1; }
 }
+
+/* [v207] Pill Button for Guest Deep Analysis */
+.pill-btn {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #4f46e5));
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    padding: 12px 28px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(92, 133, 255, 0.4);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.pill-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(92, 133, 255, 0.5);
+    filter: brightness(1.1);
+}
+
+.pill-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.pill-btn i {
+    font-size: 1.1rem;
+}
