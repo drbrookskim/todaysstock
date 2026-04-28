@@ -155,11 +155,12 @@ function renderRecentSearches() {
     }
 
     container.classList.remove('hidden');
-    list.innerHTML = recents.map(r =>
-        `<button class="recent-chip" data-code="${escapeHtml(r.code)}" data-market="${escapeHtml(r.market)}" data-name="${escapeHtml(r.name)}">
-            ${escapeHtml(r.name)}
-        </button>`
-    ).join('');
+    list.innerHTML = recents.map(r => {
+        const isInFav = isInWatchlist(r.code);
+        return `<button class="recent-chip ${isInFav ? 'in-watchlist' : ''}" data-code="${escapeHtml(r.code)}" data-market="${escapeHtml(r.market)}" data-name="${escapeHtml(r.name)}">
+            ${isInFav ? '<i class="ph ph-star ph-fill" style="color: #fbbf24; margin-right: 4px;"></i>' : ''}${escapeHtml(r.name)}
+        </button>`;
+    }).join('');
 
     list.querySelectorAll('.recent-chip').forEach(chip => {
         chip.addEventListener('click', () => {
@@ -614,6 +615,7 @@ async function addToWatchlist(item) {
     currentWatchlist.push(item);
     saveWatchlist(currentWatchlist);
     updateWatchlistBtn();
+    renderRecentSearches(); // [v203] Sync stars in chips
     showToast(`${item.name} 종목이 관심종목에 추가되었습니다.`, 'success');
 
     // [MOD] Ensure context sync for both Home and Watchlist tabs
@@ -673,6 +675,7 @@ async function removeFromWatchlist(code) {
     currentWatchlist = currentWatchlist.filter(w => w.code !== code);
     saveWatchlist(currentWatchlist);
     updateWatchlistBtn();
+    renderRecentSearches(); // [v203] Sync stars in chips
     
     // [MOD] Clear watchlist context if removed
     if (watchlistStockContext.item?.code === code) {
@@ -897,12 +900,15 @@ function renderSuggestions(items, query) {
         const marketClass = market.toLowerCase();
         const highlightedName = highlightMatch(escapeHtml(item.name), escapeHtml(query));
         const addedBadge = '';
+        const isFav = isInWatchlist(item.code);
+        const favIcon = isFav ? '<i class="ph ph-star ph-fill" style="color: #fbbf24; font-size: 0.85rem; margin-left: 6px;"></i>' : '';
+
         return `
             <div class="suggest-item ${idx === activeIndex ? 'active' : ''}"
                  data-index="${idx}"
                  onmouseenter="setActiveIndex(${idx})"
                  onclick="selectStockByIndex(${idx})">
-                <span class="suggest-item-name">${highlightedName} ${addedBadge}</span>
+                <span class="suggest-item-name">${highlightedName} ${addedBadge}${favIcon}</span>
                 <span class="suggest-item-meta">
                     <span class="suggest-item-code">${escapeHtml(item.code)}</span>
                     <span class="suggest-item-market ${marketClass}">${escapeHtml(item.market)}</span>
@@ -1548,8 +1554,9 @@ async function renderMacroIndicators() {
 
         // 1. Render Indices List
         if (indexList) {
-            indexList.innerHTML = indexData.map(idx => `
-                <div class="indicator-row clickable" 
+            indexList.innerHTML = indexData.map((idx, i) => `
+                <div class="indicator-row clickable animate-fade-in-up" 
+                     style="animation-delay: ${i * 0.05}s;"
                      data-id="${idx.id}" 
                      data-name="${idx.name}" 
                      onclick="renderMacroSplitChart('${idx.id}', '${idx.name}', 'market'); document.querySelectorAll('#indexList .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
@@ -1574,8 +1581,9 @@ async function renderMacroIndicators() {
 
         // 2. Render Economy List
         if (economyGrid) {
-            economyGrid.innerHTML = economyData.map(eco => `
-                <div class="indicator-row clickable" 
+            economyGrid.innerHTML = economyData.map((eco, i) => `
+                <div class="indicator-row clickable animate-fade-in-up" 
+                     style="animation-delay: ${0.2 + i * 0.05}s;"
                      data-id="${eco.id}" 
                      data-name="${eco.name}"
                      onclick="renderMacroSplitChart('${eco.id}', '${eco.name}', 'economy'); document.querySelectorAll('#economyGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
@@ -1601,8 +1609,9 @@ async function renderMacroIndicators() {
         // 3. Render Commodity List
         const commodityGrid = document.getElementById('commodityGrid');
         if (commodityGrid) {
-            commodityGrid.innerHTML = commodityData.map(com => `
-                <div class="indicator-row clickable" 
+            commodityGrid.innerHTML = commodityData.map((com, i) => `
+                <div class="indicator-row clickable animate-fade-in-up" 
+                     style="animation-delay: ${0.3 + i * 0.05}s;"
                      data-id="${com.id}" 
                      data-name="${com.name}"
                      onclick="renderMacroSplitChart('${com.id}', '${com.name}', 'commodity'); document.querySelectorAll('#commodityGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
@@ -1627,8 +1636,9 @@ async function renderMacroIndicators() {
 
         // 4. Render Crypto List
         if (cryptoGrid) {
-            cryptoGrid.innerHTML = cryptoData.map(cry => `
-                <div class="indicator-row clickable" 
+            cryptoGrid.innerHTML = cryptoData.map((cry, i) => `
+                <div class="indicator-row clickable animate-fade-in-up" 
+                     style="animation-delay: ${0.4 + i * 0.05}s;"
                      data-id="${cry.id}" 
                      data-name="${cry.name}"
                      onclick="renderMacroSplitChart('${cry.id}', '${cry.name}', 'crypto'); document.querySelectorAll('#cryptoGrid .indicator-row.clickable').forEach(i => i.classList.remove('active')); this.classList.add('active');">
@@ -1823,9 +1833,15 @@ function updateFearGreed(value) {
     const fgValue = document.getElementById('fgValue');
 
     if (fgFill && fgNeedle) {
-        const needleRotation = (value / 100) * 180 - 90;
-        fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
-        fgFill.style.transform = `rotate(${(value / 100) * 180}deg)`;
+        // Initial state
+        fgNeedle.style.transform = `rotate(-90deg)`;
+        fgFill.style.transform = `rotate(0deg)`;
+
+        observeElement(fgNeedle, () => {
+            const needleRotation = (value / 100) * 180 - 90;
+            fgNeedle.style.transform = `rotate(${needleRotation}deg)`;
+            fgFill.style.transform = `rotate(${(value / 100) * 180}deg)`;
+        });
         
         if (fgValue) fgValue.textContent = value;
         if (fgStatus) {
@@ -1999,12 +2015,18 @@ function renderAnalysisReport(data) {
         trendSignalTile.className = `trend-signal-tile gauge-v2-mode ${signalClass}`;
         if (trendSignalDesc) trendSignalDesc.textContent = signalText;
         
-        // Gauge V2 Rotation (Matching F&G)
+        // Gauge V2 Rotation (Matching F&G) - [v202] Animate on Reveal
         if (trendGaugeFill && trendGaugeNeedle) {
-            const needleRotation = (strength / 100) * 180 - 90;
-            const fillRotation = (strength / 100) * 180;
-            trendGaugeNeedle.style.transform = `rotate(${needleRotation}deg)`;
-            trendGaugeFill.style.transform = `rotate(${fillRotation}deg)`;
+            // Initial state (neutral/0)
+            trendGaugeNeedle.style.transform = `rotate(-90deg)`;
+            trendGaugeFill.style.transform = `rotate(0deg)`;
+
+            observeElement(trendSignalTile, () => {
+                const needleRotation = (strength / 100) * 180 - 90;
+                const fillRotation = (strength / 100) * 180;
+                trendGaugeNeedle.style.transform = `rotate(${needleRotation}deg)`;
+                trendGaugeFill.style.transform = `rotate(${fillRotation}deg)`;
+            });
         }
     }
 
@@ -2129,13 +2151,13 @@ function renderAnalysisReport(data) {
             `;
         }).join('');
         
-        // [v200] Trigger width animation after render
-        setTimeout(() => {
-            patternsList.querySelectorAll('.confidence-fill').forEach(fill => {
+        // [v202] Trigger width animation on Reveal
+        observeElement(patternsCard, (el) => {
+            el.querySelectorAll('.confidence-fill').forEach(fill => {
                 const target = fill.getAttribute('data-target-width');
                 if (target) fill.style.width = target + '%';
             });
-        }, 150);
+        });
     }
 
     observeElement(patternsCard, (el) => {
@@ -2561,8 +2583,9 @@ function renderAiInsights(data) {
                             <circle cx="25" cy="25" r="${r}" fill="none" stroke="var(--border-soft)" stroke-width="4"/>
                             <!-- Progress Circle -->
                             <circle cx="25" cy="25" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="4"
-                                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+                                stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"
                                 stroke-linecap="round" transform="rotate(-90 25 25)"
+                                class="ai-indicator-progress" data-offset="${offset}"
                                 style="transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);"/>
                             <text x="25" y="29" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text-main)">${pct}%</text>
                         </svg>
@@ -2702,6 +2725,14 @@ function renderAiInsights(data) {
             ${volHtml}
         </div>
     `;
+
+    // [v202] Trigger indicator animations on reveal
+    observeElement(body, (el) => {
+        el.querySelectorAll('.ai-indicator-progress').forEach(p => {
+            const targetOffset = p.getAttribute('data-offset');
+            if (targetOffset) p.style.strokeDashoffset = targetOffset;
+        });
+    });
 
     // ── 4. 사이클 타임 예측 (펀더멘탈 내부 컨테이너로 렌더링) ──
     const cyc = data.cycle_estimation;
@@ -2946,6 +2977,13 @@ function renderCycleTimelineChart(cyc) {
 
     html += '</svg>';
     container.innerHTML = html;
+    
+    // [v202] Trigger drawing animation on reveal
+    observeElement(container, (el) => {
+        el.querySelectorAll('.animate-draw-path').forEach(line => {
+            line.style.animationPlayState = 'running';
+        });
+    });
 
     // [CRITICAL] Set initial scroll position to the far right (most recent data)
     // Wrap in requestAnimationFrame to ensure DOM is ready

@@ -3833,6 +3833,7 @@ html[data-theme="dark"] .ai-indicator-item {
 
 .animate-draw-path {
     animation: drawPath 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-play-state: paused;
 }
 
 .workout-style:hover {
