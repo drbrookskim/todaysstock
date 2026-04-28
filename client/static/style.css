@@ -996,7 +996,7 @@ html[data-theme="light"] .theme-icon-btn i {
 .search-card {
     position: relative;
     width: 100%;
-    max-width: 1200px; /* Matches standard container width */
+    max-width: 100%; /* Matches standard container width for alignment */
     background-color: var(--bg-card);
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-main);

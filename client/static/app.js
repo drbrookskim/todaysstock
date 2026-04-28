@@ -157,8 +157,13 @@ function renderRecentSearches() {
     container.classList.remove('hidden');
     list.innerHTML = recents.map(r => {
         const isInFav = isInWatchlist(r.code);
+        // [v208] Always show star, filled if in watchlist
+        const starIcon = isInFav ? 
+            '<i class="ph ph-star ph-fill" style="color: #fbbf24; margin-right: 4px;"></i>' : 
+            '<i class="ph ph-star" style="color: var(--text-muted); margin-right: 4px;"></i>';
+            
         return `<button class="recent-chip ${isInFav ? 'in-watchlist' : ''}" data-code="${escapeHtml(r.code)}" data-market="${escapeHtml(r.market)}" data-name="${escapeHtml(r.name)}">
-            ${isInFav ? '<i class="ph ph-star ph-fill" style="color: #fbbf24; margin-right: 4px;"></i>' : ''}${escapeHtml(r.name)}
+            ${starIcon}${escapeHtml(r.name)}
         </button>`;
     }).join('');
 
@@ -1331,13 +1336,10 @@ function renderResult(data) {
     // --- NXT After-hours ---
     renderNxtCard(data.nxt);
 
-    // [v207] Handle Guest Deep Analysis Pill
-    const isGuest = !authUser || !authUser.logged_in;
+    // [v208] Always show Deep Analysis Pill if a stock is being viewed on Home
     const guestArea = document.getElementById('guestDeepAnalysisArea');
-    if (isGuest && guestArea) {
+    if (guestArea) {
         guestArea.classList.remove('hidden');
-    } else if (guestArea) {
-        guestArea.classList.add('hidden');
     }
 
     // Show result
@@ -3588,10 +3590,16 @@ function startApp() {
     document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebarOpen);
     document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
 
-    // [v207] Guest Deep Analysis Pill Listener
+    // [v208] Unified Deep Analysis Button Listener
     document.getElementById('guestDeepAnalysisBtn')?.addEventListener('click', () => {
-        if (window.showModal) {
-            window.showModal('심층 분석 안내', '심층 분석 서비스는 가입된 사용자만 확인 가능합니다.', 'info');
+        const isGuest = !authUser || !authUser.logged_in;
+        if (isGuest) {
+            if (window.showModal) {
+                window.showModal('심층 분석 안내', '심층 분석 서비스는 가입된 사용자만 확인 가능합니다.', 'info');
+            }
+        } else {
+            // Logged-in user: Navigate to Analysis section
+            navigateToSection('navAnalysis');
         }
     });
 
