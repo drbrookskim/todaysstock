@@ -3352,16 +3352,17 @@ function renderCandleChart(candles) {
     // ── MA Visual Bars (The "Quicken" Style Bars below chart) ──
     const maVisualBarsContainer = document.getElementById('maVisualBars');
     if (maVisualBarsContainer) {
-        setTimeout(() => {
-            maVisualBarsContainer.querySelectorAll('.ma-bar-fill').forEach(fillEl => {
+        // [v204] Trigger on Reveal
+        observeElement(maVisualBarsContainer, (el) => {
+            el.querySelectorAll('.ma-bar-fill').forEach(fillEl => {
                 const targetW = fillEl.getAttribute('data-target-width');
                 if (targetW) fillEl.style.width = targetW + '%';
             });
-            maVisualBarsContainer.querySelectorAll('.ma-bar-current-price').forEach(priceEl => {
+            el.querySelectorAll('.ma-bar-current-price').forEach(priceEl => {
                 const targetL = priceEl.getAttribute('data-target-left');
                 if (targetL) priceEl.style.left = targetL + '%';
             });
-        }, 300);
+        });
     }
 }
 
@@ -3385,10 +3386,10 @@ function renderBuyReport(report) {
     const strengthFillEl = document.getElementById('buyStrengthFill');
     if (strengthPctEl) strengthPctEl.textContent = `${strength}%`;
     if (strengthFillEl) {
-        // Trigger animation
-        setTimeout(() => {
+        // [v204] Trigger animation on Reveal
+        observeElement(strengthFillEl, () => {
             strengthFillEl.style.width = `${strength}%`;
-        }, 100);
+        });
     }
 
     // 2. Pattern Detail
@@ -3429,9 +3430,10 @@ function renderSellReport(report, atrTargets) {
     const strengthFillEl = document.getElementById('sellStrengthFill');
     if (strengthPctEl) strengthPctEl.textContent = `${strength}%`;
     if (strengthFillEl) {
-        setTimeout(() => {
+        // [v204] Trigger animation on Reveal
+        observeElement(strengthFillEl, () => {
             strengthFillEl.style.width = `${strength}%`;
-        }, 100);
+        });
     }
 
     // 2. Pattern Detail
