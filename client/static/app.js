@@ -3559,7 +3559,7 @@ function startApp() {
     document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
     renderRecentSearches();
     document.getElementById('clearRecent')?.addEventListener('click', clearRecentSearches);
-}
+
 
     // Unified Favorite Button Listener
     document.addEventListener('click', (e) => {
