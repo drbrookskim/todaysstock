@@ -370,9 +370,9 @@ function resetDashboardHome(force = false) {
             // No longer auto-filling searchInput to keep it clean for next search per user request
             // if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
 
-            // [FIX] Always ensure results are rendered if they exist in memory
-            if (resSec && currentStock.data) {
-                renderResult(currentStock.data);
+            // [v206] Do NOT render stock results on Home.
+            if (resSec) {
+                resSec.classList.add('hidden');
             }
         }
     }
