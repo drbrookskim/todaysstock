@@ -2623,8 +2623,9 @@ function renderAiInsights(data) {
                                     <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--border-soft)" stroke-width="10" stroke-linecap="round"/>
                                     <!-- Progress Arc -->
                                     <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="${scoreColor}" stroke-width="10" 
-                                        stroke-dasharray="${arcLength}" stroke-dashoffset="${mainOffset}"
-                                        stroke-linecap="round" style="transition: stroke-dashoffset 1.5s ease-out;"/>
+                                        stroke-dasharray="${arcLength}" stroke-dashoffset="${arcLength}"
+                                        stroke-linecap="round" class="ai-indicator-progress" data-offset="${mainOffset}"
+                                        style="transition: stroke-dashoffset 1.5s ease-out;"/>
                                     <text x="50" y="45" text-anchor="middle" font-size="24" font-weight="900" fill="var(--text-main)">${score}%</text>
                                 </svg>
                                 <span class="ai-gauge-label" style="background:${scoreColor}15; color:${scoreColor}">${prob.label}</span>
@@ -2727,10 +2728,18 @@ function renderAiInsights(data) {
     `;
 
     // [v202] Trigger indicator animations on reveal
-    observeElement(body, (el) => {
-        el.querySelectorAll('.ai-indicator-progress').forEach(p => {
-            const targetOffset = p.getAttribute('data-offset');
-            if (targetOffset) p.style.strokeDashoffset = targetOffset;
+    // Use requestAnimationFrame to ensure DOM is ready and observer catches it
+    requestAnimationFrame(() => {
+        observeElement(body, (el) => {
+            el.querySelectorAll('.ai-indicator-progress').forEach(p => {
+                const targetOffset = p.getAttribute('data-offset');
+                if (targetOffset) {
+                    // Small delay to ensure CSS transition is ready
+                    setTimeout(() => {
+                        p.style.strokeDashoffset = targetOffset;
+                    }, 50);
+                }
+            });
         });
     });
 
@@ -3539,9 +3548,18 @@ function startApp() {
         searchInput.focus();
     }
 
+    // [v205] Global Reveal Trigger for reveal-fade elements (e.g. Home Macro Cards)
+    document.querySelectorAll('.reveal-fade').forEach(el => {
+        observeElement(el, () => {
+            el.classList.add('visible');
+        });
+    });
+
+    // --- Other Event Listeners ---
     document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
     renderRecentSearches();
     document.getElementById('clearRecent')?.addEventListener('click', clearRecentSearches);
+}
 
     // Unified Favorite Button Listener
     document.addEventListener('click', (e) => {
