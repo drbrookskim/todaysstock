@@ -1050,23 +1050,14 @@ async function selectStock(item, origin = 'search') {
         if (loadingSpinner) loadingSpinner.classList.add('hidden');
 
         if (origin === 'search' || origin === 'restore') {
+            // [v206] Do NOT show stock info on Home. Always go to Analysis.
             homeStockContext = { item, data, analysis: null };
+            watchlistStockContext = { item, data, analysis: null };
             
-            // Navigate to Home section
-            navigateToSection('navHome');
+            navigateToSection('navAnalysis');
             
-            // Render the results (this will eventually hide the loaders)
-            renderResult(data);
-            
-            // Smoothly scroll to the result ONLY for fresh searches
-            if (origin === 'search') {
-                requestAnimationFrame(() => {
-                    const resSec = document.getElementById('resultSection');
-                    if (resSec && !resSec.classList.contains('hidden')) {
-                        resSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
-            }
+            // Note: navigateToSection('navAnalysis') handles the initial label update
+            // and starts the AI analysis. We don't need renderResult(data) on Home.
         } 
         else if (origin === 'watchlist') {
             // Deep Analysis View: Navigate to Full AI & Fundamental Analysis
