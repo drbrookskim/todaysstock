@@ -348,31 +348,14 @@ function resetDashboardHome(force = false) {
     } else {
         // --- 5. Robust State Restoration ---
         if (currentStock) {
-            console.log('[DEBUG] Restoring search result for', currentStock.name);
+            console.log('[DEBUG] Keeping Home clean from stock results per v206 policy.');
             
-            // Ensure section is visible through animation frame for state stability
-            requestAnimationFrame(() => {
-                const resSecMem = document.getElementById('resultSection');
-                
-                if (resSecMem) {
-                    resSecMem.classList.remove('hidden');
-                    // Physical Layer Override: Force through direct style to prevent any override
-                    resSecMem.style.setProperty('display', 'block', 'important');
-                    resSecMem.style.setProperty('visibility', 'visible', 'important');
-                    resSecMem.style.setProperty('opacity', '1', 'important');
-                }
-                // if (heroMem) {
-                //     heroMem.classList.add('hidden');
-                //     heroMem.style.setProperty('display', 'none', 'important');
-                // }
-            });
-            
-            // No longer auto-filling searchInput to keep it clean for next search per user request
-            // if (searchInput && !searchInput.value) searchInput.value = currentStock.name;
-
-            // [v206] Do NOT render stock results on Home.
+            // [v206] Ensure result section remains completely hidden and clear any previous physical overrides
             if (resSec) {
                 resSec.classList.add('hidden');
+                resSec.style.removeProperty('display');
+                resSec.style.removeProperty('visibility');
+                resSec.style.removeProperty('opacity');
             }
         }
     }
