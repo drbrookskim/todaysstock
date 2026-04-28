@@ -520,11 +520,8 @@ def _build_signal(quant: dict, events: list,
 
 def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", stock_code=""):
     """
-    [v196] 3중 혼합 밸류에이션 모델 (증권사 수준 고도화)
-    - S-RIM (30%) + 목표PBR*BPS (50%) + 목표PER*EPS (20%)
-    - Forward ROE 3단계 가중 (과거:섹터평균:성장보정 = 30:20:50)
-    - VIX 기반 심리 보정 +-15%
-    - 5단계 밴드 반환 (liquidation / bear / base / bull / analyst)
+    [v199] 3중 혼합 밸류에이션 모델 (보편적 적용 알고리즘)
+    - 5-Step Engine 적용: 동적 할인율, 선행 ROE, 섹터/리더 프리미엄, 심리 보정, 밴드 산출
     """
     if not shares or not current_price:
         return None
@@ -533,6 +530,7 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", s
     roe_hist = qnt.get("roe") or 10.0
     equity   = qnt.get("equity_raw", 0) or 0
     net_inc  = qnt.get("net_income_raw", 0) or 0
+    score    = qnt.get("score", 50)
 
     if not equity or not shares:
         return None
@@ -550,8 +548,11 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", s
         "ENERGY": 0.9, "GENERAL": 1.0
     }
     beta = beta_map.get(ctype, 1.0)
-    erp  = 0.055
-    k    = max(0.055, min(0.18, rf + beta * erp))
+    
+    # [v199] 안정성 점수(score)가 높을수록 리스크 프리미엄 감소 (안전 자산 취급)
+    erp_adj = 0.055 * (1.0 - (score - 50) / 200.0) # score 90이면 erp 약 0.044로 감소
+    erp = max(0.04, min(0.08, erp_adj))
+    k   = max(0.05, min(0.18, rf + beta * erp))
 
     # 2. Forward ROE — 3단계 가중 평균
     sector_means = _SECTOR_MEANS.get(ctype, _SECTOR_MEANS["GENERAL"])
@@ -559,48 +560,62 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", s
     growth_adj   = (qnt.get("qtr_growth") or 0) / 100.0
     sensitivity  = 0.6 if ctype in ("EQUIPMENT", "IDM", "BATTERY", "BIO") else 0.4
     roe_growth   = roe_hist * (1 + max(-0.35, min(0.5, growth_adj * sensitivity)))
-    roe_blended  = roe_hist * 0.30 + roe_sector * 0.20 + roe_growth * 0.50
-    roe_dec      = max(3.0, min(55.0, roe_blended)) / 100.0
+    
+    # [v199] 점수가 높고 성장이 강할수록 Forward ROE 비중 확대
+    if score >= 80 and growth_adj > 0:
+        roe_blended = roe_hist * 0.15 + roe_sector * 0.15 + roe_growth * 0.70
+    else:
+        roe_blended = roe_hist * 0.30 + roe_sector * 0.20 + roe_growth * 0.50
+        
+    roe_dec = max(3.0, min(55.0, roe_blended)) / 100.0
 
-    # 3. 목표 PBR / PER + 섹터 사이클 프리미엄 (v197: HBM/AI 초고성장 프리미엄 반영)
+    # 3. 목표 PBR / PER + 섹터 사이클 프리미엄
     target_pbr   = sector_means.get("pbr", 1.2)
     target_per   = sector_means.get("per", 12.0)
     
-    # [v197] HBM/AI 대장주 특별 프리미엄 (한미반도체 등)
-    is_hbm_leader = ctype == "EQUIPMENT" and roe_hist > 25 and (qnt.get("score") or 0) > 80
+    # [v199] 주도주(Market Leader) 판별: 점수 우수 & ROE 우수
+    is_market_leader = (score >= 75) and (roe_blended >= 15.0)
     
     premium_map  = {
-        "IDM": 1.5 if is_hbm_leader else 1.3, 
-        "EQUIPMENT": 1.8 if is_hbm_leader else 1.5, 
-        "BATTERY": 1.4, "BIO": 1.8,
+        "IDM": 1.4, "EQUIPMENT": 1.5, "BATTERY": 1.4, "BIO": 1.8,
         "EV": 1.1, "INTERNET": 1.4, "FINANCE": 0.8, "TELECOM": 0.7,
         "ENERGY": 0.9, "GENERAL": 1.0
     }
     cycle_factor = premium_map.get(ctype, 1.0)
     
-    # 대장주인 경우 PBR 타겟을 시장 현실(40~60배)에 맞춰 상향
-    if is_hbm_leader:
-        target_pbr = 32.0  # (32 * 1.8 = 57.6)
-        target_per = 55.0
+    # 대장주 프리미엄 부여 (최대 2.5x ~ 3.0x 효과)
+    if is_market_leader:
+        cycle_factor *= 1.8 # 성장 프리미엄
+        target_pbr = max(target_pbr, 15.0)
+        target_per = max(target_per, 30.0)
     
     target_pbr  *= cycle_factor
     target_per  *= cycle_factor
 
-    # 4. VIX 기반 심리 보정 (+-15%)
+    # 4. 심리 보정 (AI Sentiment Score Proxy)
+    # VIX 매크로 외에 개별 종목의 점수를 바탕으로 Sentiment Buffer 적용
     vix = macro.get("vix", 20)
-    if   vix >= 35: sentiment_factor = 1.15
-    elif vix >= 28: sentiment_factor = 1.08
-    elif vix >= 22: sentiment_factor = 1.02
-    elif vix <= 13: sentiment_factor = 0.88
-    elif vix <= 16: sentiment_factor = 0.94
-    elif vix <= 19: sentiment_factor = 0.98
-    else:           sentiment_factor = 1.00
+    if   vix >= 35: macro_sf = 1.15
+    elif vix >= 28: macro_sf = 1.08
+    elif vix >= 22: macro_sf = 1.02
+    elif vix <= 13: macro_sf = 0.88
+    elif vix <= 16: macro_sf = 0.94
+    elif vix <= 19: macro_sf = 0.98
+    else:           macro_sf = 1.00
+    
+    # 개별 종목 Score 기반 Sentiment (과열 방지 및 프리미엄 반영)
+    if score >= 85:   micro_sf = 1.10
+    elif score >= 70: micro_sf = 1.05
+    elif score <= 30: micro_sf = 0.90
+    else:             micro_sf = 1.00
+    
+    sentiment_factor = (macro_sf + micro_sf) / 2.0
 
-    # 5. 3중 모델 혼합 산출 (v197: 대장주의 경우 멀티플 비중 확대)
+    # 5. 3중 모델 혼합 산출
     def _s_rim(r, kk):
         base_val = bps + bps * (r - kk) / kk
-        if is_hbm_leader:
-            return base_val * 7.5 # HBM 리더 초과이익 프리미엄 (285k 타겟)
+        if is_market_leader:
+            return base_val * 4.5 # 초과 이익 지속 프리미엄
         return base_val
 
     def _pbr_val(pbr_mult):
@@ -615,7 +630,7 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", s
         srim = _s_rim(r, kk)
         pbr  = _pbr_val(pbr_m)
         per  = _per_val(per_m)
-        if is_hbm_leader:
+        if is_market_leader:
             return (srim * 0.45 + pbr * 0.45 + per * 0.10) * sf
         return (srim * 0.30 + pbr * 0.50 + per * 0.20) * sf
 
@@ -624,36 +639,6 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", s
     bull_price    = mixed(roe_dec * 1.25, k - 0.005, target_pbr * 1.20, target_per * 1.20, max(sentiment_factor, 1.03))
     analyst_price = mixed(roe_dec * 1.10, k, target_pbr * 1.5, target_per * 1.5, 1.0)
     liquidation   = bps
-
-    # [v198] AI-based Stock Expectation Explicit Overrides
-    if stock_code == "042700": # Hanmi Semiconductor
-        liquidation = 11500
-        bear_price = 195000
-        base_price = 285000
-        bull_price = 340000
-        analyst_price = 350000
-        k = 0.085
-        roe_blended = 31.6
-        cycle_factor = 2.5
-        sentiment_factor = 1.15
-    elif stock_code == "080220": # Jeju Semiconductor
-        bear_price = 42000
-        base_price = 60500
-        bull_price = 68000
-        analyst_price = 70000
-        k = 0.090
-        roe_blended = 24.5
-        cycle_factor = 2.0
-        sentiment_factor = 1.05
-    elif stock_code == "121600": # Advanced Nano Products
-        bear_price = 65000
-        base_price = 81500
-        bull_price = 98000
-        analyst_price = 100000
-        k = 0.085
-        roe_blended = 18.2
-        cycle_factor = 3.0
-        sentiment_factor = 0.90
 
     # 상태 판정 (현재가 vs 밴드 위치)
     current_pbr = current_price / bps if bps > 0 else 0
@@ -685,8 +670,6 @@ def _calculate_target(qnt, current_price, shares, macro=None, ctype="GENERAL", s
         "shares":      _safe_num(shares, 0),
     }
 
-# ════════════════════════════════════════════════════════════
-# 7.  메인 API
 # ════════════════════════════════════════════════════════════
 def analyze_fundamental(stock_code: str, corp_name: str, corp_code: str,
                         dart_key: str, ecos_key: str,
